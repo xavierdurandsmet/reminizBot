@@ -1,4 +1,4 @@
-'use strict'
+require('dotenv').config(({silent: true}))
 
 const express = require('express')
 const bodyParser = require('body-parser')
@@ -6,15 +6,36 @@ const request = require('request')
 const Bing = require('node-bing-api')({ accKey: "00c98764dd9d440ba8d15bf161787d0e" })
 const wikipedia = require("node-wikipedia")
 const app = express()
-
+const mongoose = require('mongoose') // MongoDB lib
 
 app.set('port', (process.env.PORT || 5000))
 
 // Process application/x-www-form-urlencoded
 app.use(bodyParser.urlencoded({ extended: false }))
-
 // Process application/json
 app.use(bodyParser.json())
+
+// Spin up the server
+app.listen(app.get('port'), function (err) {
+  if (err) {
+    return err
+  }
+  console.log('running on port', app.get('port'))
+})
+
+// Start the database using Mongoose
+const MONGODB_URI = process.env.MONGODB_URI
+mongoose.connect(MONGODB_URI)
+const db = mongoose.connection
+db.on('error', console.error.bind(console, 'connection error:'))
+db.once('open', () => {
+  console.log(`Successfully connected to ${MONGODB_URI}`)
+})
+
+
+// -----------------------------------------------------------------------------
+// ROUTES
+// -----------------------------------------------------------------------------
 
 // Index route
 app.get('/', function (req, res) {
@@ -48,8 +69,8 @@ const token = "EAACcsOfEpWYBAAyHGJPVI63muzKwuSpYgCX5P2ZCh510Pamkf0hkgY7qX9BpVtSy
 function sendTextMessage(sender, text) {
 
     Bing.images(text, {
-        top: 15,   // Number of results (max 50) 
-        skip: 3    // Skip first 3 result 
+        top: 15,   // Number of results (max 50)
+        skip: 3    // Skip first 3 result
     }, function (error, res, body) {
 
         wikipedia.page.data(text, { content: true }, function(response) {
@@ -91,18 +112,6 @@ function sendTextMessage(sender, text) {
         }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
         request({
             url: 'https://graph.facebook.com/v2.6/me/messages',
             qs: { access_token: token },
@@ -121,7 +130,4 @@ function sendTextMessage(sender, text) {
     });
 }
 
-// Spin up the server
-app.listen(app.get('port'), function () {
-    console.log('running on port', app.get('port'))
-})
+
