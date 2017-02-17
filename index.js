@@ -44,7 +44,7 @@ app.get('/', function (req, res) {
 
 // for Facebook verification
 app.get('/webhook/', function (req, res) {
-    if (req.query['hub.verify_token'] === 'my_voice_is_my_password_verify_me') {
+    if (req.query['hub.verify_token'] === process.env.VERIFY_TOKEN) {
         res.send(req.query['hub.challenge'])
     }
     res.send('Error, wrong token')
@@ -64,8 +64,9 @@ app.post('/webhook/', function (req, res) {
     res.sendStatus(200)
 })
 
-const token = "EAACcsOfEpWYBAAyHGJPVI63muzKwuSpYgCX5P2ZCh510Pamkf0hkgY7qX9BpVtSyYsK2hX2WbTp0vUA7ZBZBBSEMd9mKFCTpR3yfokpiQSz4Ui86WVWl7hnFoOTGYlZC1PszxTwKt7vNqyFga57t3B8VHnFBeRh9QGWhSNsrcAZDZD"
+const token = process.env.PAGE_ACCESS_TOKEN
 
+// Send a text reply to a user
 function sendTextMessage(sender, text) {
 
     Bing.images(text, {
