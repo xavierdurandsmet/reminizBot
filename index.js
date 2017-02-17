@@ -31,7 +31,6 @@ db.once('open', () => {
   console.log(`Successfully connected to ${MONGODB_URI}`)
 })
 
-
 // -----------------------------------------------------------------------------
 // ROUTES
 // -----------------------------------------------------------------------------
@@ -55,6 +54,7 @@ app.post('/webhook/', function (req, res) {
     for (let i = 0; i < messaging_events.length; i++) {
         let event = req.body.entry[0].messaging[i]
         let sender = event.sender.id
+        // Check if there was a message
         if (event.message && event.message.text) {
             let userText = event.message.text
             sendDefaultMessage(sender, userText)
