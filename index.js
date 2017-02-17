@@ -56,12 +56,31 @@ app.post('/webhook/', function (req, res) {
         let event = req.body.entry[0].messaging[i]
         let sender = event.sender.id
         if (event.message && event.message.text) {
+            getFacebookProfile(sender)
             let userText = event.message.text
             sendDefaultMessage(sender, userText)
         }
     }
     res.sendStatus(200)
 })
+
+// Get the Facebook profile from the Graph API, and print it
+function getFacebookProfile(senderId) {
+  console.log('Getting the user profile')
+  if (!senderId) {
+    console.log('Missing senderId')
+  }
+  request(`https://graph.facebook.com/v2.6/${senderId}?access_token=${process.env.PAGE_ACCESS_TOKEN}`, function (error, response, body) {
+    if (error) {
+      console.log(error)
+      return error
+    }
+    if (!error && response.statusCode === 200) {
+      console.log(body) // Show the HTML for the Google homepage.
+    }
+  })
+}
+
 
 // Send a text reply to a user
 function sendDefaultMessage(sender) {
