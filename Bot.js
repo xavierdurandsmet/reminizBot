@@ -13,77 +13,57 @@ module.exports = {
 
 const token = process.env.PAGE_ACCESS_TOKEN
 
+// Send a text reply to a user
 function sendDefaultMessage(sender) {
-
-    let messageData = {
-        "attachment": {
-            "type": "template",
-            "payload": {
-                "template_type": "list",
-                "elements": [
-                    {
-                        "title": "CNN",
-                        "image_url": "https://pbs.twimg.com/profile_images/508960761826131968/LnvhR8ED.png",
-                        "subtitle": "See who's currently talking on CNN",
-                        "default_action": {
-                            "type": "web_url",
-                            "url": "https://c65e40c2.ngrok.io",
-                            "messenger_extensions": true,
-                            "webview_height_ratio": "tall",
-                            "fallback_url": "https://c65e40c2.ngrok.io"
-                        },
-                        "buttons": [
-                            {
-                                "title": "View Now!",
-                                "type": "postback",
-                                "payload": "Natalie Portman", // hardcoded to get an actress result. To be changed to a call to the Reminiz API
-                                "webview_height_ratio": "tall"
-                            }
-                        ]
-                    },
-                    {
-                        "title": "BBC",
-                        "image_url": "https://pbs.twimg.com/profile_images/662708106/bbc.png",
-                        "subtitle": "See who's currently talking on BBC",
-                        "default_action": {
-                            "type": "web_url",
-                            "url": "https://c65e40c2.ngrok.io",
-                            "messenger_extensions": true,
-                            "webview_height_ratio": "tall",
-                            "fallback_url": "https://c65e40c2.ngrok.io"
-                        },
-                        "buttons": [
-                            {
-                                "title": "View Now!",
-                                "type": "web_url",
-                                "url": "https://c65e40c2.ngrok.io",
-                                "messenger_extensions": true,
-                                "webview_height_ratio": "tall",
-                                "fallback_url": "https://c65e40c2.ngrok.io"
-                            }
-                        ]
-                    }
-                ]
-            }
-        }
-    }
-
-
-    request({
-        url: 'https://graph.facebook.com/v2.6/me/messages',
-        qs: { access_token: token },
-        method: 'POST',
-        json: {
-            recipient: { id: sender },
-            message: messageData,
-        }
-    }, function (error, response, body) {
-        if (error) {
-            console.log('Error sending messages: ', error)
-        } else if (response.body.error) {
-            console.log('Error: ', response.body.error)
-        }
-    })
+  let messageData = {
+      "attachment": {
+          "type": "template",
+          "payload": {
+              "template_type": "generic",
+              "elements": [
+                  {
+                      "title": "CNN",
+                      "image_url": 'https://encrypted-tbn2.gstatic.com/images?q=tbn:ANd9GcQn4O8zXpRf9xbk8vy0LdrXqa8jXUduoKdlc2YfrsL5cKxLBegR_e89HXg',
+                      "subtitle": "The news channel",
+                      "buttons": [
+                        {
+                          "type":"postback",
+                          "title":"Choose ✔︎",
+                          "payload":"SINGLE_ACTOR"
+                        }
+                      ]
+                  },
+                  {
+                      "title": "Disney Channel",
+                      "image_url": 'http://vignette4.wikia.nocookie.net/logopedia/images/8/87/Disney_Channel_2014.png/revision/latest?cb=20140522224840',
+                      "subtitle": "Children love it",
+                      "buttons": [
+                        {
+                          "type":"postback",
+                          "title":"Choose ✔︎",
+                          "payload":"MANY_ACTORS"
+                        }
+                      ]
+                  }
+              ]
+          }
+      }
+  }
+  request({
+      url: 'https://graph.facebook.com/v2.6/me/messages',
+      qs: { access_token: token },
+      method: 'POST',
+      json: {
+          recipient: { id: sender },
+          message: messageData,
+      }
+  }, function (error, response) {
+      if (error) {
+          console.log('Error sending messages: ', error)
+      } else if (response.body.error) {
+          console.log('Error: ', response.body.error)
+      }
+  })
 }
 
 
