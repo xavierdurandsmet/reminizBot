@@ -6,6 +6,7 @@ const request = require('request')
 const app = express()
 const mongoose = require('mongoose') // MongoDB lib
 const token = process.env.PAGE_ACCESS_TOKEN
+const User = require('./app/models/user')
 
 app.set('port', (process.env.PORT || 5000))
 
@@ -50,36 +51,19 @@ app.get('/webhook/', function (req, res) {
 })
 
 app.post('/webhook/', function (req, res) {
-    console.log("hit here");
+    console.log('Bot received a message');
     let messaging_events = req.body.entry[0].messaging
     for (let i = 0; i < messaging_events.length; i++) {
         let event = req.body.entry[0].messaging[i]
-        let sender = event.sender.id
+        let senderId = event.sender.id
         if (event.message && event.message.text) {
-            getFacebookProfile(sender)
-            let userText = event.message.text
-            sendDefaultMessage(sender, userText)
+          const currentUser = User.findOrCreate(senderId)
+          console.log(currentUser)
+          sendDefaultMessage(senderId, event.message.text)
         }
     }
     res.sendStatus(200)
 })
-
-// Get the Facebook profile from the Graph API, and print it
-function getFacebookProfile(senderId) {
-  console.log('Getting the user profile')
-  if (!senderId) {
-    console.log('Missing senderId')
-  }
-  request(`https://graph.facebook.com/v2.6/${senderId}?access_token=${process.env.PAGE_ACCESS_TOKEN}`, function (error, response, body) {
-    if (error) {
-      console.log(error)
-      return error
-    }
-    if (!error && response.statusCode === 200) {
-      console.log(body) // Show the HTML for the Google homepage.
-    }
-  })
-}
 
 
 // Send a text reply to a user
