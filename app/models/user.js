@@ -22,7 +22,7 @@ UserSchema.statics.findOrCreate = function(facebookId) {
   // Look up if the user exists
   this.findOne({ fb_id: facebookId }, function(error, currentUser) {
     if (error) {
-      console.log('there was an error')
+      console.log('there was an error', error)
       return error
     }
     if (!currentUser) {
@@ -47,14 +47,12 @@ UserSchema.statics.findOrCreate = function(facebookId) {
           if (err || !user) {
             return null
           }
-          console.log('successfully saved the user', user)
           return user
         })
       })
     }
     // Return the user if it exists
     if (currentUser) {
-      console.log('found the user', currentUser)
       return currentUser
     }
   })
@@ -62,19 +60,16 @@ UserSchema.statics.findOrCreate = function(facebookId) {
 
 // Get the Facebook profile from the Graph API, and print it
 function getFacebookProfile(senderId, callback) {
-  console.log('getting facebook profile')
   if (!senderId) {
     console.log('Missing senderId')
   }
   request(`https://graph.facebook.com/v2.6/${senderId}?access_token=${process.env.PAGE_ACCESS_TOKEN}`, function (error, response, body) {
-    console.log('request to graph api')
     const fbProfile = JSON.parse(body)
     if (error || body.error) {
       console.log('error')
 
       return callback(null)
     }
-    console.log('logging fb profile', fbProfile)
 
     return callback(fbProfile)
   })
