@@ -6,6 +6,7 @@ const request = require('request')
 const app = express()
 const mongoose = require('mongoose') // MongoDB lib
 const token = process.env.PAGE_ACCESS_TOKEN
+const threadSettings = require('./app/controllers/thread_settings')
 
 app.set('port', (process.env.PORT || 5000))
 
@@ -19,6 +20,8 @@ app.listen(app.get('port'), function (err) {
   if (err) {
     return err
   }
+  // Uncomment this line to install thread settings
+  // threadSettings()
   console.log('running on port', app.get('port'))
 })
 

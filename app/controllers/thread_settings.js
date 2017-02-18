@@ -19,10 +19,10 @@ function addGetStartedButton() {
       setting_type: "call_to_actions",
       thread_state: "new_thread",
       call_to_actions:[{
-        payload: "GET_STARTED" /* CHANGE HERE */
+        payload: "TV_CHANNELS" /* CHANGE HERE */
       }]
     }
-  }, function(error, response, body) {
+  }, function(error, response) {
     if (error || response.body.error) {
       console.log("Error adding Get Started button")
     } else {
@@ -40,7 +40,7 @@ function removeGetStartedButton() {
       setting_type: "call_to_actions",
       thread_state: "new_thread"
     }
-  }, function(error, response, body) {
+  }, function(error, response) {
     if (error || response.body.error) {
       console.log("Error removing Get Started button")
     } else {
@@ -62,7 +62,7 @@ function addPersistentMenu() {
       call_to_actions: [{
         type:"postback",
         title:"Choose TV Channel ✔︎",
-        payload: "DEFAULT_ANSWER"
+        payload: "TV_CHANNELS"
       }, {
         type:"postback",
         title:"My favorites ❤️",
@@ -71,13 +71,7 @@ function addPersistentMenu() {
         type:"postback",
         title:"Preferences ⚙",
         payload: "PREFERENCES"
-      }, {
-        type:"web_url",
-        title:"Check out Reminiz 🚀",
-        url:"http://www.reminiz.com",
-        webview_height_ratio: "full",
-        messenger_extensions: true
-      },
+      }
     ]
     }
   }, function (error, response, body) {
