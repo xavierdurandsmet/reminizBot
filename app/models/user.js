@@ -26,13 +26,11 @@ UserSchema.statics.findOrCreate = function(facebookId) {
       return error
     }
     if (!currentUser) {
-      console.log('no user found, creating one')
       // If no user, request to facebook graph API
       getFacebookProfile(facebookId, function(fbProfile) {
         if (!fbProfile) {
           return null
         }
-        console.log('successfully found user profile')
         // Create the new user with fb profile and return it
         const newUser = new that({
           fb_id: facebookId,
@@ -62,15 +60,14 @@ UserSchema.statics.findOrCreate = function(facebookId) {
 function getFacebookProfile(senderId, callback) {
   if (!senderId) {
     console.log('Missing senderId')
+    return
   }
   request(`https://graph.facebook.com/v2.6/${senderId}?access_token=${process.env.PAGE_ACCESS_TOKEN}`, function (error, response, body) {
     const fbProfile = JSON.parse(body)
     if (error || body.error) {
       console.log('error')
-
       return callback(null)
     }
-
     return callback(fbProfile)
   })
 }
