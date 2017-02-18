@@ -216,29 +216,28 @@ function sendManyActors(sender, listOfActors) { // Changed the name of the funct
 
 // Send a response to user
 function reply(sender, response, cb) {
+  let messageData = {}
+  if (typeof (response) === 'string') {
+      messageData.text = response
+  } else {
+      messageData = response
+  }
 
-    let messageData = {}
-    if (typeof (response) === 'string') {
-        messageData.text = response
-    } else {
-        messageData = response
-    }
-
-    request({
-        url: 'https://graph.facebook.com/v2.6/me/messages',
-        qs: { access_token: PAGE_ACCESS_TOKEN },
-        method: 'POST',
-        json: {
-          recipient: { id: sender },
-          message: messageData,
-        }
-    }, function (error, response, body) {
-        if (error) {
-          console.log('Error sending messages: ', error)
-        } else if (response.body.error) {
-          console.log('Error: ', response.body.error)
-        }
-        return cb && cb(null, body)
-    })
+  request({
+      url: 'https://graph.facebook.com/v2.6/me/messages',
+      qs: { access_token: PAGE_ACCESS_TOKEN },
+      method: 'POST',
+      json: {
+        recipient: { id: sender },
+        message: messageData,
+      }
+  }, function (error, response, body) {
+      if (error) {
+        console.log('Error sending messages: ', error)
+      } else if (response.body.error) {
+        console.log('Error: ', response.body.error)
+      }
+      return cb && cb(null, body)
+  })
 }
 
