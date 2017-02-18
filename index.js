@@ -5,6 +5,7 @@ const bodyParser = require('body-parser')
 const app = express()
 const mongoose = require('mongoose') // MongoDB lib
 const Bot = require("./Bot");
+const threadSettings = require('./app/controllers/thread_settings')
 const User = require('./app/models/user')
 
 app.set('port', (process.env.PORT || 5000))
@@ -19,18 +20,20 @@ app.listen(app.get('port'), function (err) {
   if (err) {
     return err
   }
+  // Uncomment this line to install thread settings
+  // threadSettings()
   console.log('running on port', app.get('port'))
 })
 
 // Start the database using Mongoose
 const MONGODB_URI = process.env.MONGODB_URI
+mongoose.Promise = require('bluebird') // Mongoose promise library is deprecated
 mongoose.connect(MONGODB_URI)
 const db = mongoose.connection
 db.on('error', console.error.bind(console, 'connection error:'))
 db.once('open', () => {
   console.log(`Successfully connected to ${MONGODB_URI}`)
 })
-
 
 // -----------------------------------------------------------------------------
 // ROUTES
@@ -55,6 +58,7 @@ app.post('/webhook/', function (req, res) {
   let sender = event.sender.id;
   // Send the default answer in the beginning
   if ((event.postback && event.postback.payload === "TV_CHANNELS") || (event.message && event.message.text)) {
+    User.findOrCreate(sender) // Creates the USER in the DB
     Bot.sendChannelsList(sender);
   } else if (event.postback && event.postback.payload) {
     // will be replaced with the reminiz API
