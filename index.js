@@ -5,6 +5,7 @@ const bodyParser = require('body-parser')
 const app = express()
 const mongoose = require('mongoose') // MongoDB lib
 const Bot = require("./Bot");
+const threadSettings = require('./app/controllers/thread_settings')
 const User = require('./app/models/user')
 
 app.set('port', (process.env.PORT || 5000))
@@ -19,6 +20,8 @@ app.listen(app.get('port'), function (err) {
   if (err) {
     return err
   }
+  // Uncomment this line to install thread settings
+  // threadSettings()
   console.log('running on port', app.get('port'))
 })
 
@@ -49,6 +52,7 @@ app.get('/webhook/', function (req, res) {
   res.send('Error, wrong token')
 })
 
+// MAIN ROUTE - This is called every time the bot receives a message
 app.post('/webhook/', function (req, res) {
   let event = req.body.entry[0].messaging[0];
   let sender = event.sender.id;
