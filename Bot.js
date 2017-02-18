@@ -152,8 +152,8 @@ function sendSingleActor(sender, actorNameQuery, channel) {
 }
 
 function sendManyActors(sender, listOfActors) { // Changed the name of the function
+  // Query Bing for actors info and populate the actorsInro array
   let actorsInfo = []
-  // Query Bing for actors info
   Bing.images(listOfActors[0], {
     top: 5,   // Number of results (max 50)
     skip: 3    // Skip first 3 result
@@ -162,11 +162,10 @@ function sendManyActors(sender, listOfActors) { // Changed the name of the funct
       name: listOfActors[0],
       image: body.value[0].contentUrl
     }
-
     Bing.images(listOfActors[1], {
-        top: 5,   // Number of results (max 50)
-        skip: 3    // Skip first 3 result
-    }, function (error, res, body) {
+        top: 5,
+        skip: 3
+    }, function () {
 
         actorsInfo[1] = {
           name: listOfActors[1],
@@ -239,7 +238,7 @@ function reply(sender, response, cb) {
         } else if (response.body.error) {
           console.log('Error: ', response.body.error)
         }
-        cb && cb(null, body)
+        return cb && cb(null, body)
     })
 }
 
