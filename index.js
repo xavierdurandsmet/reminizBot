@@ -5,8 +5,6 @@ const bodyParser = require('body-parser')
 const app = express()
 const mongoose = require('mongoose') // MongoDB lib
 const Bot = require("./Bot");
-const app = express()
-const mongoose = require('mongoose') // MongoDB lib
 const token = process.env.PAGE_ACCESS_TOKEN
 
 app.set('port', (process.env.PORT || 5000))
@@ -38,8 +36,6 @@ db.once('open', () => {
 // ROUTES
 // -----------------------------------------------------------------------------
 
-const token = process.env.PAGE_ACCESS_TOKEN
-
 // Index route
 app.get('/', function (req, res) {
     res.send("Welcome to the Bot Server");
@@ -54,19 +50,19 @@ app.get('/webhook/', function (req, res) {
 })
 
 app.post('/webhook/', function (req, res) {
-    let messaging_events = req.body.entry[0].messaging
-    let event = req.body.entry[0].messaging[0]
-    console.log("event", event);
-    let sender = event.sender.id
-    // user typing
-    if (event.message && event.message.text) {
-        Bot.sendDefaultMessage(sender)
-    }
-    // user clicks on button
-    if (event.postback && event.postback.payload) {
+    let event = req.body.entry[0].messaging[0];
+    let sender = event.sender.id;
+    if ((event.postback && event.postback.payload === "TV_CHANNELS") || (event.message && event.message.text)) {
+        Bot.sendChannelsList(sender);
+    } else if (event.postback && event.postback.payload) {
         // will be replaced with the reminiz API
-        let actorLive = event.postback.payload;
-        Bot.sendWhoIsLive(sender, actorLive)
+        let actorsLive = ["Justin Bieber"];
+        if (event.postback.payload === "SINGLE_ACTOR") {
+            Bot.sendSingleActor(sender, actorsLive[0], "CNN");
+        } else if (event.postback.payload === "MANY_ACTORS") {
+            actorsLive = ["Justin Bieber", "Natalie Portman"];
+            Bot.sendListOfActors(sender, actorsLive);
+        }
     }
     res.sendStatus(200)
 })

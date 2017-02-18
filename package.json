@@ -24,6 +24,12 @@
     "eslint": "^3.15.0",
     "eslint-config-airbnb-base": "^11.1.0",
     "eslint-plugin-import": "^2.2.0",
-    "nodemon": "^1.11.0"
+    "htmlparser2": "^3.9.2",
+    "jQuery": "^1.7.4",
+    "jquery": "^3.1.1",
+    "jsdom": "^9.11.0",
+    "node-wikipedia": "0.0.2",
+    "nodemon": "^1.11.0",
+    "wikipedia-js": "0.0.6"
   }
 }
