@@ -53,6 +53,7 @@ app.get('/webhook/', function (req, res) {
 app.post('/webhook/', function (req, res) {
     let event = req.body.entry[0].messaging[0];
     let sender = event.sender.id;
+    // Send the default answer in the beginning
     if ((event.postback && event.postback.payload === "TV_CHANNELS") || (event.message && event.message.text)) {
         Bot.sendChannelsList(sender);
     } else if (event.postback && event.postback.payload) {

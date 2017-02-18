@@ -1,10 +1,7 @@
 const request = require('request')
-const Bing = require('node-bing-api')({ accKey: '00c98764dd9d440ba8d15bf161787d0e' })
-const wikipedia = require('wikipedia-js');
-const FACEBOOK_BASE_URL = 'https://graph.facebook.com/v2.6/me/';
-const THREAD_SETTINGS_URL = FACEBOOK_BASE_URL + 'thread_settings';
-const MESSAGES_URL = FACEBOOK_BASE_URL + 'messages';
-const token = process.env.PAGE_ACCESS_TOKEN
+const Bing = require('node-bing-api')({ accKey: '00c98764dd9d440ba8d15bf161787d0e' }) // put this in .env
+const wikipedia = require('wikipedia-js')
+const PAGE_ACCESS_TOKEN = process.env.PAGE_ACCESS_TOKEN
 
 module.exports = {
   sendChannelsList: sendChannelsList,
@@ -50,24 +47,25 @@ function sendChannelsList(sender) {
   }
   reply(sender, introductionMessage, function () {
     reply(sender, listOfChannelsMessage)
-  });
+  })
 }
 
 // Send an actor's template
 function sendSingleActor(sender, actorNameQuery, channel) {
+
   Bing.images(actorNameQuery, {
     top: 15,   // Number of results (max 50)
     skip: 3    // Skip first 3 result
   }, function (error, res, body) {
 
-    // // get the Wiki summary
+    // get the Wiki summary -- WORKS UNTIL HERE
     let options = { query: actorNameQuery, format: 'html', summaryOnly: true, lang: 'en' }
       wikipedia.searchArticle(options, function (err, htmlWikiText) {
         if (err) {
-            console.log('An error occurred', err)
-            return
+          console.log('An error occurred', err)
+          return
         }
-        let descriptionSummary = htmlWikiText.replace(/<[^>]*>?/gm, ''); // to improve: to remove imperfections in parsing
+        let descriptionSummary = htmlWikiText.replace(/<[^>]*>?/gm, '') // to improve: to remove imperfections in parsing
         let introductionMessage = `${actorNameQuery} is on screen on ${channel} ❤️`
         let nextStepMessage = {
           attachment: {
@@ -84,7 +82,7 @@ function sendSingleActor(sender, actorNameQuery, channel) {
                 {
                   type: 'postback',
                   title: 'My Favorites ❤️',
-                  payload: 'USER_DEFINED_PAYLOAD' // to define
+                  payload: 'FAVORITES' // to define
                 }
               ]
             }
@@ -103,10 +101,10 @@ function sendSingleActor(sender, actorNameQuery, channel) {
                   subtitle: descriptionSummary, // improve the parsing
                   default_action: {
                     type: 'web_url',
-                    url: 'https://c65e40c2.ngrok.io', // link to specific wikipedia page
+                    url: 'https://en.wikipedia.org/wiki/Justin_Bieber', // link to specific wikipedia page
                     messenger_extensions: true,
                     webview_height_ratio: 'tall',
-                    fallback_url: 'https://c65e40c2.ngrok.io'
+                    fallback_url: 'https://en.wikipedia.org/wiki/Justin_Bieber'
                   },
                   buttons: [
                     {
@@ -119,23 +117,23 @@ function sendSingleActor(sender, actorNameQuery, channel) {
                 },
                 {
                   title: 'Filmography',
-                  image_url: 'https://c65e40c2.ngrok.io',
+                  image_url: 'https://en.wikipedia.org/wiki/Justin_Bieber',
                   subtitle: '100% Cotton, 200% Comfortable',
                   default_action: {
                     type: 'web_url',
-                    url: 'https://c65e40c2.ngrok.io',
+                    url: 'https://en.wikipedia.org/wiki/Justin_Bieber',
                     messenger_extensions: true,
                     webview_height_ratio: 'tall',
-                    fallback_url: 'https://c65e40c2.ngrok.io'
+                    fallback_url: 'https://en.wikipedia.org/wiki/Justin_Bieber'
                   },
                   buttons: [
                     {
                       title: 'Shop Now',
                       type: 'web_url',
-                      url: 'https://c65e40c2.ngrok.io',
+                      url: 'https://en.wikipedia.org/wiki/Justin_Bieber',
                       messenger_extensions: true,
                       webview_height_ratio: 'tall',
-                      fallback_url: 'https://c65e40c2.ngrok.io'
+                      fallback_url: 'https://en.wikipedia.org/wiki/Justin_Bieber'
                     }
                   ]
                 }
@@ -143,24 +141,27 @@ function sendSingleActor(sender, actorNameQuery, channel) {
             }
           }
         }
-
-      });
-  });
+        // Sending the messages to the user, in the right order
+        reply(sender, introductionMessage, function () {
+          reply(sender, actorDescription, function () {
+            reply(sender, nextStepMessage)
+          })
+        })
+    })
+  })
 }
 
 function sendManyActors(sender, listOfActors) { // Changed the name of the function
-
-  let actorsInfo = [];
+  let actorsInfo = []
   // Query Bing for actors info
   Bing.images(listOfActors[0], {
     top: 5,   // Number of results (max 50)
     skip: 3    // Skip first 3 result
   }, function (error, res, body) {
-
     actorsInfo[0] = {
-        name: listOfActors[0],
-        image: body.value[0].contentUrl
-    };
+      name: listOfActors[0],
+      image: body.value[0].contentUrl
+    }
 
     Bing.images(listOfActors[1], {
         top: 5,   // Number of results (max 50)
@@ -208,38 +209,37 @@ function sendManyActors(sender, listOfActors) { // Changed the name of the funct
           }
         }
         reply(sender, introductionMessage, function () {
-            reply(sender, listOfActorsMessage);
-        });
+            reply(sender, listOfActorsMessage)
+        })
     })
   })
 }
 
-// Function to handle incoming messages
+// Send a response to user
 function reply(sender, response, cb) {
 
-    let messageData = {};
-
+    let messageData = {}
     if (typeof (response) === 'string') {
-        messageData.text = response;
+        messageData.text = response
     } else {
-        messageData = response;
+        messageData = response
     }
 
     request({
         url: 'https://graph.facebook.com/v2.6/me/messages',
-        qs: { access_token: token },
+        qs: { access_token: PAGE_ACCESS_TOKEN },
         method: 'POST',
         json: {
-            recipient: { id: sender },
-            message: messageData,
+          recipient: { id: sender },
+          message: messageData,
         }
     }, function (error, response, body) {
         if (error) {
-            console.log('Error sending messages: ', error)
+          console.log('Error sending messages: ', error)
         } else if (response.body.error) {
-            console.log('Error: ', response.body.error)
+          console.log('Error: ', response.body.error)
         }
-        cb && cb(null, body);
+        cb && cb(null, body)
     })
 }
 
