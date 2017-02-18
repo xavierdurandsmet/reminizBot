@@ -19,7 +19,8 @@
     "node-bing-api": "^3.2.1",
     "node-wikipedia": "0.0.2",
     "nodemon": "^1.11.0",
-    "request": "^2.79.0"
+    "request": "^2.79.0",
+    "wikipedia-js": "0.0.6"
   },
   "devDependencies": {
     "eslint": "^3.15.0",
