@@ -5,6 +5,7 @@ const bodyParser = require('body-parser')
 const app = express()
 const mongoose = require('mongoose') // MongoDB lib
 const Bot = require("./Bot");
+const threadSettings = require('./app/controllers/thread_settings')
 const User = require('./app/models/user')
 
 app.set('port', (process.env.PORT || 5000))
@@ -16,10 +17,12 @@ app.use(bodyParser.json())
 
 // Spin up the server
 app.listen(app.get('port'), function (err) {
-    if (err) {
-        return err
-    }
-    console.log('running on port', app.get('port'))
+  if (err) {
+    return err
+  }
+  // Uncomment this line to install thread settings
+  // threadSettings()
+  console.log('running on port', app.get('port'))
 })
 
 // Start the database using Mongoose
@@ -30,7 +33,6 @@ db.on('error', console.error.bind(console, 'connection error:'))
 db.once('open', () => {
     console.log(`Successfully connected to ${MONGODB_URI}`)
 })
-
 
 // -----------------------------------------------------------------------------
 // ROUTES
