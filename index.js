@@ -6,6 +6,7 @@ const app = express()
 const mongoose = require('mongoose') // MongoDB lib
 const Bot = require("./Bot");
 const token = process.env.PAGE_ACCESS_TOKEN
+const User = require('./app/models/user')
 
 app.set('port', (process.env.PORT || 5000))
 
