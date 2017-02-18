@@ -29,7 +29,7 @@ function sendChannelsList(senderId) {
                 {
                   type: 'postback',
                   title: 'Choose ✔︎',
-                  payload: 'SINGLE_ACTOR' // to replace with reminiz API
+                  payload: 'SINGLE_ACTOR'
                 }
               ]
             },
@@ -63,7 +63,7 @@ function sendSingleActor(senderId, actorNameQuery, channel) {
     skip: 3    // Skip first 3 result
   }, function (error, res, body) {
 
-    // get the Wiki summary -- WORKS UNTIL HERE
+    // get the Wiki summary
     let options = { query: actorNameQuery, format: 'html', summaryOnly: true, lang: 'en' }
       wikipedia.searchArticle(options, function (err, htmlWikiText) {
         if (err) {
