@@ -9,7 +9,7 @@ module.exports = {
   sendManyActors: sendManyActors
 }
 
-function sendChannelsList(sender) {
+function sendChannelsList(senderId) {
   let introductionMessage = "Choose a TV channel to know who's on screen, in real time ⚡️" // change to user name
   let listOfChannelsMessage = {
     attachment: {
@@ -45,13 +45,13 @@ function sendChannelsList(sender) {
       }
     }
   }
-  reply(sender, introductionMessage, function () {
-    reply(sender, listOfChannelsMessage)
+  reply(senderId, introductionMessage, function () {
+    reply(senderId, listOfChannelsMessage)
   })
 }
 
 // Send an actor's template
-function sendSingleActor(sender, actorNameQuery, channel) {
+function sendSingleActor(senderId, actorNameQuery, channel) {
 
   Bing.images(actorNameQuery, {
     top: 15,   // Number of results (max 50)
@@ -142,16 +142,16 @@ function sendSingleActor(sender, actorNameQuery, channel) {
           }
         }
         // Sending the messages to the user, in the right order
-        reply(sender, introductionMessage, function () {
-          reply(sender, actorDescription, function () {
-            reply(sender, nextStepMessage)
+        reply(senderId, introductionMessage, function () {
+          reply(senderId, actorDescription, function () {
+            reply(senderId, nextStepMessage)
           })
         })
     })
   })
 }
 
-function sendManyActors(sender, listOfActors) { // Changed the name of the function
+function sendManyActors(senderId, listOfActors) { // Changed the name of the function
   // Query Bing for actors info and populate the actorsInro array
   let actorsInfo = []
   Bing.images(listOfActors[0], {
@@ -207,15 +207,15 @@ function sendManyActors(sender, listOfActors) { // Changed the name of the funct
             }
           }
         }
-        reply(sender, introductionMessage, function () {
-            reply(sender, listOfActorsMessage)
+        reply(senderId, introductionMessage, function () {
+            reply(senderId, listOfActorsMessage)
         })
     })
   })
 }
 
 // Send a response to user
-function reply(sender, response, cb) {
+function reply(senderId, response, cb) {
   let messageData = {}
   if (typeof (response) === 'string') {
       messageData.text = response
@@ -228,7 +228,7 @@ function reply(sender, response, cb) {
       qs: { access_token: PAGE_ACCESS_TOKEN },
       method: 'POST',
       json: {
-        recipient: { id: sender },
+        recipient: { id: senderId },
         message: messageData,
       }
   }, function (error, response, body) {
