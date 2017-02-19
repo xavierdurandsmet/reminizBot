@@ -4,7 +4,7 @@ const express = require('express')
 const bodyParser = require('body-parser')
 const app = express()
 const mongoose = require('mongoose') // MongoDB lib
-const Bot = require("./Bot");
+const Bot = require("./Bot")
 const threadSettings = require('./app/controllers/thread_settings')
 const User = require('./app/models/user')
 
@@ -41,7 +41,7 @@ db.once('open', () => {
 
 // Index route
 app.get('/', function (req, res) {
-  res.send("Welcome to the Bot Server");
+  res.send("Welcome to the Bot Server")
 })
 
 // for Facebook verification
@@ -54,20 +54,24 @@ app.get('/webhook/', function (req, res) {
 
 // MAIN ROUTE - This is called every time the bot receives a message
 app.post('/webhook/', function (req, res) {
-  let event = req.body.entry[0].messaging[0];
-  let sender = event.sender.id;
-  // Send the default answer in the beginning
+  let event = req.body.entry[0].messaging[0]
+  let senderId = event.sender.id
+  // When a user clicks on the GET STARTED button, send the default answer
+  if ((event.postback && event.postback.payload === "GET_STARTED")) {
+    User.findOrCreate(senderId) // Creates the USER in the DB
+    Bot.sendChannelsList(senderId)
+  }
+  // Send the default answer for any text message
   if ((event.postback && event.postback.payload === "TV_CHANNELS") || (event.message && event.message.text)) {
-    User.findOrCreate(sender) // Creates the USER in the DB
-    Bot.sendChannelsList(sender);
+    Bot.sendChannelsList(senderId)
   } else if (event.postback && event.postback.payload) {
     // will be replaced with the reminiz API
-    let actorsLive = ["Justin Bieber"];
+    let actorsLive = ["Justin Bieber"]
     if (event.postback.payload === "SINGLE_ACTOR") {
-      Bot.sendSingleActor(sender, actorsLive[0], "CNN");
+      Bot.sendSingleActor(senderId, actorsLive[0], "CNN")
     } else if (event.postback.payload === "MANY_ACTORS") {
-      actorsLive = ["Justin Bieber", "Natalie Portman"];
-      Bot.sendListOfActors(sender, actorsLive);
+      actorsLive = ["Justin Bieber", "Natalie Portman"]
+      Bot.sendListOfActors(senderId, actorsLive)
     }
   }
   res.sendStatus(200)

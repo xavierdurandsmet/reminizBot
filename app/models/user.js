@@ -14,7 +14,7 @@ var UserSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 // Find the user with this fb Id, create it if doesn't exist, and return it
-UserSchema.statics.findOrCreate = function(facebookId) {
+UserSchema.statics.findOrCreate = function(facebookId, callback) {
   const that = this
   if (!facebookId) {
     console.log('Missing facebook Id')
@@ -29,7 +29,7 @@ UserSchema.statics.findOrCreate = function(facebookId) {
       // If no user, request to facebook graph API
       getFacebookProfile(facebookId, function(fbProfile) {
         if (!fbProfile) {
-          return null
+          return callback(null)
         }
         // Create the new user with fb profile and return it
         const newUser = new that({
@@ -45,13 +45,13 @@ UserSchema.statics.findOrCreate = function(facebookId) {
           if (err || !user) {
             return null
           }
-          return user
+          return callback(user)
         })
       })
     }
     // Return the user if it exists
     if (currentUser) {
-      return currentUser
+      return callback(currentUser)
     }
   })
 }

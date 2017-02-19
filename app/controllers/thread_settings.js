@@ -19,7 +19,7 @@ function addGetStartedButton() {
       setting_type: "call_to_actions",
       thread_state: "new_thread",
       call_to_actions:[{
-        payload: "TV_CHANNELS" /* CHANGE HERE */
+        payload: "GET_STARTED" /* CHANGE HERE */
       }]
     }
   }, function(error, response) {
