@@ -71,7 +71,20 @@ app.post('/webhook/', function (req, res) {
       Bot.sendSingleActor(senderId, actorsLive[0], "CNN")
     } else if (event.postback.payload === "MANY_ACTORS") {
       actorsLive = ["Justin Bieber", "Natalie Portman"]
-      Bot.sendListOfActors(senderId, actorsLive)
+      Bot.sendManyActors(senderId, actorsLive)
+    } else if (event.postback.payload === "FAVORITES") {
+      User.findOrCreate(senderId, function (currentUser) {
+        Bot.sendFavoriteActors(senderId, currentUser.favorites);
+      })
+    } else {
+      let newFavorite = event.postback.payload;
+      User.findOrCreate(senderId, function(currentUser) {
+        let currentFavoritesList = currentUser.favorites;
+        currentFavoritesList.push(newFavorite);
+        User.findOneAndUpdate({fb_id: senderId}, {favorites: currentFavoritesList}, function(updatedUser) {
+          console.log("UPDATED USER", updatedUser); // find out why it's returning null
+        });
+      })
     }
   }
   res.sendStatus(200)
