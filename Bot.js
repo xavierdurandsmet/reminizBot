@@ -17,19 +17,20 @@ function sendChannelsList(senderId) {
   User.findOrCreate(senderId, function (user) {
     // Greet user by its first name
     let introductionMessage = `Hi ${user.fb_first_name} 👋 Pick a TV channel to know who's on screen in real time ⚡️` // change to user name
+    let channels = ['CNN', 'DISNEY_CHANNEL']
     let listOfChannelsMessage = messageTemplate.createGenericTemplate(
       [
         {
-          "title": 'CNN',
+          "title": channels[0],
           "image_url": 'https://encrypted-tbn2.gstatic.com/images?q=tbn:ANd9GcQn4O8zXpRf9xbk8vy0LdrXqa8jXUduoKdlc2YfrsL5cKxLBegR_e89HXg',
           "subtitle": 'The news channel',
-          "buttons": [{ "title": 'Choose ✔︎', "payload": 'SINGLE_ACTOR' }]
+          "buttons": [{ "title": 'Choose ✔︎', "payload": channels[0] }]
         },
         {
-          "title": 'Disney Channel',
+          "title": channels[1],
           "image_url": 'http://vignette4.wikia.nocookie.net/logopedia/images/8/87/Disney_Channel_2014.png/revision/latest?cb=20140522224840',
           "subtitle": 'Children love it',
-          "buttons": [{ "title": 'Choose ✔︎', "payload": 'MANY_ACTORS' }]
+          "buttons": [{ "title": 'Choose ✔︎', "payload": channels[1] }]
         }
       ]
     )
@@ -66,7 +67,7 @@ function sendSingleActor(senderId, actorNameQuery, channel) {
             "image_url": body.value[0].contentUrl,
             "subtitle": descriptionSummary,
             "default_action": { url: 'https://en.wikipedia.org/wiki/Justin_Bieber', fallback_url: 'https://en.wikipedia.org/wiki/Justin_Bieber' },
-            "buttons": [{ "title": 'Bookmark', "payload": actorNameQuery }]
+            "buttons": [{ "title": 'Bookmark', "payload": 'BOOKMARK ' + actorNameQuery }]
           },
           {
             "title": 'Filmography',
@@ -88,9 +89,10 @@ function sendSingleActor(senderId, actorNameQuery, channel) {
   })
 }
 
-function sendManyActors(senderId, listOfActors) {
+function sendManyActors(senderId, listOfActors, channelName) {
   // Query Bing for actors info and populate the actorsInro array
   let actorsInfo = []
+  console.log("listOfActors", listOfActors)
   Bing.images(listOfActors[0], {
     top: 5,   // Number of results (max 50)
     skip: 3    // Skip first 3 result
@@ -102,11 +104,11 @@ function sendManyActors(senderId, listOfActors) {
     Bing.images(listOfActors[1], {
       top: 5,
       skip: 3
-    }, function () {
+    }, function (error, res, body) {
 
       actorsInfo[1] = {
         name: listOfActors[1],
-        image: body.value[0].contentUrl
+        image: body.value[1].contentUrl
       }
 
       let introductionMessage = 'There are multiple actors on screen right now 😎 \n Which one are you interested in?' // change to user name
@@ -116,13 +118,13 @@ function sendManyActors(senderId, listOfActors) {
             "title": actorsInfo[0].name,
             "image_url": actorsInfo[0].image,
             "subtitle": 'DESCRIPTION HERE',
-            "buttons": [{ "title": 'Choose ✔︎', "payload": 'SINGLE_ACTOR' }]
+            "buttons": [{ "title": 'Choose ✔︎', "payload": 'SINGLE_ACTOR,' + channelName + "," + actorsInfo[0].name}]
           },
           {
             "title": actorsInfo[1].name,
             "image_url": actorsInfo[1].image,
             "subtitle": 'DESCRIPTION HERE',
-            "buttons": [{ "title": 'Choose ✔︎', "payload": 'SINGLE_ACTOR' }]
+            "buttons": [{ "title": 'Choose ✔︎', "payload": 'SINGLE_ACTOR,' + channelName + "," + actorsInfo[1].name}]
           }
         ]
       )
@@ -147,7 +149,7 @@ function sendFavoriteActors(senderId, listOfActors) {
     Bing.images(listOfActors[1], {
       top: 5,
       skip: 3
-    }, function () {
+    }, function (error, res, body) {
 
       actorsInfo[1] = {
         name: listOfActors[1],
