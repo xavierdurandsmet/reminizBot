@@ -55,16 +55,17 @@ app.get('/webhook/', function (req, res) {
 // MAIN ROUTE - This is called every time the bot receives a message
 app.post('/webhook/', function (req, res) {
   let event = req.body.entry[0].messaging[0]
+  let postback = event.postback
   let senderId = event.sender.id
   // When a user clicks on the GET STARTED button, send the default answer
-  if ((event.postback && event.postback.payload === "GET_STARTED")) {
+  if ((postback && postback.payload === "GET_STARTED")) {
     User.findOrCreate(senderId) // Creates the USER in the DB
     Bot.sendChannelsList(senderId)
   }
   // Send the default answer for any text message
-  if ((event.postback && event.postback.payload === "TV_CHANNELS") || (event.message && event.message.text)) {
+  if ((postback && postback.payload === "TV_CHANNELS") || (event.message && event.message.text)) {
     Bot.sendChannelsList(senderId)
-  } else if (event.postback && event.postback.payload) {
+  } else if (postback && postback.payload) {
     // will be replaced with the reminiz API
     let channels = [
       {
@@ -76,24 +77,24 @@ app.post('/webhook/', function (req, res) {
         actors: ["Justin Bieber", "Justin Timberlake"]
       }
     ]
-    if (event.postback.payload === "CNN") {
+    if (postback.payload === "CNN") {
       Bot.sendSingleActor(senderId, channels[0].actors[0], channels[0].name)
-    } else if (event.postback.payload === "DISNEY_CHANNEL") {
+    } else if (postback.payload === "DISNEY_CHANNEL") {
       Bot.sendManyActors(senderId, channels[1].actors, channels[1].name)
-    } else if (event.postback.payload.substr(0, 12) === "SINGLE_ACTOR") {
-      let info = event.postback.payload.split(",");
+    } else if (postback.payload.substr(0, 12) === "SINGLE_ACTOR") {
+      let info = postback.payload.split(",");
       let actor = info[2];
       let channel = info[1];
       Bot.sendSingleActor(senderId, actor, channel);
-    } else if (event.postback.payload === "FAVORITES") {
+    } else if (postback.payload === "FAVORITES") {
       User.findOrCreate(senderId, function (currentUser) {
         Bot.sendFavoriteActors(senderId, currentUser.favorites);
       })
-    } else if (event.postback.payload.substr(0, 8) === "BOOKMARK") {
-      let newFavorite = event.postback.payload.substr(9);
+    } else if (postback.payload.substr(0, 8) === "BOOKMARK") {
+      let newFavorite = postback.payload.substr(9);
       User.findOrCreate(senderId, function (currentUser) {
         let currentFavoritesList = currentUser.favorites;
-        currentFavoritesList.push(newFavorite);
+        currentFavoritesList.unshift(newFavorite);
         User.findOneAndUpdate({ fb_id: senderId }, { favorites: currentFavoritesList }, function (updatedUser) {
           console.log("UPDATED USER", updatedUser); // find out why it's returning null
         });
