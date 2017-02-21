@@ -45,7 +45,11 @@ function createListTemplate(elements) {
       } else if (key === "buttons") {
         ret.buttons = [];
         element.buttons.forEach(function (button) {
-          ret.buttons.push({ type: "postback", title: button.title, payload: button.payload });
+          if (button.type === "web_url") {
+            ret.buttons.push({ type: "web_url", title: button.title, url: button.url });
+          } else {  
+            ret.buttons.push({ type: "postback", title: button.title, payload: button.payload });
+          }
         })
       } else if (key === "default_action") {
         ret.default_action = {
