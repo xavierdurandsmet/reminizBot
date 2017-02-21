@@ -66,12 +66,38 @@ app.post('/webhook/', function (req, res) {
     Bot.sendChannelsList(senderId)
   } else if (event.postback && event.postback.payload) {
     // will be replaced with the reminiz API
-    let actorsLive = ["Justin Bieber"]
-    if (event.postback.payload === "SINGLE_ACTOR") {
-      Bot.sendSingleActor(senderId, actorsLive[0], "CNN")
-    } else if (event.postback.payload === "MANY_ACTORS") {
-      actorsLive = ["Justin Bieber", "Natalie Portman"]
-      Bot.sendListOfActors(senderId, actorsLive)
+    let channels = [
+      {
+        name: "CNN",
+        actors: ["Natalie Portman"]
+      },
+      {
+        name: "DISNEY_CHANNEL",
+        actors: ["Justin Bieber", "Justin Timberlake"]
+      }
+    ]
+    if (event.postback.payload === "CNN") {
+      Bot.sendSingleActor(senderId, channels[0].actors[0], channels[0].name)
+    } else if (event.postback.payload === "DISNEY_CHANNEL") {
+      Bot.sendManyActors(senderId, channels[1].actors, channels[1].name)
+    } else if (event.postback.payload.substr(0, 12) === "SINGLE_ACTOR") {
+      let info = event.postback.payload.split(",");
+      let actor = info[2];
+      let channel = info[1];
+      Bot.sendSingleActor(senderId, actor, channel);
+    } else if (event.postback.payload === "FAVORITES") {
+      User.findOrCreate(senderId, function (currentUser) {
+        Bot.sendFavoriteActors(senderId, currentUser.favorites);
+      })
+    } else if (event.postback.payload.substr(0, 8) === "BOOKMARK") {
+      let newFavorite = event.postback.payload.substr(9);
+      User.findOrCreate(senderId, function (currentUser) {
+        let currentFavoritesList = currentUser.favorites;
+        currentFavoritesList.push(newFavorite);
+        User.findOneAndUpdate({ fb_id: senderId }, { favorites: currentFavoritesList }, function (updatedUser) {
+          console.log("UPDATED USER", updatedUser); // find out why it's returning null
+        });
+      })
     }
   }
   res.sendStatus(200)
