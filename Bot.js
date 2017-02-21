@@ -1,6 +1,6 @@
 const request = require('request')
-const Bing = require('node-bing-api')({ accKey: '00c98764dd9d440ba8d15bf161787d0e' }) // put this in .env
-const MovieDB = require('moviedb')('3ee4401feb4c733524b5934436aa10c0'); // put this in .env
+const Bing = require('node-bing-api')({ accKey: process.env.BING_ACCESS_KEY }) // put this in .env
+const MovieDB = require('moviedb')(process.env.MOVIE_DB_ACCESS_KEY); // put this in .env
 const wikipedia = require('wikipedia-js')
 const User = require('./app/models/user')
 const PAGE_ACCESS_TOKEN = process.env.PAGE_ACCESS_TOKEN
@@ -46,48 +46,35 @@ function sendSingleActor(senderId, actorName, channel) { // Send an actor's temp
     name: actorName,
     channel: channel.replace("_", " ") // prettify the channel name
   };
-  let introductionMessage = `${actor.name} is on screen on ${actor.channel} ❤️`;
+  let introductionMessage = channel ? `${actor.name} is on screen on ${actor.channel} ❤️` : `${actor.name} ❤️`;
+  let defaultBingNewsImage = 'https://s3.amazonaws.com/images.seroundtable.com/t-bing-news-1300711212.png'; // in case there is no image for the news
 
   Bing.images(actor.name, { top: 15, skip: 3 },
     function (error, res, body) {
 
       let options = { query: actor.name, format: 'html', summaryOnly: true, lang: 'en' } // get the Wiki summary
       wikipedia.searchArticle(options, function (err, htmlWikiText) {
-        if (err) {
-          console.log('An error occurred', err)
-          return;
+        checkForErrors(err);
+        if (htmlWikiText) {
+          actor.descriptionSummary = htmlWikiText.replace(/<[^>]*>?/gm, '') // to improve: to remove imperfections in parsing
         }
-
-        actor.descriptionSummary = htmlWikiText.replace(/<[^>]*>?/gm, '') // to improve: to remove imperfections in parsing
         actor.image = body.value[0].contentUrl;
 
         MovieDB.searchPerson({ query: actor.name }, (err, res) => {
-          if (err) {
-            console.log('An error occurred', err)
-            return;
-          }
+          checkForErrors(err);
           actor.id = res.results[0].id;
 
           MovieDB.personMovieCredits({ id: actor.id }, (err, res) => {
-            if (err) {
-              console.log('An error occurred', err)
-              return;
-            }
+            checkForErrors(err);
             actor.movie = res.cast[0]
 
             Bing.images(actor.movie.original_title + 'movie', { top: 15, skip: 3 }, // get image of the first movie to display
               function (error, res, body) {
-                if (err) {
-                  console.log('An error occurred', err)
-                  return;
-                }
+                checkForErrors(err);
                 actor.movie.image = body.value[0].contentUrl;
 
                 Bing.news(actor.name, { top: 10, skip: 3 }, function (error, res, body) {
-                  if (err) {
-                    console.log('An error occurred', err)
-                    return;
-                  }
+                  checkForErrors(err);
                   actor.news = body.value[0];
                   actor.description = messageTemplate.createListTemplate( // List template with the actor profile
                     [
@@ -96,7 +83,7 @@ function sendSingleActor(senderId, actorName, channel) { // Send an actor's temp
                         "image_url": actor.image,
                         "subtitle": actor.descriptionSummary,
                         "default_action": { url: 'https://en.wikipedia.org/wiki/' + actor.name, fallback_url: 'https://en.wikipedia.org/wiki/' + actor.name },
-                        "buttons": [{ "type": "web_url", "title": 'See More!', "url": 'https://en.wikipedia.org/wiki/' + actor.name}]
+                        "buttons": [{ "type": "web_url", "title": 'See More!', "url": 'https://en.wikipedia.org/wiki/' + actor.name }]
                       },
                       {
                         "title": 'Filmography',
@@ -107,7 +94,7 @@ function sendSingleActor(senderId, actorName, channel) { // Send an actor's temp
                       },
                       {
                         "title": 'News',
-                        "image_url": actor.news.image.contentUrl,
+                        "image_url": actor.news.image.contentUrl ? actor.news.image.contentUrl : defaultBingNewsImage,
                         "subtitle": actor.news.name,
                         "default_action": { url: 'https://en.wikipedia.org/wiki/' + actor, fallback_url: 'https://en.wikipedia.org/wiki/' + actor }, // to change to next line but currently not working
                         // "default_action": { url: actor.news.url, fallback_url: actor.news.url},
@@ -130,90 +117,52 @@ function sendSingleActor(senderId, actorName, channel) { // Send an actor's temp
 }
 
 function sendManyActors(senderId, listOfActors, channelName) {
-  let actorsInfo = [] // Query Bing for actors info and populate the actorsInfo array
-  Bing.images(listOfActors[0], {
-    top: 5,   // Number of results (max 50)
-    skip: 3    // Skip first 3 result
-  }, function (error, res, body) {
-    actorsInfo[0] = {
-      name: listOfActors[0],
-      image: body.value[0].contentUrl
-    }
-    Bing.images(listOfActors[1], {
-      top: 5,
-      skip: 3
-    }, function (error, res, body) {
-
-      actorsInfo[1] = {
-        name: listOfActors[1],
-        image: body.value[1].contentUrl
-      }
-
-      let introductionMessage = 'There are multiple actors on screen right now 😎 \n Which one are you interested in?' // change to user name
-      let listOfActorsMessage = messageTemplate.createGenericTemplate(
-        [
-          {
-            "title": actorsInfo[0].name,
-            "image_url": actorsInfo[0].image,
-            "subtitle": 'DESCRIPTION HERE',
-            "buttons": [{ "title": 'Choose ✔︎', "payload": 'SINGLE_ACTOR,' + channelName + "," + actorsInfo[0].name }]
-          },
-          {
-            "title": actorsInfo[1].name,
-            "image_url": actorsInfo[1].image,
-            "subtitle": 'DESCRIPTION HERE',
-            "buttons": [{ "title": 'Choose ✔︎', "payload": 'SINGLE_ACTOR,' + channelName + "," + actorsInfo[1].name }]
-          }
-        ]
-      )
-
-      reply(senderId, introductionMessage, function () {
-        reply(senderId, listOfActorsMessage)
-      })
-    })
-  })
+  let introductionMessage = 'There are multiple actors on screen right now 😎 \n Which one are you interested in?' // change to user name
+  sendGenericTemplate(senderId, listOfActors, introductionMessage, channelName)
 }
 
 function sendFavoriteActors(senderId, listOfActors) {
-  let actorsInfo = []
-  Bing.images(listOfActors[0], {
-    top: 5,   // Number of results (max 50)
-    skip: 3    // Skip first 3 result
-  }, function (error, res, body) {
-    actorsInfo[0] = {
-      name: listOfActors[0],
-      image: body.value[0].contentUrl
-    }
-    Bing.images(listOfActors[1], {
-      top: 5,
-      skip: 3
-    }, function (error, res, body) {
+  let introductionMessage = "Here are your favorite actors ❤️"
+  sendGenericTemplate(senderId, listOfActors, introductionMessage);
+}
 
-      actorsInfo[1] = {
-        name: listOfActors[1],
+function sendGenericTemplate(senderId, listOfActors, introductionMessage, channelName) {
+  let actorsInfo = [];
+  Bing.images(listOfActors[0], { top: 5, skip: 3 },
+    function (error, res, body) {
+      actorsInfo[0] = {
+        name: listOfActors[0],
         image: body.value[0].contentUrl
       }
-
-      let listOfActorsMessage = messageTemplate.createGenericTemplate(
-        [
-          {
-            "title": actorsInfo[0].name,
-            "image_url": actorsInfo[0].image,
-            "subtitle": 'DESCRIPTION HERE'
-          },
-          {
-            "title": actorsInfo[1].name,
-            "image_url": actorsInfo[1].image,
-            "subtitle": 'DESCRIPTION HERE'
+      Bing.images(listOfActors[1], { top: 5, skip: 3 },
+        function (error, res, body) {
+          actorsInfo[1] = {
+            name: listOfActors[1],
+            image: body.value[0].contentUrl
           }
-        ]
-      )
 
-      reply(senderId, {}, function () {
-        reply(senderId, listOfActorsMessage)
-      })
+          let listOfActorsMessage = messageTemplate.createGenericTemplate(
+            [
+              {
+                "title": actorsInfo[0].name,
+                "image_url": actorsInfo[0].image,
+                "subtitle": 'DESCRIPTION HERE',
+                "buttons": [{ "title": 'Choose ✔︎', "payload": 'SINGLE_ACTOR,' + actorsInfo[0].name + "," + (channelName ? channelName : "") }]
+              },
+              {
+                "title": actorsInfo[1].name,
+                "image_url": actorsInfo[1].image,
+                "subtitle": 'DESCRIPTION HERE',
+                "buttons": [{ "title": 'Choose ✔︎', "payload": 'SINGLE_ACTOR,' + actorsInfo[1].name + "," + (channelName ? channelName : "") }]
+              }
+            ]
+          )
+
+          reply(senderId, introductionMessage, function () {
+            reply(senderId, listOfActorsMessage)
+          })
+        })
     })
-  })
 }
 
 function sendNextStepMessage(senderId, actorToBookmark) {
@@ -246,9 +195,8 @@ function sendNextStepMessage(senderId, actorToBookmark) {
   reply(senderId, nextStepMessage)
 }
 
-// Send a response to user
-function reply(senderId, response, cb) {
-  let messageData = {}
+function reply(senderId, response, cb) { // Send a response to user
+  let messageData = {};
   if (typeof (response) === 'string') {
     messageData.text = response
   } else {
@@ -271,5 +219,12 @@ function reply(senderId, response, cb) {
     }
     return cb && cb(null, body)
   })
+}
+
+function checkForErrors(err) {
+  if (err) {
+    console.log('An error occurred', err)
+    return;
+  }
 }
 
