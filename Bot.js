@@ -123,6 +123,9 @@ function sendManyActors(senderId, listOfActors, channelName) {
 
 function sendFavoriteActors(senderId, listOfActors) {
   let introductionMessage = "Here are your favorite actors ❤️"
+  if (listOfActors.length < 2) {
+    sendNextStepMessage("Choose at least 2 different actors"); // temp solution
+  }
   sendGenericTemplate(senderId, listOfActors, introductionMessage);
 }
 

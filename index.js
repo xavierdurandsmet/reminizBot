@@ -48,8 +48,9 @@ app.get('/', function (req, res) {
 app.get('/webhook/', function (req, res) {
   if (req.query['hub.verify_token'] === process.env.VERIFY_TOKEN) {
     res.send(req.query['hub.challenge'])
+  } else {
+    res.send('Error, wrong token')
   }
-  res.send('Error, wrong token')
 })
 
 // MAIN ROUTE - This is called every time the bot receives a message
