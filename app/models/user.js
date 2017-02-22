@@ -65,9 +65,9 @@ function getFacebookProfile(senderId, callback) {
   request(`https://graph.facebook.com/v2.6/${senderId}?access_token=${process.env.PAGE_ACCESS_TOKEN}`, function (error, response, body) {
     const fbProfile = JSON.parse(body)
     if (error || body.error) {
-      console.log('error')
       return callback(error || body.error)
     }
+    console.log('logging fbprofile', fbProfile)
     return callback(fbProfile)
   })
 }

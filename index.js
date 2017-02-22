@@ -94,12 +94,19 @@ app.post('/webhook/', function (req, res) {
           Bot.sendFavoriteActors(senderId, currentUser.favorites);
         })
       } else if (postback.payload.substr(0, 8) === "BOOKMARK") {
+        // User bookmarks an actor, bot sends the list of his fav actors
         let newFavorite = postback.payload.substr(9);
         User.findOrCreate(senderId, function (currentUser) {
           let currentFavoritesList = currentUser.favorites;
           currentFavoritesList.unshift(newFavorite);
-          User.findOneAndUpdate({ fb_id: senderId }, { favorites: currentFavoritesList }, function (updatedUser) {
-            console.log("UPDATED USER", updatedUser); // find out why it's returning null
+          User.findOneAndUpdate({ fb_id: senderId }, { favorites: currentFavoritesList }, {new: true}, function (error, updatedUser) {
+            if (error) {
+              return error;
+            }
+            // Crash because of Bing request, see how to fix this
+            // Bot must return carousel of favorite actors, 1 is enough
+            // Bot.sendFavoriteActors(updatedUser.fb_id, currentFavoritesList);
+            Bot.sendChannelsList(updatedUser.fb_id); // temporary
           });
         })
       }

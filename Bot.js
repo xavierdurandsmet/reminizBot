@@ -83,7 +83,7 @@ function sendSingleActor(senderId, actorName, channel) { // Send an actor's temp
                         "image_url": actor.image,
                         "subtitle": actor.descriptionSummary,
                         "default_action": { url: 'https://en.wikipedia.org/wiki/' + actor.name, fallback_url: 'https://en.wikipedia.org/wiki/' + actor.name },
-                        "buttons": [{ "type": "web_url", "title": 'See More!', "url": 'https://en.wikipedia.org/wiki/' + actor.name }]
+                        "buttons": [{ "type": "postback", "title": 'Bookmark ❤️', "payload": "BOOKMARK" }]
                       },
                       {
                         "title": 'Filmography',
@@ -121,10 +121,11 @@ function sendManyActors(senderId, listOfActors, channelName) {
   sendGenericTemplate(senderId, listOfActors, introductionMessage, channelName)
 }
 
+// THIS FUNCTION ALWAYS CRASHES
 function sendFavoriteActors(senderId, listOfActors) {
-  let introductionMessage = "Here are your favorite actors ❤️"
-  if (listOfActors.length < 2) {
-    sendNextStepMessage("Choose at least 2 different actors"); // temp solution
+  let introductionMessage = "Here will be your favorite actors ❤️"
+  if (listOfActors.length < 1) {
+    sendNextStepMessage(senderId); // temp solution
   }
   sendGenericTemplate(senderId, listOfActors, introductionMessage);
 }
@@ -168,7 +169,8 @@ function sendGenericTemplate(senderId, listOfActors, introductionMessage, channe
     })
 }
 
-function sendNextStepMessage(senderId, actorToBookmark) {
+// Generic follow up message
+function sendNextStepMessage(senderId) {
   let nextStepMessage = {
     attachment: {
       type: 'template',
@@ -185,11 +187,6 @@ function sendNextStepMessage(senderId, actorToBookmark) {
             type: 'postback',
             title: 'My Favorites ❤️',
             payload: 'FAVORITES' // to define
-          },
-          {
-            type: 'postback',
-            title: 'Bookmark',
-            payload: 'BOOKMARK ' + actorToBookmark.name
           }
         ]
       }
@@ -227,7 +224,7 @@ function reply(senderId, response, cb) { // Send a response to user
 function checkForErrors(err) {
   if (err) {
     console.log('An error occurred', err)
-    return;
+    return err;
   }
 }
 
