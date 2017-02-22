@@ -25,14 +25,13 @@ UserSchema.statics.findOrCreate = function(facebookId, callback) {
       console.log('there was an error', error)
       return error
     }
+    // If no user, request to facebook graph API
     if (!currentUser) {
-      // If no user, request to facebook graph API
       getFacebookProfile(facebookId, function(fbProfile) {
-        if (!fbProfile) {
+        if (!fbProfile || fbProfile === null) {
           console.log("has no fb profile")
-          return callback(null)
+          return callback(null);
         }
-        console.log('fbprfile:', fbProfile)
         // Create the new user with fb profile and return it
         const newUser = new that({
           fb_id: facebookId,
@@ -46,16 +45,13 @@ UserSchema.statics.findOrCreate = function(facebookId, callback) {
         newUser.save(function (err, user) {
           if (err || !user) {
             console.log("there was an error after saving ", err);
-            return null;
+            return err || null;
           }
-          console.log("FINAL USER", user)
-          return user;
+          return callback(user);
         })
       })
-    }
-    // Return the user if it exists
-    if (currentUser) {
-      return callback(currentUser)
+    } else if (currentUser) {
+      return callback(currentUser);
     }
   })
 }
@@ -64,7 +60,7 @@ UserSchema.statics.findOrCreate = function(facebookId, callback) {
 function getFacebookProfile(senderId, callback) {
   if (!senderId) {
     console.log('Missing senderId')
-    return
+    return callback(null)
   }
   request(`https://graph.facebook.com/v2.6/${senderId}?access_token=${process.env.PAGE_ACCESS_TOKEN}`, function (error, response, body) {
     const fbProfile = JSON.parse(body)
@@ -72,11 +68,9 @@ function getFacebookProfile(senderId, callback) {
       console.log('error')
       return callback(error || body.error)
     }
-    console.log('successfully found user profile', fbProfile)
     return callback(fbProfile)
   })
 }
-
 
 module.exports = mongoose.model("User", UserSchema);
 
