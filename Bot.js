@@ -51,7 +51,7 @@ function sendSingleActor(senderId, actorName, channel) { // Send an actor's temp
 
   Bing.images(actor.name, { top: 15, skip: 3 },
     function (error, res, body) {
-
+      checkForErrors(error);
       let options = { query: actor.name, format: 'html', summaryOnly: true, lang: 'en' } // get the Wiki summary
       wikipedia.searchArticle(options, function (err, htmlWikiText) {
         checkForErrors(err);
@@ -93,16 +93,16 @@ function sendSingleActor(senderId, actorName, channel) { // Send an actor's temp
                         "buttons": [{ "type": "web_url", "title": 'See More!', "url": "https://www.themoviedb.org/person/" + actor.id }]
                       },
                       {
+                        // Bug with actor.news
                         "title": 'News',
-                        "image_url": actor.news.image.contentUrl ? actor.news.image.contentUrl : defaultBingNewsImage,
-                        "subtitle": actor.news.name,
+                        "image_url": defaultBingNewsImage,
+                        "subtitle": 'actor.news.name',
                         "default_action": { url: 'https://en.wikipedia.org/wiki/' + actor, fallback_url: 'https://en.wikipedia.org/wiki/' + actor }, // to change to next line but currently not working
                         // "default_action": { url: actor.news.url, fallback_url: actor.news.url},
-                        "buttons": [{ "type": "web_url", "title": 'See More!', "url": actor.news.url }]
+                        "buttons": [{ "type": "web_url", "title": 'See More!', "url": 'actor.news.url' }]
                       }
                     ]
                   )
-
                   reply(senderId, introductionMessage, function () { // Sending the messages to the user, in the right order
                     reply(senderId, actor.description, function () {
                       sendNextStepMessage(senderId, actor)
