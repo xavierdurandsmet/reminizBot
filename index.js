@@ -57,7 +57,6 @@ app.get('/webhook/', function (req, res) {
 app.post('/webhook/', function (req, res) {
   let events = req.body.entry[0].messaging;
   for (let i = 0; i < events.length; i++) {
-    console.log("event ", event)
     let event = events[i];
     console.log("event ", event)
     let postback = event.postback
