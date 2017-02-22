@@ -96,10 +96,10 @@ function sendSingleActor(senderId, actorName, channel) { // Send an actor's temp
                         // Bug with actor.news
                         "title": 'News',
                         "image_url": defaultBingNewsImage,
-                        "subtitle": 'actor.news.name',
+                        "subtitle": actor.news.name,
                         "default_action": { url: 'https://en.wikipedia.org/wiki/' + actor, fallback_url: 'https://en.wikipedia.org/wiki/' + actor }, // to change to next line but currently not working
                         // "default_action": { url: actor.news.url, fallback_url: actor.news.url},
-                        "buttons": [{ "type": "web_url", "title": 'See More!', "url": 'actor.news.url' }]
+                        "buttons": [{ "type": "web_url", "title": 'See More!', "url": actor.news.url }]
                       }
                     ]
                   )
