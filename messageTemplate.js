@@ -47,7 +47,7 @@ function createListTemplate(elements) {
         element.buttons.forEach(function (button) {
           if (button.type === "web_url") {
             ret.buttons.push({ type: "web_url", title: button.title, url: button.url });
-          } else {  
+          } else {
             ret.buttons.push({ type: "postback", title: button.title, payload: button.payload });
           }
         })
@@ -69,7 +69,13 @@ function createListTemplate(elements) {
       type: "template",
       payload: {
         template_type: "list",
-        elements: elements
+        elements: elements,
+        // To refactor: not always share button
+        buttons: [
+          {
+            type:"element_share"
+          }
+        ]
       }
     }
   }
