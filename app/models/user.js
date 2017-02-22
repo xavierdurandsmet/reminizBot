@@ -26,8 +26,6 @@ UserSchema.statics.findOrCreate = function(facebookId, callback) {
       console.log('there was an error', error)
       return error
     }
-    console.log("facebookID SECOND", facebookId)
-    console.log("currentUser", currentUser)
     if (!currentUser) {
       // If no user, request to facebook graph API
       getFacebookProfile(facebookId, function(fbProfile) {
