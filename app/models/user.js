@@ -25,11 +25,12 @@ UserSchema.statics.findOrCreate = function(facebookId, callback) {
       console.log('there was an error', error)
       return error
     }
+    // If no user, request to facebook graph API
     if (!currentUser) {
-      // If no user, request to facebook graph API
       getFacebookProfile(facebookId, function(fbProfile) {
-        if (!fbProfile) {
-          return callback(null)
+        if (!fbProfile || fbProfile === null) {
+          console.log("has no fb profile")
+          return callback(null);
         }
         // Create the new user with fb profile and return it
         const newUser = new that({
@@ -43,15 +44,14 @@ UserSchema.statics.findOrCreate = function(facebookId, callback) {
         })
         newUser.save(function (err, user) {
           if (err || !user) {
-            return null
+            console.log("there was an error after saving ", err);
+            return err || null;
           }
-          return callback(user)
+          return callback(user);
         })
       })
-    }
-    // Return the user if it exists
-    if (currentUser) {
-      return callback(currentUser)
+    } else if (currentUser) {
+      return callback(currentUser);
     }
   })
 }
@@ -60,18 +60,17 @@ UserSchema.statics.findOrCreate = function(facebookId, callback) {
 function getFacebookProfile(senderId, callback) {
   if (!senderId) {
     console.log('Missing senderId')
-    return
+    return callback(null)
   }
   request(`https://graph.facebook.com/v2.6/${senderId}?access_token=${process.env.PAGE_ACCESS_TOKEN}`, function (error, response, body) {
     const fbProfile = JSON.parse(body)
     if (error || body.error) {
       console.log('error')
-      return callback(null)
+      return callback(error || body.error)
     }
     return callback(fbProfile)
   })
 }
-
 
 module.exports = mongoose.model("User", UserSchema);
 

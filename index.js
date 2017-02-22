@@ -1,4 +1,4 @@
-require('dotenv').config(({ silent: true }))
+  require('dotenv').config(({ silent: true }))
 
 const express = require('express')
 const bodyParser = require('body-parser')
@@ -21,7 +21,7 @@ app.listen(app.get('port'), function (err) {
     return err
   }
   // Uncomment this line to install thread settings
-  // threadSettings()
+  threadSettings()
   console.log('running on port', app.get('port'))
 })
 
@@ -58,11 +58,11 @@ app.post('/webhook/', function (req, res) {
   let events = req.body.entry[0].messaging;
   for (let i = 0; i < events.length; i++) {
     let event = events[i];
+    console.log("event ", event)
     let postback = event.postback
     let senderId = event.sender.id
     // When a user clicks on the GET STARTED button, send the default answer
     if ((postback && postback.payload === "GET_STARTED")) {
-      User.findOrCreate(senderId) // Creates the USER in the DB
       Bot.sendChannelsList(senderId)
     }
     // Send the default answer for any text message

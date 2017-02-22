@@ -14,7 +14,7 @@ module.exports = {
 }
 
 function sendChannelsList(senderId) {
-  User.findOrCreate(senderId, function (user) { // Find the current user first
+  User.findOrCreate(senderId, function (user) { // Find the current user first_name
     let introductionMessage = `Hi ${user.fb_first_name} 👋 Pick a TV channel to know who's on screen in real time ⚡️` // Greet user by its first name
     let channels = ['CNN', 'DISNEY_CHANNEL']
     let listOfChannelsMessage = messageTemplate.createGenericTemplate(
