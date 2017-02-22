@@ -19,7 +19,6 @@ UserSchema.statics.findOrCreate = function(facebookId, callback) {
   if (!facebookId) {
     console.log('Missing facebook Id')
   }
-  console.log("FACEBOOK ID first", facebookId)
   // Look up if the user exists
   this.findOne({ fb_id: facebookId }, function(error, currentUser) {
     if (error) {
@@ -33,6 +32,7 @@ UserSchema.statics.findOrCreate = function(facebookId, callback) {
           console.log("has no fb profile")
           return callback(null)
         }
+        console.log('fbprfile:', fbProfile)
         // Create the new user with fb profile and return it
         const newUser = new that({
           fb_id: facebookId,
@@ -46,10 +46,10 @@ UserSchema.statics.findOrCreate = function(facebookId, callback) {
         newUser.save(function (err, user) {
           if (err || !user) {
             console.log("there was an error after saving ", err);
-            return null
+            return null;
           }
           console.log("FINAL USER", user)
-          return callback(user)
+          return user;
         })
       })
     }
@@ -70,8 +70,9 @@ function getFacebookProfile(senderId, callback) {
     const fbProfile = JSON.parse(body)
     if (error || body.error) {
       console.log('error')
-      return callback(null)
+      return callback(error || body.error)
     }
+    console.log('successfully found user profile', fbProfile)
     return callback(fbProfile)
   })
 }
