@@ -19,16 +19,20 @@ UserSchema.statics.findOrCreate = function(facebookId, callback) {
   if (!facebookId) {
     console.log('Missing facebook Id')
   }
+  console.log("FACEBOOK ID first", facebookId)
   // Look up if the user exists
   this.findOne({ fb_id: facebookId }, function(error, currentUser) {
     if (error) {
       console.log('there was an error', error)
       return error
     }
+    console.log("facebookID SECOND", facebookId)
+    console.log("currentUser", currentUser)
     if (!currentUser) {
       // If no user, request to facebook graph API
       getFacebookProfile(facebookId, function(fbProfile) {
         if (!fbProfile) {
+          console.log("has no fb profile")
           return callback(null)
         }
         // Create the new user with fb profile and return it
@@ -43,8 +47,10 @@ UserSchema.statics.findOrCreate = function(facebookId, callback) {
         })
         newUser.save(function (err, user) {
           if (err || !user) {
+            console.log("there was an error after saving ", err);
             return null
           }
+          console.log("FINAL USER", user)
           return callback(user)
         })
       })
