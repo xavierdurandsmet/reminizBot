@@ -58,12 +58,14 @@ app.post('/webhook/', function (req, res) {
   let events = req.body.entry[0].messaging;
   for (let i = 0; i < events.length; i++) {
     let event = events[i];
+    console.log("event ", event)
     let postback = event.postback
     let senderId = event.sender.id
     // When a user clicks on the GET STARTED button, send the default answer
     if ((postback && postback.payload === "GET_STARTED")) {
       User.findOrCreate(senderId) // Creates the USER in the DB
       Bot.sendChannelsList(senderId)
+      console.log("SENDER ID", senderId)
     }
     // Send the default answer for any text message
     if ((postback && postback.payload === "TV_CHANNELS") || (event.message && event.message.text)) {
