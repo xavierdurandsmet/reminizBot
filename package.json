@@ -19,6 +19,7 @@
     "dotenv": "^4.0.0",
     "express": "^4.14.1",
     "mongoose": "^4.8.3",
+    "moviedb": "^0.2.7",
     "ngrok": "^2.2.6",
     "node-bing-api": "^3.2.1",
     "node-wikipedia": "0.0.2",
