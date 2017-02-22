@@ -1,6 +1,9 @@
 {
   "name": "reminizBot",
   "version": "1.0.0",
+  "engines": {
+    "node": "6.9.4"
+  },
   "description": "",
   "main": "index.js",
   "scripts": {
