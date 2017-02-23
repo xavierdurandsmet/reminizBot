@@ -99,14 +99,14 @@ app.post('/webhook/', function (req, res) {
         User.findOrCreate(senderId, function (currentUser) {
           let currentFavoritesList = currentUser.favorites;
           currentFavoritesList.unshift(newFavorite);
+          if (currentFavoritesList.length > 2) {
+            currentFavoritesList.pop(); // temp business logic: favorites is max 2 (change this logic after refactoring the sendGenericTemplate function)
+          }
           User.findOneAndUpdate({ fb_id: senderId }, { favorites: currentFavoritesList }, {new: true}, function (error, updatedUser) {
             if (error) {
               return error;
             }
-            // Crash because of Bing request, see how to fix this
-            // Bot must return carousel of favorite actors, 1 is enough
-            // Bot.sendFavoriteActors(updatedUser.fb_id, currentFavoritesList);
-            Bot.sendChannelsList(updatedUser.fb_id); // temporary
+            Bot.sendActorIsBookmarked(senderId, newFavorite);
           });
         })
       }
