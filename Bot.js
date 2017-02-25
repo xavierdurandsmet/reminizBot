@@ -139,73 +139,35 @@ function sendActorIsBookmarked(senderId, newFavorite) {
 
 function sendGenericTemplate(senderId, listOfActors, introductionMessage) {
   let actorsInfo = [];
-  if (listOfActors.length === 1) {
-    Bing.images(listOfActors[0], { top: 5, skip: 3 },
-      function (error, res, body) {
-        actorsInfo[0] = {
-          name: listOfActors[0],
-          image: body.value[0].contentUrl
-        }
-        let listOfActorsMessage = messageTemplate.createGenericTemplate([{
-          "title": actorsInfo[0].name,
-          "image_url": actorsInfo[0].image,
+  let elements = [];
+  for (let i = 0; i < listOfActors.length; i++) {
+    Bing.images(listOfActors[i], { top: 5, skip: 3 }, function (error, res, body) {
+      actorsInfo[i] = {
+        name: listOfActors[i],
+        image: body.value ? body.value[i].contentUrl : "" // temp fix, change the lib
+      }; // FIND A WAY TO MAKE THIS EXECUTE BEFORE THE NEXT LINE
+      elements.push({
+        "title": actorsInfo[i].name,
+          "image_url": actorsInfo[i].image,
           "subtitle": 'DESCRIPTION HERE',
           "buttons": [
             {
               "title": 'Choose ✔︎',
-              "payload": 'SINGLE_ACTOR,' + actorsInfo[0].name
+              "payload": `SINGLE_ACTOR ${actorsInfo[i].name}`
             },
             {
               "title": 'Bookmark ❤️︎',
-              "payload": `BOOKMARK ${actorsInfo[0].name}`
+              "payload": `BOOKMARK ${actorsInfo[i].name}`
             }
           ]
-        }])
-        reply(senderId, introductionMessage, function () {
-          reply(senderId, listOfActorsMessage)
-        })
       })
-
-  } else if (listOfActors.length === 2) {
-
-    Bing.images(listOfActors[0], { top: 5, skip: 3 },
-      function (error, res, body) {
-        actorsInfo[0] = {
-          name: listOfActors[0],
-          image: body.value ? body.value[0].contentUrl : "" // temp fix, change the lib
-        }
-        Bing.images(listOfActors[1], { top: 5, skip: 3 },
-          function (error, res, body) {
-            actorsInfo[1] = {
-              name: listOfActors[1],
-              image: body.value ? body.value[0].contentUrl : "" // temp fix, change the lib
-            }
-            let elements = [];
-            for (let i = 0; i < actorsInfo.length; i++) {
-              elements.push({
-                "title": actorsInfo[i].name,
-                  "image_url": actorsInfo[i].image,
-                  "subtitle": 'DESCRIPTION HERE',
-                  "buttons": [
-                    {
-                      "title": 'Choose ✔︎',
-                      "payload": `SINGLE_ACTOR ${actorsInfo[i].name}`
-                    },
-                    {
-                      "title": 'Bookmark ❤️︎',
-                      "payload": `BOOKMARK ${actorsInfo[i].name}`
-                    }
-                  ]
-              })
-            }
-            let listOfActorsMessage = messageTemplate.createGenericTemplate(elements)
-
-            reply(senderId, introductionMessage, function () {
-              reply(senderId, listOfActorsMessage)
-            })
-          })
-      })
+    })
   }
+  let listOfActorsMessage = messageTemplate.createGenericTemplate(elements)
+
+  reply(senderId, introductionMessage, function () {
+    reply(senderId, listOfActorsMessage)
+  })
 }
 
 // Generic follow up message
