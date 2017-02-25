@@ -180,41 +180,25 @@ function sendGenericTemplate(senderId, listOfActors, introductionMessage) {
               name: listOfActors[1],
               image: body.value ? body.value[0].contentUrl : "" // temp fix, change the lib
             }
-
-            let listOfActorsMessage = messageTemplate.createGenericTemplate(
-              [
-                {
-                  "title": actorsInfo[0].name,
-                  "image_url": actorsInfo[0].image,
+            let elements = [];
+            for (let i = 0; i < actorsInfo.length; i++) {
+              elements.push({
+                "title": actorsInfo[i].name,
+                  "image_url": actorsInfo[i].image,
                   "subtitle": 'DESCRIPTION HERE',
                   "buttons": [
                     {
                       "title": 'Choose ✔︎',
-                      "payload": 'SINGLE_ACTOR,' + actorsInfo[0].name
+                      "payload": `SINGLE_ACTOR ${actorsInfo[i].name}`
                     },
                     {
                       "title": 'Bookmark ❤️︎',
-                      "payload": `BOOKMARK ${actorsInfo[0].name}`
+                      "payload": `BOOKMARK ${actorsInfo[i].name}`
                     }
                   ]
-                },
-                {
-                  "title": actorsInfo[1].name,
-                  "image_url": actorsInfo[1].image,
-                  "subtitle": 'DESCRIPTION HERE',
-                  "buttons": [
-                    {
-                      "title": 'Choose ✔︎',
-                      "payload": 'SINGLE_ACTOR,' + actorsInfo[1].name
-                    },
-                    {
-                      "title": 'Bookmark ❤️︎',
-                      "payload": `BOOKMARK ${actorsInfo[1].name}`
-                    }
-                  ]
-                }
-              ]
-            )
+              })
+            }
+            let listOfActorsMessage = messageTemplate.createGenericTemplate(elements)
 
             reply(senderId, introductionMessage, function () {
               reply(senderId, listOfActorsMessage)
