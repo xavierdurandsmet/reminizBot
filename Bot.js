@@ -41,13 +41,12 @@ function sendChannelsList(senderId) {
   })
 }
 
-function sendSingleActor(senderId, actorName, channel) { // Send an actor's template
+function sendSingleActor(senderId, actorName) { // Send an actor's template
 
   let actor = {
-    name: actorName,
-    channel: channel.replace("_", " ") // prettify the channel name
+    name: actorName
   };
-  let introductionMessage = channel ? `${actor.name} is on screen on ${actor.channel} ❤️` : `${actor.name} ❤️`;
+  let introductionMessage = `${actor.name} is live ❤️`;
   let defaultBingNewsImage = 'http://news.thewindowsclubco.netdna-cdn.com/wp-content/uploads/2015/01/Bing-News.jpg'; // in case there is no image for the news
 
   Bing.images(actor.name, { top: 15, skip: 3 },
@@ -117,9 +116,9 @@ function sendSingleActor(senderId, actorName, channel) { // Send an actor's temp
     })
 }
 
-function sendManyActors(senderId, listOfActors, channelName) {
+function sendManyActors(senderId, listOfActors) {
   let introductionMessage = 'There are multiple actors on screen right now 😎 \n Which one are you interested in?' // change to user name
-  sendGenericTemplate(senderId, listOfActors, introductionMessage, channelName)
+  sendGenericTemplate(senderId, listOfActors, introductionMessage)
 }
 
 // THIS FUNCTION ALWAYS CRASHES
@@ -138,7 +137,7 @@ function sendActorIsBookmarked(senderId, newFavorite) {
   });
 }
 
-function sendGenericTemplate(senderId, listOfActors, introductionMessage, channelName) {
+function sendGenericTemplate(senderId, listOfActors, introductionMessage) {
   let actorsInfo = [];
   if (listOfActors.length === 1) {
     Bing.images(listOfActors[0], { top: 5, skip: 3 },
@@ -151,7 +150,16 @@ function sendGenericTemplate(senderId, listOfActors, introductionMessage, channe
           "title": actorsInfo[0].name,
           "image_url": actorsInfo[0].image,
           "subtitle": 'DESCRIPTION HERE',
-          "buttons": [{ "title": 'Choose ✔︎', "payload": 'SINGLE_ACTOR,' + actorsInfo[0].name + "," + (channelName ? channelName : "") }]
+          "buttons": [
+            {
+              "title": 'Choose ✔︎',
+              "payload": 'SINGLE_ACTOR,' + actorsInfo[0].name
+            },
+            {
+              "title": 'Bookmark ❤️︎',
+              "payload": `BOOKMARK ${actorsInfo[0].name}`
+            }
+          ]
         }])
         reply(senderId, introductionMessage, function () {
           reply(senderId, listOfActorsMessage)
@@ -179,13 +187,31 @@ function sendGenericTemplate(senderId, listOfActors, introductionMessage, channe
                   "title": actorsInfo[0].name,
                   "image_url": actorsInfo[0].image,
                   "subtitle": 'DESCRIPTION HERE',
-                  "buttons": [{ "title": 'Choose ✔︎', "payload": 'SINGLE_ACTOR,' + actorsInfo[0].name + "," + (channelName ? channelName : "") }]
+                  "buttons": [
+                    {
+                      "title": 'Choose ✔︎',
+                      "payload": 'SINGLE_ACTOR,' + actorsInfo[0].name
+                    },
+                    {
+                      "title": 'Bookmark ❤️︎',
+                      "payload": `BOOKMARK ${actorsInfo[0].name}`
+                    }
+                  ]
                 },
                 {
                   "title": actorsInfo[1].name,
                   "image_url": actorsInfo[1].image,
                   "subtitle": 'DESCRIPTION HERE',
-                  "buttons": [{ "title": 'Choose ✔︎', "payload": 'SINGLE_ACTOR,' + actorsInfo[1].name + "," + (channelName ? channelName : "") }]
+                  "buttons": [
+                    {
+                      "title": 'Choose ✔︎',
+                      "payload": 'SINGLE_ACTOR,' + actorsInfo[1].name
+                    },
+                    {
+                      "title": 'Bookmark ❤️︎',
+                      "payload": `BOOKMARK ${actorsInfo[1].name}`
+                    }
+                  ]
                 }
               ]
             )
