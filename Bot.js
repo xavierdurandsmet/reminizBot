@@ -138,14 +138,11 @@ function sendActorIsBookmarked(senderId, newFavorite) {
 }
 
 function sendGenericTemplate(senderId, listOfActors, introductionMessage) {
-  let actorsInfo = [];
   let elements = [];
-  for (let i = 0; i < listOfActors.length; i++) {
-    Bing.images(listOfActors[i], { top: 5, skip: 3 }, function (error, res, body) {
-      actorsInfo[i] = {
-        name: listOfActors[i],
-        image: body.value ? body.value[i].contentUrl : "" // temp fix, change the lib
-      }; // FIND A WAY TO MAKE THIS EXECUTE BEFORE THE NEXT LINE
+  let counter = 0;
+  getActorsInfo(listOfActors, function(actorsInfo) {
+    console.log('here', actorsInfo)
+    for (let i = 0; i < actorsInfo.length; i++) {
       elements.push({
         "title": actorsInfo[i].name,
           "image_url": actorsInfo[i].image,
@@ -160,14 +157,36 @@ function sendGenericTemplate(senderId, listOfActors, introductionMessage) {
               "payload": `BOOKMARK ${actorsInfo[i].name}`
             }
           ]
-      })
-    })
-  }
-  let listOfActorsMessage = messageTemplate.createGenericTemplate(elements)
+      });
+      counter = counter + 1;
+      if (counter === actorsInfo.length) {
+        let listOfActorsMessage = messageTemplate.createGenericTemplate(elements)
+        reply(senderId, introductionMessage, function () {
+          reply(senderId, listOfActorsMessage)
+        })
+      }
+    }
+  });
 
-  reply(senderId, introductionMessage, function () {
-    reply(senderId, listOfActorsMessage)
-  })
+}
+
+function getActorsInfo(listOfActors, callback) {
+  let actorsInfo = [];
+  let counter = 0;
+  for (let i = 0; i < listOfActors.length; i++) {
+    Bing.images(listOfActors[i], { top: 5, skip: 3 }, function (error, res, body) {
+      checkForErrors(error);
+      console.log('pushing')
+      actorsInfo.push({
+        name: listOfActors[i],
+        image: body.value ? body.value[i].contentUrl : "" // temp fix, change the lib
+      });
+      counter = counter + 1;
+      if (counter === listOfActors.length) {
+        return callback(actorsInfo);
+      }
+    });
+  }
 }
 
 // Generic follow up message
