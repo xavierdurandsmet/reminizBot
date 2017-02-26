@@ -14,6 +14,7 @@
   "author": "Antonin Archer",
   "license": "ISC",
   "dependencies": {
+    "amazon-product-api": "^0.4.3",
     "bluebird": "^3.4.7",
     "body-parser": "^1.16.1",
     "dotenv": "^4.0.0",
