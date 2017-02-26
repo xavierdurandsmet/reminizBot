@@ -1,6 +1,6 @@
-  require('dotenv').config(({ silent: true }))
+require('dotenv').config(({ silent: true }));
 
-const express = require('express')
+const express = require('express');
 const bodyParser = require('body-parser')
 const app = express()
 const mongoose = require('mongoose') // MongoDB lib
@@ -26,10 +26,10 @@ app.listen(app.get('port'), function (err) {
 })
 
 // Start the database using Mongoose
-const MONGODB_URI = process.env.MONGODB_URI
-mongoose.Promise = require('bluebird') // Mongoose promise library is deprecated
-mongoose.connect(MONGODB_URI)
-const db = mongoose.connection
+const MONGODB_URI = process.env.MONGODB_URI;
+mongoose.Promise = require('bluebird'); // Mongoose promise library is deprecated
+mongoose.connect(MONGODB_URI);
+const db = mongoose.connection;
 db.on('error', console.error.bind(console, 'connection error:'))
 db.once('open', () => {
   console.log(`Successfully connected to ${MONGODB_URI}`)
@@ -90,7 +90,7 @@ app.post('/webhook/', function (req, res) {
         Bot.sendSingleActor(senderId, actor);
       } else if (postback.payload === "FAVORITES") {
         User.findOrCreate(senderId, function (currentUser) {
-          Bot.sendFavoriteActors(senderId, currentUser.favorites);
+          Bot.sendFavoriteActors(currentUser);
         })
       } else if (postback.payload.substr(0, 6) === "AMAZON") {
         let actorName = postback.payload.substr(7);
@@ -106,7 +106,9 @@ app.post('/webhook/', function (req, res) {
           }
           User.findOneAndUpdate({ fb_id: senderId }, { favorites: currentFavoritesList }, {new: true}, function (error, updatedUser) {
             if (error) {
-              return error;
+              return res.send(error);
+            } else if (!updatedUser) {
+              return res.sendStatus(400);
             }
             Bot.sendActorIsBookmarked(senderId, newFavorite);
           });
