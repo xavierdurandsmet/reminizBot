@@ -41,15 +41,14 @@ function sendChannelsList(senderId) {
   })
 }
 
-function sendSingleActor(senderId, actorName, channel) { // Send an actor's template
+function sendSingleActor(senderId, actorName) { // Send an actor's template
 
   let actor = {
-    name: actorName,
-    channel: channel.replace("_", " ") // prettify the channel name
+    name: actorName
   };
-  let introductionMessage = channel ? `${actor.name} is on screen on ${actor.channel} ❤️` : `${actor.name} ❤️`;
+  let introductionMessage = `${actor.name} is live ❤️`;
   let defaultBingNewsImage = 'http://news.thewindowsclubco.netdna-cdn.com/wp-content/uploads/2015/01/Bing-News.jpg'; // in case there is no image for the news
-
+  console.log(actor.name)
   Bing.images(actor.name, { top: 15, skip: 3 },
     function (error, res, body) {
       checkForErrors(error);
@@ -117,9 +116,9 @@ function sendSingleActor(senderId, actorName, channel) { // Send an actor's temp
     })
 }
 
-function sendManyActors(senderId, listOfActors, channelName) {
+function sendManyActors(senderId, listOfActors) {
   let introductionMessage = 'There are multiple actors on screen right now 😎 \n Which one are you interested in?' // change to user name
-  sendGenericTemplate(senderId, listOfActors, introductionMessage, channelName)
+  sendGenericTemplate(senderId, listOfActors, introductionMessage)
 }
 
 // THIS FUNCTION ALWAYS CRASHES
@@ -138,63 +137,52 @@ function sendActorIsBookmarked(senderId, newFavorite) {
   });
 }
 
-function sendGenericTemplate(senderId, listOfActors, introductionMessage, channelName) {
-  let actorsInfo = [];
-  if (listOfActors.length === 1) {
-    Bing.images(listOfActors[0], { top: 5, skip: 3 },
-      function (error, res, body) {
-        actorsInfo[0] = {
-          name: listOfActors[0],
-          image: body.value[0].contentUrl
-        }
-        let listOfActorsMessage = messageTemplate.createGenericTemplate([{
-          "title": actorsInfo[0].name,
-          "image_url": actorsInfo[0].image,
+function sendGenericTemplate(senderId, listOfActors, introductionMessage) {
+  let elements = [];
+  let counter = 0;
+  getActorsInfo(listOfActors, function(actorsInfo) {
+    for (let i = 0; i < actorsInfo.length; i++) {
+      elements.push({
+        "title": actorsInfo[i].name,
+          "image_url": actorsInfo[i].image,
           "subtitle": 'DESCRIPTION HERE',
-          "buttons": [{ "title": 'Choose ✔︎', "payload": 'SINGLE_ACTOR,' + actorsInfo[0].name + "," + (channelName ? channelName : "") }]
-        }])
-        reply(senderId, introductionMessage, function () {
-          reply(senderId, listOfActorsMessage)
-        })
-      })
-
-  } else if (listOfActors.length === 2) {
-
-    Bing.images(listOfActors[0], { top: 5, skip: 3 },
-      function (error, res, body) {
-        actorsInfo[0] = {
-          name: listOfActors[0],
-          image: body.value ? body.value[0].contentUrl : "" // temp fix, change the lib
-        }
-        Bing.images(listOfActors[1], { top: 5, skip: 3 },
-          function (error, res, body) {
-            actorsInfo[1] = {
-              name: listOfActors[1],
-              image: body.value ? body.value[0].contentUrl : "" // temp fix, change the lib
+          "buttons": [
+            {
+              "title": 'Choose ✔︎',
+              "payload": 'SINGLE_ACTOR,' + actorsInfo[i].name
+            },
+            {
+              "title": 'Bookmark ❤️︎',
+              "payload": 'BOOKMARK,' + actorsInfo[i].name
             }
+          ]
+      });
+      counter = counter + 1;
+      if (counter === actorsInfo.length) {
+        let listOfActorsMessage = messageTemplate.createGenericTemplate(elements);
+        reply(senderId, introductionMessage, function () {
+          reply(senderId, listOfActorsMessage);
+        })
+      }
+    }
+  });
+}
 
-            let listOfActorsMessage = messageTemplate.createGenericTemplate(
-              [
-                {
-                  "title": actorsInfo[0].name,
-                  "image_url": actorsInfo[0].image,
-                  "subtitle": 'DESCRIPTION HERE',
-                  "buttons": [{ "title": 'Choose ✔︎', "payload": 'SINGLE_ACTOR,' + actorsInfo[0].name + "," + (channelName ? channelName : "") }]
-                },
-                {
-                  "title": actorsInfo[1].name,
-                  "image_url": actorsInfo[1].image,
-                  "subtitle": 'DESCRIPTION HERE',
-                  "buttons": [{ "title": 'Choose ✔︎', "payload": 'SINGLE_ACTOR,' + actorsInfo[1].name + "," + (channelName ? channelName : "") }]
-                }
-              ]
-            )
-
-            reply(senderId, introductionMessage, function () {
-              reply(senderId, listOfActorsMessage)
-            })
-          })
-      })
+function getActorsInfo(listOfActors, callback) {
+  let actorsInfo = [];
+  let counter = 0;
+  for (let i = 0; i < listOfActors.length; i++) {
+    Bing.images(listOfActors[i], { top: 5, skip: 3 }, function (error, res, body) {
+      checkForErrors(error);
+      actorsInfo.push({
+        name: listOfActors[i],
+        image: body.value ? body.value[i].contentUrl : "" // temp fix, change the lib
+      });
+      counter = counter + 1;
+      if (counter === listOfActors.length) {
+        return callback(actorsInfo);
+      }
+    });
   }
 }
 

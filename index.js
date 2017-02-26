@@ -81,14 +81,13 @@ app.post('/webhook/', function (req, res) {
         }
       ]
       if (postback.payload === "CNN") {
-        Bot.sendSingleActor(senderId, channels[0].actors[0], channels[0].name)
+        Bot.sendSingleActor(senderId, channels[0].actors[0])
       } else if (postback.payload === "DISNEY_CHANNEL") {
-        Bot.sendManyActors(senderId, channels[1].actors, channels[1].name)
+        Bot.sendManyActors(senderId, channels[1].actors)
       } else if (postback.payload.substr(0, 12) === "SINGLE_ACTOR") {
         let info = postback.payload.split(",");
         let actor = info[1];
-        let channel = info[2];
-        Bot.sendSingleActor(senderId, actor, channel);
+        Bot.sendSingleActor(senderId, actor);
       } else if (postback.payload === "FAVORITES") {
         User.findOrCreate(senderId, function (currentUser) {
           Bot.sendFavoriteActors(senderId, currentUser.favorites);
