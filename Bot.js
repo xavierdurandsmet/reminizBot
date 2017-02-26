@@ -5,13 +5,19 @@ const wikipedia = require('wikipedia-js')
 const User = require('./app/models/user')
 const PAGE_ACCESS_TOKEN = process.env.PAGE_ACCESS_TOKEN
 const messageTemplate = require('./messageTemplate')
+const amazon = require('amazon-product-api');
+const client = amazon.createClient({
+  awsId: process.env.AMAZON_ID,
+  awsSecret: process.env.AMAZON_SECRET_KEY
+});
 
 module.exports = {
   sendChannelsList: sendChannelsList,
   sendSingleActor: sendSingleActor,
   sendManyActors: sendManyActors,
   sendFavoriteActors: sendFavoriteActors,
-  sendActorIsBookmarked: sendActorIsBookmarked
+  sendActorIsBookmarked: sendActorIsBookmarked,
+  sendAmazonProducts: sendAmazonProducts
 }
 
 function sendChannelsList(senderId) {
@@ -101,6 +107,13 @@ function sendSingleActor(senderId, actorName, channel) { // Send an actor's temp
                         "default_action": { url: 'https://en.wikipedia.org/wiki/' + actor, fallback_url: 'https://en.wikipedia.org/wiki/' + actor }, // to change to next line but currently not working
                         // "default_action": { url: actor.news.url, fallback_url: actor.news.url},
                         "buttons": [{ "type": "web_url", "title": 'See More!', "url": actor.news.url }]
+                      },
+                      {
+                        "title": 'Products',
+                        "image_url": 'https://images-na.ssl-images-amazon.com/images/G/01/gc/designs/livepreview/a_generic_white_10_us_noto_email_v2016_us-main._CB277146614_.png',
+                        "subtitle": 'Find Amazon products related to this actor',
+                        "default_action": { url: 'https://en.wikipedia.org/wiki/' + actor.movie.original_title, fallback_url: 'https://en.wikipedia.org/wiki/' + actor.movie.original_title },
+                        "buttons": [{ "type": "postback", "title": 'See More Products!', "payload": "AMAZON " + actor.name }]
                       }
                     ]
                   )
@@ -136,6 +149,29 @@ function sendActorIsBookmarked(senderId, newFavorite) {
   reply(senderId, introductionMessage, function () {
     sendNextStepMessage(senderId);
   });
+}
+
+function sendAmazonProducts(senderId, actorName) {
+  client.itemSearch({ // do the Amazon call here rather than in sendSingleActor because the latter is already overloaded
+    searchIndex: 'All',
+    keywords: actorName, // we might have to change the query to adapt to Jack's will
+    responseGroup: 'ItemAttributes,Offers,Images'
+  }, function (err, results, response) {
+    checkForErrors(err);
+    let productList = [];
+    for (let i = 0; i <= 4; i++) {
+      let product = {};
+      product.title = "FIND WHICH PROPERTY OF THE JSON FITS BEST FOR TITLE";
+      product.image_url = results[i].LargeImage[0].URL[0];
+      product.subtitle = results[0].OfferSummary[0].LowestNewPrice[0].FormattedPrice[0];
+      product.buttonsURL = [{ "title": 'Buy it!', "url": results[i].DetailPageURL[0] ? results[i].DetailPageURL[0] : 'https://en.wikipedia.org/' }]
+      productList.push(product);
+    }
+    let productTemplate = messageTemplate.createGenericTemplate(productList)
+    reply(senderId, productTemplate, function () {
+      sendNextStepMessage(senderId)
+    })
+  })
 }
 
 function sendGenericTemplate(senderId, listOfActors, introductionMessage, channelName) {
