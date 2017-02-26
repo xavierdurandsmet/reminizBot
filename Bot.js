@@ -48,7 +48,7 @@ function sendSingleActor(senderId, actorName) { // Send an actor's template
   };
   let introductionMessage = `${actor.name} is live ❤️`;
   let defaultBingNewsImage = 'http://news.thewindowsclubco.netdna-cdn.com/wp-content/uploads/2015/01/Bing-News.jpg'; // in case there is no image for the news
-
+  console.log(actor.name)
   Bing.images(actor.name, { top: 15, skip: 3 },
     function (error, res, body) {
       checkForErrors(error);
@@ -141,7 +141,6 @@ function sendGenericTemplate(senderId, listOfActors, introductionMessage) {
   let elements = [];
   let counter = 0;
   getActorsInfo(listOfActors, function(actorsInfo) {
-    console.log('here', actorsInfo)
     for (let i = 0; i < actorsInfo.length; i++) {
       elements.push({
         "title": actorsInfo[i].name,
@@ -150,7 +149,7 @@ function sendGenericTemplate(senderId, listOfActors, introductionMessage) {
           "buttons": [
             {
               "title": 'Choose ✔︎',
-              "payload": `SINGLE_ACTOR ${actorsInfo[i].name}`
+              "payload": 'SINGLE_ACTOR,' + actorsInfo[i].name
             },
             {
               "title": 'Bookmark ❤️︎',
@@ -160,9 +159,9 @@ function sendGenericTemplate(senderId, listOfActors, introductionMessage) {
       });
       counter = counter + 1;
       if (counter === actorsInfo.length) {
-        let listOfActorsMessage = messageTemplate.createGenericTemplate(elements)
+        let listOfActorsMessage = messageTemplate.createGenericTemplate(elements);
         reply(senderId, introductionMessage, function () {
-          reply(senderId, listOfActorsMessage)
+          reply(senderId, listOfActorsMessage);
         })
       }
     }
@@ -176,7 +175,6 @@ function getActorsInfo(listOfActors, callback) {
   for (let i = 0; i < listOfActors.length; i++) {
     Bing.images(listOfActors[i], { top: 5, skip: 3 }, function (error, res, body) {
       checkForErrors(error);
-      console.log('pushing')
       actorsInfo.push({
         name: listOfActors[i],
         image: body.value ? body.value[i].contentUrl : "" // temp fix, change the lib
