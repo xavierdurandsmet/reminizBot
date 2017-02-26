@@ -92,6 +92,9 @@ app.post('/webhook/', function (req, res) {
         User.findOrCreate(senderId, function (currentUser) {
           Bot.sendFavoriteActors(senderId, currentUser.favorites);
         })
+      } else if (postback.payload.substr(0, 6) === "AMAZON") {
+        let actorName = postback.payload.substr(7);
+        Bot.sendAmazonProducts(senderId, actorName);
       } else if (postback.payload.substr(0, 8) === "BOOKMARK") {
         // User bookmarks an actor, bot sends the list of his fav actors
         let newFavorite = postback.payload.substr(9);

@@ -16,6 +16,11 @@ function createGenericTemplate(elements) {
         element.buttons.forEach(function (button) {
           ret.buttons.push({ type: "postback", title: button.title, payload: button.payload });
         })
+      } else if (key === "buttonsURL") {
+        ret.buttons = [];
+        element.buttonsURL.forEach(function (button) {
+          ret.buttons.push({ type: "web_url", title: button.title, url: button.url });
+        })
       }
     }
     if (element.share === true) {
@@ -73,7 +78,7 @@ function createListTemplate(elements) {
         // To refactor: not always share button
         buttons: [
           {
-            type:"element_share"
+            type: "element_share"
           }
         ]
       }
