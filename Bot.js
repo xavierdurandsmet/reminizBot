@@ -131,16 +131,13 @@ function sendSingleActor(senderId, actorName) { // Send an actor's template
 
 function sendManyActors(senderId, listOfActors) {
   let introductionMessage = 'There are multiple actors on screen right now 😎 \n Which one are you interested in?' // change to user name
-  sendGenericTemplate(senderId, listOfActors, introductionMessage)
+  sendCarouselOfActors(senderId, listOfActors, introductionMessage)
 }
 
 // THIS FUNCTION ALWAYS CRASHES
-function sendFavoriteActors(senderId, listOfActors) {
-  let introductionMessage = "Here will be your favorite actors ❤️"
-  if (listOfActors.length < 1) {
-    sendNextStepMessage(senderId); // temp solution
-  }
-  sendGenericTemplate(senderId, listOfActors, introductionMessage);
+function sendFavoriteActors(user) {
+  let introductionMessage = "And your favorite actors are...(drumroll) 🙌️"
+  sendCarouselOfActors(user.fb_id, user.favorites, introductionMessage);
 }
 
 function sendActorIsBookmarked(senderId, newFavorite) {
@@ -156,7 +153,7 @@ function sendAmazonProducts(senderId, actorName) {
     searchIndex: 'All',
     keywords: actorName, // we might have to change the query to adapt to Jack's will
     responseGroup: 'ItemAttributes,Offers,Images'
-  }, function (err, results, response) {
+  }, function (err, results) {
     checkForErrors(err);
     let productList = [];
     for (let i = 0; i <= 4; i++) {
@@ -174,7 +171,7 @@ function sendAmazonProducts(senderId, actorName) {
   })
 }
 
-function sendGenericTemplate(senderId, listOfActors, introductionMessage) {
+function sendCarouselOfActors(senderId, listOfActors, introductionMessage) {
   let elements = [];
   let counter = 0;
   getActorsInfo(listOfActors, function(actorsInfo) {
@@ -190,7 +187,7 @@ function sendGenericTemplate(senderId, listOfActors, introductionMessage) {
             },
             {
               "title": 'Bookmark ❤️︎',
-              "payload": 'BOOKMARK,' + actorsInfo[i].name
+              "payload": 'BOOKMARK,' + actorsInfo[i].name // Or unbookmark if already bookmarked
             }
           ]
       });
