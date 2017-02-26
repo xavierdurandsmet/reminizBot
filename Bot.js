@@ -17,6 +17,7 @@ module.exports = {
   sendManyActors: sendManyActors,
   sendFavoriteActors: sendFavoriteActors,
   sendActorIsBookmarked: sendActorIsBookmarked,
+  sendActorIsUnbookmarked: sendActorIsUnbookmarked,
   sendAmazonProducts: sendAmazonProducts
 }
 
@@ -129,19 +130,26 @@ function sendSingleActor(senderId, actorName) { // Send an actor's template
     })
 }
 
-function sendManyActors(senderId, listOfActors) {
+function sendManyActors(user, listOfActors) {
   let introductionMessage = 'There are multiple actors on screen right now 😎 \n Which one are you interested in?' // change to user name
-  sendCarouselOfActors(senderId, listOfActors, introductionMessage)
+  sendCarouselOfActors(user, listOfActors, introductionMessage)
 }
 
 // THIS FUNCTION ALWAYS CRASHES
 function sendFavoriteActors(user) {
   let introductionMessage = "And your favorite actors are...(drumroll) 🙌️"
-  sendCarouselOfActors(user.fb_id, user.favorites, introductionMessage);
+  sendCarouselOfActors(user, user.favorites, introductionMessage);
 }
 
 function sendActorIsBookmarked(senderId, newFavorite) {
   let introductionMessage = `${newFavorite} is now bookmarked 😎 You can access bookmarked actors by clicking on "My favorites" ❤️`;
+  reply(senderId, introductionMessage, function () {
+    sendNextStepMessage(senderId);
+  });
+}
+
+function sendActorIsUnbookmarked(senderId, actorName) {
+  let introductionMessage = `${actorName} successfully unbookmarked ❌️`;
   reply(senderId, introductionMessage, function () {
     sendNextStepMessage(senderId);
   });
@@ -171,16 +179,31 @@ function sendAmazonProducts(senderId, actorName) {
   })
 }
 
-function sendCarouselOfActors(senderId, listOfActors, introductionMessage) {
+function sendCarouselOfActors(currentUser, listOfActors, introductionMessage) {
   let elements = [];
   let counter = 0;
   getActorsInfo(listOfActors, function(actorsInfo) {
     for (let i = 0; i < actorsInfo.length; i++) {
-      elements.push({
-        "title": actorsInfo[i].name,
-          "image_url": actorsInfo[i].image,
-          "subtitle": 'DESCRIPTION HERE',
-          "buttons": [
+      let element = {
+        title: actorsInfo[i].name,
+        image_url: actorsInfo[i].image,
+        subtitle: 'DESCRIPTION HERE',
+      }
+      console.log(typeof currentUser.favorites);
+      console.log(currentUser)
+      if (currentUser.favorites.indexOf(actorsInfo[i].name)) {
+        element.buttons = [
+            {
+              "title": 'Choose ✔︎',
+              "payload": 'SINGLE_ACTOR,' + actorsInfo[i].name
+            },
+            {
+              "title": 'Unbookmark ❌️︎',
+              "payload": 'UNBOOKMARK,' + actorsInfo[i].name // Or unbookmark if already bookmarked
+            }
+          ]
+        } else {
+        element.buttons = [
             {
               "title": 'Choose ✔︎',
               "payload": 'SINGLE_ACTOR,' + actorsInfo[i].name
@@ -190,12 +213,13 @@ function sendCarouselOfActors(senderId, listOfActors, introductionMessage) {
               "payload": 'BOOKMARK,' + actorsInfo[i].name // Or unbookmark if already bookmarked
             }
           ]
-      });
-      counter = counter + 1;
+        }
+      elements.push(element);
+      counter += 1;
       if (counter === actorsInfo.length) {
         let listOfActorsMessage = messageTemplate.createGenericTemplate(elements);
-        reply(senderId, introductionMessage, function () {
-          reply(senderId, listOfActorsMessage);
+        reply(currentUser.fb_id, introductionMessage, function () {
+          reply(currentUser.fb_id, listOfActorsMessage);
         })
       }
     }
@@ -212,7 +236,7 @@ function getActorsInfo(listOfActors, callback) {
         name: listOfActors[i],
         image: body.value ? body.value[i].contentUrl : "" // temp fix, change the lib
       });
-      counter = counter + 1;
+      counter += 1;
       if (counter === listOfActors.length) {
         return callback(actorsInfo);
       }

@@ -83,7 +83,9 @@ app.post('/webhook/', function (req, res) {
       if (postback.payload === "CNN") {
         Bot.sendSingleActor(senderId, channels[0].actors[0])
       } else if (postback.payload === "DISNEY_CHANNEL") {
-        Bot.sendManyActors(senderId, channels[1].actors)
+        User.findOrCreate(senderId, function (currentUser) {
+          Bot.sendManyActors(currentUser, channels[1].actors);
+        });
       } else if (postback.payload.substr(0, 12) === "SINGLE_ACTOR") {
         let info = postback.payload.split(",");
         let actor = info[1];
@@ -113,6 +115,21 @@ app.post('/webhook/', function (req, res) {
             Bot.sendActorIsBookmarked(senderId, newFavorite);
           });
         })
+      } else if (postback.payload.substr(0, 10) === 'UNBOOKMARK') {
+        const actorToUnbookmark = postback.payload.substr(11);
+        User.findOrCreate(senderId, function (currentUser) {
+          const indexOfActor = currentUser.favorites.indexOf(actorToUnbookmark);
+          const newFavoritesList = currentUser.favorites.splice(indexOfActor, 1);
+          User.findOneAndUpdate({fb_id: senderId}, { favorites: newFavoritesList }, {new: true}, function (error, updatedUser) {
+            console.log('Actor is unbookmarked');
+            if (error) {
+              return res.send(error);
+            } else if (!updatedUser) {
+              return res.sendStatus(400);
+            }
+            Bot.sendActorIsUnbookmarked(senderId, actorToUnbookmark);
+          });
+        });
       }
     }
   }
