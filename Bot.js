@@ -141,6 +141,10 @@ function sendGenericTemplate(senderId, listOfActors, introductionMessage) {
   let elements = [];
   let counter = 0;
   getActorsInfo(listOfActors, function(actorsInfo) {
+<<<<<<< HEAD
+=======
+    console.log('here', actorsInfo)
+>>>>>>> 1fde6967895155a3bb39b8a83b5f3128146e1abe
     for (let i = 0; i < actorsInfo.length; i++) {
       elements.push({
         "title": actorsInfo[i].name,
@@ -149,7 +153,11 @@ function sendGenericTemplate(senderId, listOfActors, introductionMessage) {
           "buttons": [
             {
               "title": 'Choose ✔︎',
+<<<<<<< HEAD
               "payload": 'SINGLE_ACTOR,' + actorsInfo[i].name
+=======
+              "payload": `SINGLE_ACTOR ${actorsInfo[i].name}`
+>>>>>>> 1fde6967895155a3bb39b8a83b5f3128146e1abe
             },
             {
               "title": 'Bookmark ❤️︎',
@@ -159,7 +167,11 @@ function sendGenericTemplate(senderId, listOfActors, introductionMessage) {
       });
       counter = counter + 1;
       if (counter === actorsInfo.length) {
+<<<<<<< HEAD
         let listOfActorsMessage = messageTemplate.createGenericTemplate(elements);
+=======
+        let listOfActorsMessage = messageTemplate.createGenericTemplate(elements)
+>>>>>>> 1fde6967895155a3bb39b8a83b5f3128146e1abe
         reply(senderId, introductionMessage, function () {
           reply(senderId, listOfActorsMessage);
         })
@@ -175,6 +187,10 @@ function getActorsInfo(listOfActors, callback) {
   for (let i = 0; i < listOfActors.length; i++) {
     Bing.images(listOfActors[i], { top: 5, skip: 3 }, function (error, res, body) {
       checkForErrors(error);
+<<<<<<< HEAD
+=======
+      console.log('pushing')
+>>>>>>> 1fde6967895155a3bb39b8a83b5f3128146e1abe
       actorsInfo.push({
         name: listOfActors[i],
         image: body.value ? body.value[i].contentUrl : "" // temp fix, change the lib
