@@ -67,7 +67,6 @@ function getFacebookProfile(senderId, callback) {
     if (error || body.error) {
       return callback(error || body.error)
     }
-    console.log('logging fbprofile', fbProfile)
     return callback(fbProfile)
   })
 }

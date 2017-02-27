@@ -189,28 +189,27 @@ function sendCarouselOfActors(currentUser, listOfActors, introductionMessage) {
         image_url: actorsInfo[i].image,
         subtitle: 'DESCRIPTION HERE',
       }
-      console.log(typeof currentUser.favorites);
-      console.log(currentUser)
-      if (currentUser.favorites.indexOf(actorsInfo[i].name)) {
+      console.log(currentUser.favorites.indexOf(actorsInfo[i].name))
+      if (currentUser.favorites.indexOf(actorsInfo[i].name) === -1) {
         element.buttons = [
             {
-              "title": 'Choose ✔︎',
-              "payload": 'SINGLE_ACTOR,' + actorsInfo[i].name
+              "title": "Choose ✔︎",
+              "payload": "SINGLE_ACTOR," + actorsInfo[i].name
             },
             {
-              "title": 'Unbookmark ❌️︎',
-              "payload": 'UNBOOKMARK,' + actorsInfo[i].name // Or unbookmark if already bookmarked
+              "title": "Bookmark ❤️",
+              "payload": "BOOKMARK," + actorsInfo[i].name
             }
           ]
         } else {
         element.buttons = [
             {
-              "title": 'Choose ✔︎',
-              "payload": 'SINGLE_ACTOR,' + actorsInfo[i].name
+              "title": "Choose ✔︎",
+              "payload": "SINGLE_ACTOR," + actorsInfo[i].name
             },
             {
-              "title": 'Bookmark ❤️︎',
-              "payload": 'BOOKMARK,' + actorsInfo[i].name // Or unbookmark if already bookmarked
+              "title": "Unbookmark ❌",
+              "payload": "UNBOOKMARK," + actorsInfo[i].name
             }
           ]
         }

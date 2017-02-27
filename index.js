@@ -115,11 +115,15 @@ app.post('/webhook/', function (req, res) {
             Bot.sendActorIsBookmarked(senderId, newFavorite);
           });
         })
-      } else if (postback.payload.substr(0, 10) === 'UNBOOKMARK') {
+      } else if (postback.payload.substr(0, 10) === "UNBOOKMARK") {
         const actorToUnbookmark = postback.payload.substr(11);
         User.findOrCreate(senderId, function (currentUser) {
           const indexOfActor = currentUser.favorites.indexOf(actorToUnbookmark);
+          console.log(indexOfActor)
+          console.log(currentUser.favorites)
           const newFavoritesList = currentUser.favorites.splice(indexOfActor, 1);
+          console.log(newFavoritesList === currentUser.favorites)
+          console.log('newFavoritesList:', newFavoritesList)
           User.findOneAndUpdate({fb_id: senderId}, { favorites: newFavoritesList }, {new: true}, function (error, updatedUser) {
             console.log('Actor is unbookmarked');
             if (error) {
