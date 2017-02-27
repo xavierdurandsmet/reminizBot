@@ -66,11 +66,6 @@ function sendSingleActor(senderId, actorName) { // Send an actor's template
         }
         actor.image = body.value[0].contentUrl;
 
-        // Bing.images(actor.movie.original_title + 'movie', { top: 15, skip: 3 }, // get image of the first movie to display
-        //   function (error, res, body) {
-        //     checkForErrors(err);
-        //     actor.movie.image = body.value[0].contentUrl;
-
         Bing.news(actor.name, { top: 10, skip: 3 }, function (error, res, body) {
           checkForErrors(err);
           actor.news = body.value[0];
@@ -116,7 +111,6 @@ function sendSingleActor(senderId, actorName) { // Send an actor's template
         })
       })
     })
-  // })
 }
 
 function sendManyActors(senderId, listOfActors) {
