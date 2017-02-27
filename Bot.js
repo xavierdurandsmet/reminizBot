@@ -18,7 +18,8 @@ module.exports = {
   sendFavoriteActors: sendFavoriteActors,
   sendActorIsBookmarked: sendActorIsBookmarked,
   sendAmazonProducts: sendAmazonProducts,
-  sendCarouselOfFilms: sendCarouselOfFilms
+  sendCarouselOfFilms: sendCarouselOfFilms,
+  sendCarouselOfNews: sendCarouselOfNews
 }
 
 function sendChannelsList(senderId) {
@@ -50,11 +51,12 @@ function sendChannelsList(senderId) {
 
 function sendSingleActor(senderId, actorName) { // Send an actor's template
 
-  let actor = {
-    name: actorName
-  };
-  let introductionMessage = `${actor.name} is live ❤️`;
-  let defaultBingNewsImage = 'http://news.thewindowsclubco.netdna-cdn.com/wp-content/uploads/2015/01/Bing-News.jpg'; // in case there is no image for the news
+  let actor = { name: actorName },
+      bingNewsImage = 'http://news.thewindowsclubco.netdna-cdn.com/wp-content/uploads/2015/01/Bing-News.jpg', // in case there is no image for the news
+      filmImage = 'https://pbs.twimg.com/profile_images/789117657714831361/zGfknUu8.jpg',
+      introductionMessage = `${actor.name} is live ❤️`,
+      productImage = 'https://images-na.ssl-images-amazon.com/images/G/01/gc/designs/livepreview/a_generic_white_10_us_noto_email_v2016_us-main._CB277146614_.png'
+
   Bing.images(actor.name, { top: 15, skip: 3 },
     function (error, res, body) {
       checkForErrors(error);
@@ -65,6 +67,7 @@ function sendSingleActor(senderId, actorName) { // Send an actor's template
           actor.descriptionSummary = htmlWikiText.replace(/<[^>]*>?/gm, '') // to improve: to remove imperfections in parsing
         }
         actor.image = body.value[0].contentUrl;
+<<<<<<< HEAD
 
         Bing.news(actor.name, { top: 10, skip: 3 }, function (error, res, body) {
           checkForErrors(err);
@@ -170,6 +173,27 @@ function sendCarouselOfFilms(senderId, actorName) {
   })
 }
 
+function sendCarouselOfNews(senderId, actorName) {
+  let actor = {};
+  Bing.news(actorName, { top: 10, skip: 3, safeSearch: "Moderate" }, function (error, res, body) {
+    checkForErrors(error);
+    let JSONResponse = body.value;
+    let newsList = [];
+    for (let i = 0; i <= 4; i++) {
+      let newsArticle = {};
+      newsArticle.title = JSONResponse[i].name,
+        newsArticle.image_url = JSONResponse[i].image.thumbnail.contentUrl, // get better quality images?
+        newsArticle.subtitle = JSONResponse[i].description,
+        newsArticle.buttonsURL = [{ "title": 'View More!', "url": JSONResponse[i].url }] // change to specific movie
+      newsList.push(newsArticle);
+    }
+    let newsTemplate = messageTemplate.createGenericTemplate(newsList)
+    reply(senderId, newsTemplate, function () {
+      sendNextStepMessage(senderId)
+    })
+  })
+}
+
 function sendAmazonProducts(senderId, actorName) {
   client.itemSearch({ // do the Amazon call here rather than in sendSingleActor because the latter is already overloaded
     searchIndex: 'All',
@@ -184,7 +208,7 @@ function sendAmazonProducts(senderId, actorName) {
         product.title = results[i].ItemAttributes[0].Title[0];
         product.image_url = results[i].LargeImage[0].URL[0];
         product.subtitle = results[i].OfferSummary[0].LowestNewPrice[0].FormattedPrice[0];
-        product.buttonsURL = [{ "title": 'Buy Now!', "url": results[i].DetailPageURL[0] ? results[i].DetailPageURL[0] : 'https://www.amazon.com/' }]
+        product.buttonsURL = [{ "title": 'Buy Now!', "url": results[i].DetailPageURL[0] ? results[i].DetailPageURL[0] : 'https://www.amazon.com/' }] // do a more precise search query
         productList.push(product);
       }
     }

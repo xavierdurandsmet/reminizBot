@@ -98,6 +98,9 @@ app.post('/webhook/', function (req, res) {
        } else if (postback.payload.substr(0, 11) === "FILMOGRAPHY") {
         let actorName = postback.payload.substr(12);
         Bot.sendCarouselOfFilms(senderId, actorName);
+      } else if (postback.payload.substr(0, 4) === "NEWS") {
+        let actorName = postback.payload.substr(5);
+        Bot.sendCarouselOfNews(senderId, actorName);
       } else if (postback.payload.substr(0, 8) === "BOOKMARK") {
         // User bookmarks an actor, bot sends the list of his fav actors
         let newFavorite = postback.payload.substr(9);
