@@ -66,11 +66,6 @@ function sendSingleActor(senderId, actorName) { // Send an actor's template
         }
         actor.image = body.value[0].contentUrl;
 
-        // Bing.images(actor.movie.original_title + 'movie', { top: 15, skip: 3 }, // get image of the first movie to display
-        //   function (error, res, body) {
-        //     checkForErrors(err);
-        //     actor.movie.image = body.value[0].contentUrl;
-
         Bing.news(actor.name, { top: 10, skip: 3 }, function (error, res, body) {
           checkForErrors(err);
           actor.news = body.value[0];
@@ -116,7 +111,6 @@ function sendSingleActor(senderId, actorName) { // Send an actor's template
         })
       })
     })
-  // })
 }
 
 function sendManyActors(senderId, listOfActors) {
@@ -159,7 +153,9 @@ function sendCarouselOfFilms(senderId, actorName) {
       let filmListToPush = [];
       filmList.forEach(function (film) { // use forEach to create its own scope, for the async call
         MovieDB.movieTrailers({ id: film.id }, function (err, res) {
-          film.trailer = "https://www.youtube.com/watch?v=" + res.youtube[0].source;
+          checkForErrors(err);
+          console.log("res ", res)
+          film.trailer = res.youtube[0] ? "https://www.youtube.com/watch?v=" + res.youtube[0].source : "https://www.youtube.com";
           film.buttonsURL.push({ "title": 'Watch Trailer!', "url": film.trailer })
           filmListToPush.push(film);
           if (filmListToPush.length === 5) { // if statement inside the forEach to not have asynchronous pbs
