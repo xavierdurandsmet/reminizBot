@@ -54,7 +54,6 @@ function sendSingleActor(senderId, actorName) { // Send an actor's template
   };
   let introductionMessage = `${actor.name} is live ❤️`;
   let defaultBingNewsImage = 'http://news.thewindowsclubco.netdna-cdn.com/wp-content/uploads/2015/01/Bing-News.jpg'; // in case there is no image for the news
-  console.log(actor.name)
   Bing.images(actor.name, { top: 15, skip: 3 },
     function (error, res, body) {
       checkForErrors(error);
@@ -110,7 +109,7 @@ function sendSingleActor(senderId, actorName) { // Send an actor's template
                       {
                         "title": 'Products',
                         "image_url": 'https://images-na.ssl-images-amazon.com/images/G/01/gc/designs/livepreview/a_generic_white_10_us_noto_email_v2016_us-main._CB277146614_.png',
-                        "subtitle": 'Find Amazon products related to this actor',
+                        "subtitle": 'Find Amazon products related to ' + actor.name,
                         "default_action": { url: 'https://en.wikipedia.org/wiki/' + actor.movie.original_title, fallback_url: 'https://en.wikipedia.org/wiki/' + actor.movie.original_title },
                         "buttons": [{ "type": "postback", "title": 'See More Products!', "payload": "AMAZON " + actor.name }]
                       }
@@ -157,12 +156,14 @@ function sendAmazonProducts(senderId, actorName) {
     checkForErrors(err);
     let productList = [];
     for (let i = 0; i <= 4; i++) {
-      let product = {};
-      product.title = "FIND WHICH PROPERTY OF THE JSON FITS BEST FOR TITLE";
-      product.image_url = results[i].LargeImage[0].URL[0];
-      product.subtitle = results[0].OfferSummary[0].LowestNewPrice[0].FormattedPrice[0];
-      product.buttonsURL = [{ "title": 'Buy it!', "url": results[i].DetailPageURL[0] ? results[i].DetailPageURL[0] : 'https://en.wikipedia.org/' }]
-      productList.push(product);
+      if (results[i].OfferSummary[0].TotalNew[0] != 0) { // make sure the product is available or will return undefined
+        let product = {};
+        product.title = results[i].ItemAttributes[0].Title[0];
+        product.image_url = results[i].LargeImage[0].URL[0];
+        product.subtitle = results[i].OfferSummary[0].LowestNewPrice[0].FormattedPrice[0];
+        product.buttonsURL = [{ "title": 'Buy Now!', "url": results[i].DetailPageURL[0] ? results[i].DetailPageURL[0] : 'https://www.amazon.com/' }]
+        productList.push(product);
+      }
     }
     let productTemplate = messageTemplate.createGenericTemplate(productList)
     reply(senderId, productTemplate, function () {
@@ -174,22 +175,22 @@ function sendAmazonProducts(senderId, actorName) {
 function sendCarouselOfActors(senderId, listOfActors, introductionMessage) {
   let elements = [];
   let counter = 0;
-  getActorsInfo(listOfActors, function(actorsInfo) {
+  getActorsInfo(listOfActors, function (actorsInfo) {
     for (let i = 0; i < actorsInfo.length; i++) {
       elements.push({
         "title": actorsInfo[i].name,
-          "image_url": actorsInfo[i].image,
-          "subtitle": 'DESCRIPTION HERE',
-          "buttons": [
-            {
-              "title": 'Choose ✔︎',
-              "payload": 'SINGLE_ACTOR,' + actorsInfo[i].name
-            },
-            {
-              "title": 'Bookmark ❤️︎',
-              "payload": 'BOOKMARK,' + actorsInfo[i].name // Or unbookmark if already bookmarked
-            }
-          ]
+        "image_url": actorsInfo[i].image,
+        "subtitle": 'DESCRIPTION HERE',
+        "buttons": [
+          {
+            "title": 'Choose ✔︎',
+            "payload": 'SINGLE_ACTOR,' + actorsInfo[i].name
+          },
+          {
+            "title": 'Bookmark ❤️︎',
+            "payload": 'BOOKMARK,' + actorsInfo[i].name // Or unbookmark if already bookmarked
+          }
+        ]
       });
       counter = counter + 1;
       if (counter === actorsInfo.length) {
