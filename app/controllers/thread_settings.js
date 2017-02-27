@@ -67,10 +67,6 @@ function addPersistentMenu() {
         type:"postback",
         title:"My favorites ❤️",
         payload:"FAVORITES"
-      }, {
-        type:"postback",
-        title:"Preferences ⚙",
-        payload: "PREFERENCES"
       }
     ]
     }
