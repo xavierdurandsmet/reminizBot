@@ -143,7 +143,7 @@ function sendCarouselOfFilms(senderId, actorName) {
       for (let i = 0; i <= 4; i++) {
         let film = {
           id: JSONResponse[i].id,
-          title: JSONResponse[i].original_title,
+          title: JSONResponse[i].title,
           image_url: 'https://image.tmdb.org/t/p/w500/' + JSONResponse[i].poster_path,
           subtitle: JSONResponse[i].release_date ? JSONResponse[i].release_date.substr(0, 4) : "",
           buttonsURL: [{ "title": 'View More!', "url": "https://www.themoviedb.org/person/" + actor.id }] // change to specific movi,
