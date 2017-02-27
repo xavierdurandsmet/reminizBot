@@ -153,7 +153,9 @@ function sendCarouselOfFilms(senderId, actorName) {
       let filmListToPush = [];
       filmList.forEach(function (film) { // use forEach to create its own scope, for the async call
         MovieDB.movieTrailers({ id: film.id }, function (err, res) {
-          film.trailer = "https://www.youtube.com/watch?v=" + res.youtube[0].source;
+          checkForErrors(err);
+          console.log("res ", res)
+          film.trailer = res.youtube[0] ? "https://www.youtube.com/watch?v=" + res.youtube[0].source : "https://www.youtube.com";
           film.buttonsURL.push({ "title": 'Watch Trailer!', "url": film.trailer })
           filmListToPush.push(film);
           if (filmListToPush.length === 5) { // if statement inside the forEach to not have asynchronous pbs
