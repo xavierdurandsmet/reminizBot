@@ -170,10 +170,11 @@ function sendCarouselOfNews(senderId, actorName) {
   Bing.news(actorName, { top: 10, skip: 3, safeSearch: "Moderate" }, function (error, res, body) {
     checkForErrors(error);
     let JSONResponse = body.value;
+    console.log(JSONResponse)
     let newsList = [];
     for (let i = 0; i <= 4; i++) {
       let newsArticle = {};
-      newsArticle.title = JSONResponse[i].name,
+        newsArticle.title = JSONResponse[i].name,
         newsArticle.image_url = JSONResponse[i].image.thumbnail.contentUrl, // get better quality images?
         newsArticle.subtitle = JSONResponse[i].description,
         newsArticle.buttonsURL = [{ "title": 'Read More', "url": JSONResponse[i].url }] // change to specific movie
