@@ -20,7 +20,9 @@ module.exports = {
   sendActorIsUnbookmarked: sendActorIsUnbookmarked,
   sendAmazonProducts: sendAmazonProducts,
   reply: reply,
-  sendNextStepMessage: sendNextStepMessage
+  sendNextStepMessage: sendNextStepMessage,
+  sendCarouselOfFilms: sendCarouselOfFilms,
+  sendCarouselOfNews: sendCarouselOfNews
 }
 
 function sendChannelsList(senderId) {
@@ -52,12 +54,12 @@ function sendChannelsList(senderId) {
 
 function sendSingleActor(senderId, actorName) { // Send an actor's template
 
-  let actor = {
-    name: actorName
-  };
-  let introductionMessage = `${actor.name} is live ❤️`;
-  let defaultBingNewsImage = 'http://news.thewindowsclubco.netdna-cdn.com/wp-content/uploads/2015/01/Bing-News.jpg'; // in case there is no image for the news
-  console.log(actor.name)
+  let actor = { name: actorName },
+      bingNewsImage = 'http://news.thewindowsclubco.netdna-cdn.com/wp-content/uploads/2015/01/Bing-News.jpg', // in case there is no image for the news
+      filmImage = 'https://pbs.twimg.com/profile_images/789117657714831361/zGfknUu8.jpg',
+      introductionMessage = `${actor.name} is live ❤️`,
+      productImage = 'https://images-na.ssl-images-amazon.com/images/G/01/gc/designs/livepreview/a_generic_white_10_us_noto_email_v2016_us-main._CB277146614_.png'
+
   Bing.images(actor.name, { top: 15, skip: 3 },
     function (error, res, body) {
       checkForErrors(error);
@@ -68,64 +70,41 @@ function sendSingleActor(senderId, actorName) { // Send an actor's template
           actor.descriptionSummary = htmlWikiText.replace(/<[^>]*>?/gm, '') // to improve: to remove imperfections in parsing
         }
         actor.image = body.value[0].contentUrl;
-
-        MovieDB.searchPerson({ query: actor.name }, (err, res) => {
-          checkForErrors(err);
-          actor.id = res.results[0].id;
-
-          MovieDB.personMovieCredits({ id: actor.id }, (err, res) => {
-            checkForErrors(err);
-            actor.movie = res.cast[0]
-
-            Bing.images(actor.movie.original_title + 'movie', { top: 15, skip: 3 }, // get image of the first movie to display
-              function (error, res, body) {
-                checkForErrors(err);
-                actor.movie.image = body.value[0].contentUrl;
-
-                Bing.news(actor.name, { top: 10, skip: 3 }, function (error, res, body) {
-                  checkForErrors(err);
-                  actor.news = body.value[0];
-                  actor.description = messageTemplate.createListTemplate( // List template with the actor profile
-                    [
-                      {
-                        "title": actor.name,
-                        "image_url": actor.image,
-                        "subtitle": actor.descriptionSummary,
-                        "default_action": { url: 'https://en.wikipedia.org/wiki/' + actor.name, fallback_url: 'https://en.wikipedia.org/wiki/' + actor.name },
-                        "buttons": [{ "type": "postback", "title": 'Bookmark ❤️', "payload": "BOOKMARK " + actor.name }]
-                      },
-                      {
-                        "title": 'Filmography',
-                        "image_url": actor.movie.image,
-                        "subtitle": actor.movie.original_title,
-                        "default_action": { url: 'https://en.wikipedia.org/wiki/' + actor.movie.original_title, fallback_url: 'https://en.wikipedia.org/wiki/' + actor.movie.original_title },
-                        "buttons": [{ "type": "web_url", "title": 'See More!', "url": "https://www.themoviedb.org/person/" + actor.id }]
-                      },
-                      {
-                        // Bug with actor.news
-                        "title": 'News',
-                        "image_url": defaultBingNewsImage,
-                        "subtitle": actor.news.name,
-                        "default_action": { url: 'https://en.wikipedia.org/wiki/' + actor, fallback_url: 'https://en.wikipedia.org/wiki/' + actor }, // to change to next line but currently not working
-                        // "default_action": { url: actor.news.url, fallback_url: actor.news.url},
-                        "buttons": [{ "type": "web_url", "title": 'See More!', "url": actor.news.url }]
-                      },
-                      {
-                        "title": 'Products',
-                        "image_url": 'https://images-na.ssl-images-amazon.com/images/G/01/gc/designs/livepreview/a_generic_white_10_us_noto_email_v2016_us-main._CB277146614_.png',
-                        "subtitle": 'Find Amazon products related to this actor',
-                        "default_action": { url: 'https://en.wikipedia.org/wiki/' + actor.movie.original_title, fallback_url: 'https://en.wikipedia.org/wiki/' + actor.movie.original_title },
-                        "buttons": [{ "type": "postback", "title": 'See More Products!', "payload": "AMAZON " + actor.name }]
-                      }
-                    ]
-                  )
-                  reply(senderId, introductionMessage, function () { // Sending the messages to the user, in the right order
-                    reply(senderId, actor.description, function () {
-                      sendNextStepMessage(senderId, actor)
-                    })
-                  })
-                })
-              })
+        actor.description = messageTemplate.createListTemplate( // List template with the actor profile
+          [
+            {
+              "title": actor.name,
+              "image_url": actor.image,
+              "subtitle": actor.descriptionSummary,
+              "default_action": { url: 'https://en.wikipedia.org/wiki/' + actor.name, fallback_url: 'https://en.wikipedia.org/wiki/' + actor.name },
+              "buttons": [{ "type": "postback", "title": 'Bookmark ❤️', "payload": "BOOKMARK " + actor.name }]
+            },
+            {
+              "title": 'Filmography',
+              "image_url": filmImage,
+              "subtitle": 'Find Movies related to ' + actor.name,
+              "default_action": { url: 'https://www.themoviedb.org/person/' + actor.id, fallback_url: 'https://www.themoviedb.org/person/' + actor.id },
+              "buttons": [{ "type": "postback", "title": 'See Films 🎬', "payload": "FILMOGRAPHY " + actor.name }]
+            },
+            {
+              "title": 'News',
+              "image_url": bingNewsImage,
+              "subtitle": 'Find News related to ' + actor.name,
+              "default_action": { url: 'https://en.wikipedia.org/wiki/' + actor, fallback_url: 'https://en.wikipedia.org/wiki/' + actor }, // to change to next line but currently not working
+              "buttons": [{ "type": "postback", "title": 'Read News 📰', "payload": "NEWS " + actor.name }]
+            },
+            {
+              "title": 'Products',
+              "image_url": productImage,
+              "subtitle": 'Find Amazon products related to ' + actor.name,
+              "default_action": { url: 'https://en.wikipedia.org/wiki/' + actor.name, fallback_url: 'https://en.wikipedia.org/wiki/' + actor.name }, // change this?
+              "buttons": [{ "type": "postback", "title": 'See Products 🛒', "payload": "AMAZON " + actor.name }]
+            }
+          ]
+        )
+        reply(senderId, introductionMessage, function () { // Sending the messages to the user, in the right order
+          reply(senderId, actor.description, function () {
+            sendNextStepMessage(senderId, actor)
           })
         })
       })
@@ -133,11 +112,10 @@ function sendSingleActor(senderId, actorName) { // Send an actor's template
 }
 
 function sendManyActors(user, listOfActors) {
-  let introductionMessage = 'There are multiple actors on screen right now 😎 \n Which one are you interested in?' // change to user name
+  let introductionMessage = 'There are many actors on screen right now 😎 Which one are you interested in?'
   sendCarouselOfActors(user, listOfActors, introductionMessage)
 }
 
-// THIS FUNCTION ALWAYS CRASHES
 function sendFavoriteActors(user) {
   if (user.favorites.length === 0) {
     reply(user.fb_id, "You don't have any favorites yet 😞", function () {
@@ -160,6 +138,7 @@ function sendActorIsBookmarked(senderId, newFavorite) {
   });
 }
 
+
 function sendActorIsUnbookmarked(senderId, actorName) {
   let introductionMessage = `${actorName} successfully unbookmarked ❌️`;
   reply(senderId, introductionMessage, function () {
@@ -167,6 +146,68 @@ function sendActorIsUnbookmarked(senderId, actorName) {
   });
 }
 
+function sendCarouselOfFilms(senderId, actorName) {
+  let actor = {};
+  MovieDB.searchPerson({ query: actorName }, (err, res) => {
+    checkForErrors(err);
+    actor.id = res.results[0].id;
+    MovieDB.personMovieCredits({ id: actor.id }, (err, res) => {
+      checkForErrors(err);
+      let JSONResponse = res.cast;
+      let filmList = [];
+      for (let i = 0; i <= 4; i++) {
+        let film = {
+          id: JSONResponse[i].id,
+          title: JSONResponse[i].title,
+          image_url: 'https://image.tmdb.org/t/p/w500/' + JSONResponse[i].poster_path,
+          subtitle: JSONResponse[i].release_date ? JSONResponse[i].release_date.substr(0, 4) : "",
+          buttonsURL: [{ "title": 'See More', "url": "https://www.themoviedb.org/person/" + actor.id }] // change to specific movi,
+        }
+        filmList.push(film)
+      }
+      let filmListToPush = [];
+      filmList.forEach(function (film) { // use forEach to create its own scope, for the async call
+        MovieDB.movieTrailers({ id: film.id }, function (err, res) {
+          checkForErrors(err);
+          film.trailer = res.youtube[0] ? "https://www.youtube.com/watch?v=" + res.youtube[0].source : "https://www.youtube.com";
+          film.buttonsURL.push({ "title": 'Watch Trailer', "url": film.trailer })
+          filmListToPush.push(film);
+          if (filmListToPush.length === 5) { // if statement inside the forEach to not have asynchronous pbs
+            let filmTemplate = messageTemplate.createGenericTemplate(filmListToPush)
+            reply(senderId, filmTemplate, function () {
+              sendNextStepMessage(senderId)
+            })
+          }
+        })
+      })
+    })
+  })
+}
+
+function sendCarouselOfNews(senderId, actorName) {
+  let actor = {};
+  Bing.news(actorName, { top: 10, skip: 3, safeSearch: "Moderate" }, function (error, res, body) {
+    checkForErrors(error);
+    let JSONResponse = body.value;
+    let newsList = [];
+    for (let i = 0; i <= 4; i++) {
+      let newsArticle = {};
+      newsArticle.title = JSONResponse[i].name;
+      if (!JSONResponse[i].image) {
+        newsArticle.image_url = "https://www.google.fr/url?sa=i&rct=j&q=&esrc=s&source=images&cd=&cad=rja&uact=8&ved=0ahUKEwiyro22s7HSAhXMwBQKHQEkDvQQjRwIBw&url=http%3A%2F%2Fona15.journalists.org%2Fsponsors%2Fbing-news%2F&psig=AFQjCNHfW_aTfMwiqhTZmWjONp_U1n3nUA&ust=1488323542794389";
+      } else if (JSONResponse[i].image.thumbnail.contentUrl) {
+        newsArticle.image_url = JSONResponse[i].image.thumbnail.contentUrl; // get better quality images?
+      }
+      newsArticle.subtitle = JSONResponse[i].description;
+      newsArticle.buttonsURL = [{ "title": 'Read More', "url": JSONResponse[i].url }]; // change to specific movie
+      newsList.push(newsArticle);
+    }
+    let newsTemplate = messageTemplate.createGenericTemplate(newsList)
+    reply(senderId, newsTemplate, function () {
+      sendNextStepMessage(senderId)
+    })
+  })
+}
 
 function sendAmazonProducts(senderId, actorName) {
   client.itemSearch({ // do the Amazon call here rather than in sendSingleActor because the latter is already overloaded
@@ -177,12 +218,14 @@ function sendAmazonProducts(senderId, actorName) {
     checkForErrors(err);
     let productList = [];
     for (let i = 0; i <= 4; i++) {
-      let product = {};
-      product.title = "FIND WHICH PROPERTY OF THE JSON FITS BEST FOR TITLE";
-      product.image_url = results[i].LargeImage[0].URL[0];
-      product.subtitle = results[0].OfferSummary[0].LowestNewPrice[0].FormattedPrice[0];
-      product.buttonsURL = [{ "title": 'Buy it!', "url": results[i].DetailPageURL[0] ? results[i].DetailPageURL[0] : 'https://en.wikipedia.org/' }]
-      productList.push(product);
+      if (results[i].OfferSummary[0].TotalNew[0] != 0) { // make sure the product is available or will return undefined
+        let product = {};
+        product.title = results[i].ItemAttributes[0].Title[0];
+        product.image_url = results[i].LargeImage[0].URL[0];
+        product.subtitle = results[i].OfferSummary[0].LowestNewPrice[0].FormattedPrice[0];
+        product.buttonsURL = [{ "title": 'Buy Now', "url": results[i].DetailPageURL[0] ? results[i].DetailPageURL[0] : 'https://www.amazon.com/' }] // do a more precise search query
+        productList.push(product);
+      }
     }
     let productTemplate = messageTemplate.createGenericTemplate(productList)
     reply(senderId, productTemplate, function () {
@@ -194,7 +237,7 @@ function sendAmazonProducts(senderId, actorName) {
 function sendCarouselOfActors(currentUser, listOfActors, introductionMessage) {
   let elements = [];
   let counter = 0;
-  getActorsInfo(listOfActors, function(actorsInfo) {
+  getActorsInfo(listOfActors, function (actorsInfo) {
     for (let i = 0; i < actorsInfo.length; i++) {
       let element = {
         title: actorsInfo[i].name,
@@ -258,25 +301,19 @@ function getActorsInfo(listOfActors, callback) {
 // Generic follow up message
 function sendNextStepMessage(senderId) {
   let nextStepMessage = {
-    attachment: {
-      type: 'template',
-      payload: {
-        template_type: 'button',
-        text: 'What should we do now?',
-        buttons: [
-          {
-            type: 'postback',
-            title: 'TV Channels',
-            payload: 'TV_CHANNELS'
-          },
-          {
-            type: 'postback',
-            title: 'My Favorites ❤️',
-            payload: 'FAVORITES' // to define
-          }
-        ]
+    text: "What should we do now?",
+    quick_replies: [
+      {
+        "content_type":"text",
+        "title":"TV Channels 📺",
+        "payload":"TV_CHANNELS"
+      },
+      {
+        "content_type":"text",
+        "title":"My Favorites ❤️",
+        "payload":"FAVORITES"
       }
-    }
+    ]
   }
   reply(senderId, nextStepMessage)
 }

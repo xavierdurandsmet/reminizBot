@@ -19,7 +19,7 @@ function createGenericTemplate(elements) {
       } else if (key === "buttonsURL") {
         ret.buttons = [];
         element.buttonsURL.forEach(function (button) {
-          ret.buttons.push({ type: "web_url", title: button.title, url: button.url });
+          ret.buttons.push({ type: "web_url", webview_height_ratio: "tall", title: button.title, url: button.url });
         })
       }
     }
