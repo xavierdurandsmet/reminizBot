@@ -66,8 +66,13 @@ app.post('/webhook/', function (req, res) {
     if ((postback && postback.payload === "GET_STARTED")) {
       Bot.sendChannelsList(senderId)
     }
+    if ((postback && postback.payload === "FAVORITES") || (event.message && event.message.quick_reply && event.message.quick_reply.payload === "FAVORITES")) {
+      User.findOrCreate(senderId, function (currentUser) {
+        Bot.sendFavoriteActors(currentUser);
+      })
+    }
     // Send the default answer for any text message
-    if ((postback && postback.payload === "TV_CHANNELS") || (event.message && event.message.text)) {
+    if ((postback && postback.payload === "TV_CHANNELS") || (event.message && event.message.quick_reply && event.message.quick_reply.payload === "TV_CHANNELS")) {
       Bot.sendChannelsList(senderId)
     } else if (postback && postback.payload) {
       // will be replaced with the reminiz API
@@ -84,15 +89,13 @@ app.post('/webhook/', function (req, res) {
       if (postback.payload === "CNN") {
         Bot.sendSingleActor(senderId, channels[0].actors[0])
       } else if (postback.payload === "DISNEY_CHANNEL") {
-        Bot.sendManyActors(senderId, channels[1].actors)
+        User.findOrCreate(senderId, function (currentUser) {
+          Bot.sendManyActors(currentUser, channels[1].actors);
+        });
       } else if (postback.payload.substr(0, 12) === "SINGLE_ACTOR") {
         let info = postback.payload.split(",");
         let actor = info[1];
         Bot.sendSingleActor(senderId, actor);
-      } else if (postback.payload === "FAVORITES") {
-        User.findOrCreate(senderId, function (currentUser) {
-          Bot.sendFavoriteActors(currentUser);
-        })
       } else if (postback.payload.substr(0, 6) === "AMAZON") {
         let actorName = postback.payload.substr(7);
         let lastName = 'Portman' // we should receive id for each actor by reminiz, replace this value with the id
@@ -126,24 +129,47 @@ app.post('/webhook/', function (req, res) {
         let lastName = 'Portman' // we should receive id for each actor by reminiz, replace this value with the id
         User.findOrCreate(senderId, function (currentUser) {
           let currentFavoritesList = currentUser.favorites;
-          currentFavoritesList.unshift(newFavoriteActor);
-          if (currentFavoritesList.length > 2) {
-            currentFavoritesList.pop(); // temp business logic: favorites is max 2 (change this logic after refactoring the sendGenericTemplate function)
-          }
-          User.findOneAndUpdate({ fb_id: senderId }, { favorites: currentFavoritesList }, { new: true }, function (error, updatedUser) {
-            if (error) {
-              return res.send(error);
-            } else if (!updatedUser) {
-              return res.sendStatus(400);
-            }
-            Bot.sendActorIsBookmarked(senderId, newFavoriteActor);
-            Actor.findByIdAndUpdate({ id: lastName }, { $inc: { bookmarked: 1 } }, function (error, updatedActor) {
+          if (currentFavoritesList.indexOf(newFavorite) !== -1) {
+            Bot.reply(currentUser.fb_id, "You already bookmarked this actor 😀 Go to your favorites 😉", function () {
+              Bot.sendNextStepMessage(currentUser.fb_id);
+            });
+          } else if (currentFavoritesList.indexOf(newFavorite)) {
+            currentFavoritesList.unshift(newFavorite);
+            User.findOneAndUpdate({ fb_id: senderId }, { favorites: currentFavoritesList }, { new: true }, function (error, updatedUser) {
               if (error) {
                 return res.send(error);
+              } else if (!updatedUser) {
+                return res.sendStatus(400);
               }
-            })
-          });
+              Bot.sendActorIsBookmarked(senderId, newFavorite);
+              Actor.findByIdAndUpdate({ id: lastName }, { $inc: { bookmarked: 1 } }, function (error, updatedActor) {
+                if (error) {
+                  return res.send(error);
+                }
+              })
+            });
+          }
         })
+      } else if (postback.payload.substr(0, 10) === "UNBOOKMARK") { // Remove an actor from the list of favorites
+        const actorToUnbookmark = postback.payload.substr(11);
+        User.findOrCreate(senderId, function (currentUser) {
+          const indexOfActor = currentUser.favorites.indexOf(actorToUnbookmark);
+          if (indexOfActor === -1) {
+            Bot.reply(currentUser.fb_id, "Tryin' to trick me ? This actor isn't in your favorites 😉", function () {
+              Bot.sendNextStepMessage(currentUser.fb_id);
+            });
+          } else {
+            currentUser.favorites.splice(indexOfActor, 1);
+            User.findOneAndUpdate({ fb_id: senderId }, { favorites: currentUser.favorites }, { new: true }, function (error, updatedUser) {
+              if (error) {
+                return res.send(error);
+              } else if (!updatedUser) {
+                return res.sendStatus(400);
+              }
+              Bot.sendActorIsUnbookmarked(senderId, actorToUnbookmark);
+            });
+          }
+        });
       }
     }
   }
