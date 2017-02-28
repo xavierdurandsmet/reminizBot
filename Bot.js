@@ -149,7 +149,6 @@ function sendCarouselOfFilms(senderId, actorName) {
       filmList.forEach(function (film) { // use forEach to create its own scope, for the async call
         MovieDB.movieTrailers({ id: film.id }, function (err, res) {
           checkForErrors(err);
-          console.log("res ", res)
           film.trailer = res.youtube[0] ? "https://www.youtube.com/watch?v=" + res.youtube[0].source : "https://www.youtube.com";
           film.buttonsURL.push({ "title": 'Watch Trailer', "url": film.trailer })
           filmListToPush.push(film);
@@ -235,7 +234,9 @@ function sendCarouselOfActors(senderId, listOfActors, introductionMessage) {
       if (counter === actorsInfo.length) {
         let listOfActorsMessage = messageTemplate.createGenericTemplate(elements);
         reply(senderId, introductionMessage, function () {
-          reply(senderId, listOfActorsMessage);
+          reply(senderId, listOfActorsMessage, function () {
+            sendNextStepMessage(senderId)
+          })
         })
       }
     }
@@ -263,25 +264,19 @@ function getActorsInfo(listOfActors, callback) {
 // Generic follow up message
 function sendNextStepMessage(senderId) {
   let nextStepMessage = {
-    attachment: {
-      type: 'template',
-      payload: {
-        template_type: 'button',
-        text: 'What should we do now?',
-        buttons: [
-          {
-            type: 'postback',
-            title: 'TV Channels 📺',
-            payload: 'TV_CHANNELS'
-          },
-          {
-            type: 'postback',
-            title: 'My Favorites ❤️',
-            payload: 'FAVORITES' // to define
-          }
-        ]
+    text: "What should we do now?",
+    quick_replies: [
+      {
+        "content_type":"text",
+        "title":"TV Channels 📺",
+        "payload":"TV_CHANNELS"
+      },
+      {
+        "content_type":"text",
+        "title":"My Favorites ❤️",
+        "payload":"FAVORITES"
       }
-    }
+    ]
   }
   reply(senderId, nextStepMessage)
 }
