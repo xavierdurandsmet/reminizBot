@@ -244,7 +244,6 @@ function sendCarouselOfActors(currentUser, listOfActors, introductionMessage) {
         image_url: actorsInfo[i].image,
         subtitle: 'DESCRIPTION HERE',
       }
-      console.log(currentUser.favorites.indexOf(actorsInfo[i].name))
       if (currentUser.favorites.indexOf(actorsInfo[i].name) === -1) {
         element.buttons = [
             {
