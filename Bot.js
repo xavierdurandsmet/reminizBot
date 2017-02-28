@@ -17,13 +17,16 @@ module.exports = {
   sendManyActors: sendManyActors,
   sendFavoriteActors: sendFavoriteActors,
   sendActorIsBookmarked: sendActorIsBookmarked,
+  sendActorIsUnbookmarked: sendActorIsUnbookmarked,
   sendAmazonProducts: sendAmazonProducts,
+  reply: reply,
+  sendNextStepMessage: sendNextStepMessage,
   sendCarouselOfFilms: sendCarouselOfFilms,
   sendCarouselOfNews: sendCarouselOfNews
 }
 
 function sendChannelsList(senderId) {
-  User.findOrCreate(senderId, function (user) { // Find the current user first_name
+  User.findOrCreate(senderId, function (user) {
     let introductionMessage = `Hi ${user.fb_first_name} 👋 Pick a TV channel to know who's on screen in real time ⚡️` // Greet user by its first name
     let channels = ['CNN', 'DISNEY_CHANNEL']
     let listOfChannelsMessage = messageTemplate.createGenericTemplate(
@@ -45,8 +48,8 @@ function sendChannelsList(senderId) {
 
     reply(senderId, introductionMessage, function () {
       reply(senderId, listOfChannelsMessage)
-    })
-  })
+    });
+  });
 }
 
 function sendSingleActor(senderId, actorName) { // Send an actor's template
@@ -108,19 +111,36 @@ function sendSingleActor(senderId, actorName) { // Send an actor's template
     })
 }
 
-function sendManyActors(senderId, listOfActors) {
+function sendManyActors(user, listOfActors) {
   let introductionMessage = 'There are many actors on screen right now 😎 Which one are you interested in?'
-  sendCarouselOfActors(senderId, listOfActors, introductionMessage)
+  sendCarouselOfActors(user, listOfActors, introductionMessage)
 }
 
-// THIS FUNCTION ALWAYS CRASHES
 function sendFavoriteActors(user) {
-  let introductionMessage = "And your favorite actors are...(drumroll) 🙌️"
-  sendCarouselOfActors(user.fb_id, user.favorites, introductionMessage);
+  if (user.favorites.length === 0) {
+    reply(user.fb_id, "You don't have any favorites yet 😞", function () {
+      reply(user.fb_id, "But don't be sad 😄", function () {
+        reply(user.fb_id, "Click on 'Bookmark ❤️' to add an actor to your favorites, like a pro 😎", function () {
+          sendNextStepMessage(user.fb_id);
+        })
+      })
+    })
+  } else {
+    let introductionMessage = "And your favorite actors are...(drumroll) 🙌️"
+    sendCarouselOfActors(user, user.favorites, introductionMessage);
+  }
 }
 
 function sendActorIsBookmarked(senderId, newFavorite) {
   let introductionMessage = `${newFavorite} is now bookmarked 😎 You can access bookmarked actors by clicking on "My favorites" ❤️`;
+  reply(senderId, introductionMessage, function () {
+    sendNextStepMessage(senderId);
+  });
+}
+
+
+function sendActorIsUnbookmarked(senderId, actorName) {
+  let introductionMessage = `${actorName} successfully unbookmarked ❌️`;
   reply(senderId, introductionMessage, function () {
     sendNextStepMessage(senderId);
   });
@@ -214,33 +234,45 @@ function sendAmazonProducts(senderId, actorName) {
   })
 }
 
-function sendCarouselOfActors(senderId, listOfActors, introductionMessage) {
+function sendCarouselOfActors(currentUser, listOfActors, introductionMessage) {
   let elements = [];
   let counter = 0;
   getActorsInfo(listOfActors, function (actorsInfo) {
     for (let i = 0; i < actorsInfo.length; i++) {
-      elements.push({
-        "title": actorsInfo[i].name,
-        "image_url": actorsInfo[i].image,
-        "subtitle": 'DESCRIPTION HERE',
-        "buttons": [
-          {
-            "title": 'Choose ✔︎',
-            "payload": 'SINGLE_ACTOR,' + actorsInfo[i].name
-          },
-          {
-            "title": 'Bookmark ❤️︎',
-            "payload": 'BOOKMARK,' + actorsInfo[i].name // Or unbookmark if already bookmarked
-          }
-        ]
-      });
-      counter = counter + 1;
+      let element = {
+        title: actorsInfo[i].name,
+        image_url: actorsInfo[i].image,
+        subtitle: 'DESCRIPTION HERE',
+      }
+      if (currentUser.favorites.indexOf(actorsInfo[i].name) === -1) {
+        element.buttons = [
+            {
+              "title": "Choose ✔︎",
+              "payload": "SINGLE_ACTOR," + actorsInfo[i].name
+            },
+            {
+              "title": "Bookmark ❤️",
+              "payload": "BOOKMARK," + actorsInfo[i].name
+            }
+          ]
+        } else {
+        element.buttons = [
+            {
+              "title": "Choose ✔︎",
+              "payload": "SINGLE_ACTOR," + actorsInfo[i].name
+            },
+            {
+              "title": "Unbookmark ❌",
+              "payload": "UNBOOKMARK," + actorsInfo[i].name
+            }
+          ]
+        }
+      elements.push(element);
+      counter += 1;
       if (counter === actorsInfo.length) {
         let listOfActorsMessage = messageTemplate.createGenericTemplate(elements);
-        reply(senderId, introductionMessage, function () {
-          reply(senderId, listOfActorsMessage, function () {
-            sendNextStepMessage(senderId)
-          })
+        reply(currentUser.fb_id, introductionMessage, function () {
+          reply(currentUser.fb_id, listOfActorsMessage);
         })
       }
     }
@@ -257,7 +289,7 @@ function getActorsInfo(listOfActors, callback) {
         name: listOfActors[i],
         image: body.value ? body.value[i].contentUrl : "" // temp fix, change the lib
       });
-      counter = counter + 1;
+      counter += 1;
       if (counter === listOfActors.length) {
         return callback(actorsInfo);
       }
