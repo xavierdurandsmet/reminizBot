@@ -18,11 +18,13 @@ module.exports = {
   sendFavoriteActors: sendFavoriteActors,
   sendActorIsBookmarked: sendActorIsBookmarked,
   sendActorIsUnbookmarked: sendActorIsUnbookmarked,
-  sendAmazonProducts: sendAmazonProducts
+  sendAmazonProducts: sendAmazonProducts,
+  reply: reply,
+  sendNextStepMessage: sendNextStepMessage
 }
 
 function sendChannelsList(senderId) {
-  User.findOrCreate(senderId, function (user) { // Find the current user first_name
+  User.findOrCreate(senderId, function (user) {
     let introductionMessage = `Hi ${user.fb_first_name} 👋 Pick a TV channel to know who's on screen in real time ⚡️` // Greet user by its first name
     let channels = ['CNN', 'DISNEY_CHANNEL']
     let listOfChannelsMessage = messageTemplate.createGenericTemplate(
@@ -44,8 +46,8 @@ function sendChannelsList(senderId) {
 
     reply(senderId, introductionMessage, function () {
       reply(senderId, listOfChannelsMessage)
-    })
-  })
+    });
+  });
 }
 
 function sendSingleActor(senderId, actorName) { // Send an actor's template
@@ -137,8 +139,18 @@ function sendManyActors(user, listOfActors) {
 
 // THIS FUNCTION ALWAYS CRASHES
 function sendFavoriteActors(user) {
-  let introductionMessage = "And your favorite actors are...(drumroll) 🙌️"
-  sendCarouselOfActors(user, user.favorites, introductionMessage);
+  if (user.favorites.length === 0) {
+    reply(user.fb_id, "You don't have any favorites yet 😞", function () {
+      reply(user.fb_id, "But don't be sad 😄", function () {
+        reply(user.fb_id, "Click on 'Bookmark ❤️' to add an actor to your favorites, like a pro 😎", function () {
+          sendNextStepMessage(user.fb_id);
+        })
+      })
+    })
+  } else {
+    let introductionMessage = "And your favorite actors are...(drumroll) 🙌️"
+    sendCarouselOfActors(user, user.favorites, introductionMessage);
+  }
 }
 
 function sendActorIsBookmarked(senderId, newFavorite) {

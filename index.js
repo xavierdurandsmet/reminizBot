@@ -97,42 +97,45 @@ app.post('/webhook/', function (req, res) {
       } else if (postback.payload.substr(0, 6) === "AMAZON") {
         let actorName = postback.payload.substr(7);
         Bot.sendAmazonProducts(senderId, actorName);
-      } else if (postback.payload.substr(0, 8) === "BOOKMARK") {
-        // User bookmarks an actor, bot sends the list of his fav actors
+      } else if (postback.payload.substr(0, 8) === "BOOKMARK") { // Add an actor to the list of favorites
         let newFavorite = postback.payload.substr(9);
         User.findOrCreate(senderId, function (currentUser) {
           let currentFavoritesList = currentUser.favorites;
-          currentFavoritesList.unshift(newFavorite);
-          if (currentFavoritesList.length > 2) {
-            currentFavoritesList.pop(); // temp business logic: favorites is max 2 (change this logic after refactoring the sendGenericTemplate function)
+          if (currentFavoritesList.indexOf(newFavorite) !== -1) {
+            Bot.reply(currentUser.fb_id, "You already bookmarked this actor 😀 Go to your favorites 😉", function () {
+              Bot.sendNextStepMessage(currentUser.fb_id);
+            });
+          } else if (currentFavoritesList.indexOf(newFavorite)) {
+            currentFavoritesList.unshift(newFavorite);
+            User.findOneAndUpdate({ fb_id: senderId }, { favorites: currentFavoritesList }, {new: true}, function (error, updatedUser) {
+              if (error) {
+                return res.send(error);
+              } else if (!updatedUser) {
+                return res.sendStatus(400);
+              }
+              Bot.sendActorIsBookmarked(senderId, newFavorite);
+            });
           }
-          User.findOneAndUpdate({ fb_id: senderId }, { favorites: currentFavoritesList }, {new: true}, function (error, updatedUser) {
-            if (error) {
-              return res.send(error);
-            } else if (!updatedUser) {
-              return res.sendStatus(400);
-            }
-            Bot.sendActorIsBookmarked(senderId, newFavorite);
-          });
         })
-      } else if (postback.payload.substr(0, 10) === "UNBOOKMARK") {
+      } else if (postback.payload.substr(0, 10) === "UNBOOKMARK") { // Remove an actor from the list of favorites
         const actorToUnbookmark = postback.payload.substr(11);
         User.findOrCreate(senderId, function (currentUser) {
           const indexOfActor = currentUser.favorites.indexOf(actorToUnbookmark);
-          console.log(indexOfActor)
-          console.log(currentUser.favorites)
-          const newFavoritesList = currentUser.favorites.splice(indexOfActor, 1);
-          console.log(newFavoritesList === currentUser.favorites)
-          console.log('newFavoritesList:', newFavoritesList)
-          User.findOneAndUpdate({fb_id: senderId}, { favorites: newFavoritesList }, {new: true}, function (error, updatedUser) {
-            console.log('Actor is unbookmarked');
-            if (error) {
-              return res.send(error);
-            } else if (!updatedUser) {
-              return res.sendStatus(400);
-            }
-            Bot.sendActorIsUnbookmarked(senderId, actorToUnbookmark);
-          });
+          if (indexOfActor === -1) {
+            Bot.reply(currentUser.fb_id, "Tryin' to trick me ? This actor isn't in your favorites 😉", function () {
+              Bot.sendNextStepMessage(currentUser.fb_id);
+            });
+          } else {
+            currentUser.favorites.splice(indexOfActor, 1);
+            User.findOneAndUpdate({fb_id: senderId}, { favorites: currentUser.favorites }, {new: true}, function (error, updatedUser) {
+              if (error) {
+                return res.send(error);
+              } else if (!updatedUser) {
+                return res.sendStatus(400);
+              }
+              Bot.sendActorIsUnbookmarked(senderId, actorToUnbookmark);
+            });
+          }
         });
       }
     }
