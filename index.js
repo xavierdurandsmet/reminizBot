@@ -7,6 +7,7 @@ const mongoose = require('mongoose') // MongoDB lib
 const Bot = require("./Bot")
 const threadSettings = require('./app/controllers/thread_settings')
 const User = require('./app/models/user')
+const Actor = require('./app/models/actor')
 
 app.set('port', (process.env.PORT || 5000))
 
@@ -94,29 +95,53 @@ app.post('/webhook/', function (req, res) {
         })
       } else if (postback.payload.substr(0, 6) === "AMAZON") {
         let actorName = postback.payload.substr(7);
+        let lastName = 'Portman' // we should receive id for each actor by reminiz, replace this value with the id
         Bot.sendAmazonProducts(senderId, actorName);
-       } else if (postback.payload.substr(0, 11) === "FILMOGRAPHY") {
+        Actor.findOneAndUpdate({ last_name: lastName }, { $inc: { 'sectionsClicked.products': 1 } }, function (error, updatedActor) { // replace last_name with id
+          if (error) {
+            return res.send(error);
+          }
+        })
+      } else if (postback.payload.substr(0, 11) === "FILMOGRAPHY") {
         let actorName = postback.payload.substr(12);
+        let lastName = 'Portman' // we should receive id for each actor by reminiz, replace this value with the id
         Bot.sendCarouselOfFilms(senderId, actorName);
+        Actor.findOneAndUpdate({ last_name: lastName }, { $inc: { 'sectionsClicked.filmography': 1 } }, function (error, updatedActor) { // replace last_name with id
+          console.log("updatedActor ", updatedActor)
+          if (error) {
+            return res.send(error);
+          }
+        })
       } else if (postback.payload.substr(0, 4) === "NEWS") {
         let actorName = postback.payload.substr(5);
+        let lastName = 'Portman' // we should receive id for each actor by reminiz, replace this value with the id
         Bot.sendCarouselOfNews(senderId, actorName);
-      } else if (postback.payload.substr(0, 8) === "BOOKMARK") {
-        // User bookmarks an actor, bot sends the list of his fav actors
-        let newFavorite = postback.payload.substr(9);
+        Actor.findOneAndUpdate({ last_name: lastName }, { $inc: { 'sectionsClicked.news': 1 } }, function (error, updatedActor) { // replace last_name with id
+          if (error) {
+            return res.send(error);
+          }
+        })
+      } else if (postback.payload.substr(0, 8) === "BOOKMARK") { // User bookmarks an actor, bot sends the list of his fav actors
+        let newFavoriteActor = postback.payload.substr(9);
+        let lastName = 'Portman' // we should receive id for each actor by reminiz, replace this value with the id
         User.findOrCreate(senderId, function (currentUser) {
           let currentFavoritesList = currentUser.favorites;
-          currentFavoritesList.unshift(newFavorite);
+          currentFavoritesList.unshift(newFavoriteActor);
           if (currentFavoritesList.length > 2) {
             currentFavoritesList.pop(); // temp business logic: favorites is max 2 (change this logic after refactoring the sendGenericTemplate function)
           }
-          User.findOneAndUpdate({ fb_id: senderId }, { favorites: currentFavoritesList }, {new: true}, function (error, updatedUser) {
+          User.findOneAndUpdate({ fb_id: senderId }, { favorites: currentFavoritesList }, { new: true }, function (error, updatedUser) {
             if (error) {
               return res.send(error);
             } else if (!updatedUser) {
               return res.sendStatus(400);
             }
-            Bot.sendActorIsBookmarked(senderId, newFavorite);
+            Bot.sendActorIsBookmarked(senderId, newFavoriteActor);
+            Actor.findByIdAndUpdate({ id: lastName }, { $inc: { bookmarked: 1 } }, function (error, updatedActor) {
+              if (error) {
+                return res.send(error);
+              }
+            })
           });
         })
       }
