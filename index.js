@@ -65,8 +65,13 @@ app.post('/webhook/', function (req, res) {
     if ((postback && postback.payload === "GET_STARTED")) {
       Bot.sendChannelsList(senderId)
     }
+    if ((postback && postback.payload === "FAVORITES") || (event.message && event.message.quick_reply && event.message.quick_reply.payload === "FAVORITES")) {
+        User.findOrCreate(senderId, function (currentUser) {
+          Bot.sendFavoriteActors(currentUser);
+        })
+    }
     // Send the default answer for any text message
-    if ((postback && postback.payload === "TV_CHANNELS") || (event.message && event.message.text)) {
+    if ((postback && postback.payload === "TV_CHANNELS") || (event.message && event.message.quick_reply && event.message.quick_reply.payload === "TV_CHANNELS")) {
       Bot.sendChannelsList(senderId)
     } else if (postback && postback.payload) {
       // will be replaced with the reminiz API
@@ -88,10 +93,6 @@ app.post('/webhook/', function (req, res) {
         let info = postback.payload.split(",");
         let actor = info[1];
         Bot.sendSingleActor(senderId, actor);
-      } else if (postback.payload === "FAVORITES") {
-        User.findOrCreate(senderId, function (currentUser) {
-          Bot.sendFavoriteActors(currentUser);
-        })
       } else if (postback.payload.substr(0, 6) === "AMAZON") {
         let actorName = postback.payload.substr(7);
         Bot.sendAmazonProducts(senderId, actorName);
