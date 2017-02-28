@@ -172,10 +172,14 @@ function sendCarouselOfNews(senderId, actorName) {
     let newsList = [];
     for (let i = 0; i <= 4; i++) {
       let newsArticle = {};
-      newsArticle.title = JSONResponse[i].name,
-        newsArticle.image_url = JSONResponse[i].image.thumbnail.contentUrl, // get better quality images?
-        newsArticle.subtitle = JSONResponse[i].description,
-        newsArticle.buttonsURL = [{ "title": 'Read More', "url": JSONResponse[i].url }] // change to specific movie
+      newsArticle.title = JSONResponse[i].name;
+      if (!JSONResponse[i].image) {
+        newsArticle.image_url = "https://www.google.fr/url?sa=i&rct=j&q=&esrc=s&source=images&cd=&cad=rja&uact=8&ved=0ahUKEwiyro22s7HSAhXMwBQKHQEkDvQQjRwIBw&url=http%3A%2F%2Fona15.journalists.org%2Fsponsors%2Fbing-news%2F&psig=AFQjCNHfW_aTfMwiqhTZmWjONp_U1n3nUA&ust=1488323542794389";
+      } else if (JSONResponse[i].image.thumbnail.contentUrl) {
+        newsArticle.image_url = JSONResponse[i].image.thumbnail.contentUrl; // get better quality images?
+      }
+      newsArticle.subtitle = JSONResponse[i].description;
+      newsArticle.buttonsURL = [{ "title": 'Read More', "url": JSONResponse[i].url }]; // change to specific movie
       newsList.push(newsArticle);
     }
     let newsTemplate = messageTemplate.createGenericTemplate(newsList)
