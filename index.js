@@ -121,27 +121,31 @@ app.post('/webhook/', function (req, res) {
           }
         })
       } else if (postback.payload.substr(0, 8) === "BOOKMARK") { // User bookmarks an actor, bot sends the list of his fav actors
+        // User bookmarks an actor, bot sends the list of his fav actors
         let newFavoriteActor = postback.payload.substr(9);
         User.findOrCreate(senderId, function (currentUser) {
-          let currentUserName = currentUser.fb_first_name + " " + currentUser.fb_last_name;
           let currentFavoritesList = currentUser.favorites;
-          currentFavoritesList.unshift(newFavoriteActor);
-          if (currentFavoritesList.length > 2) {
-            currentFavoritesList.pop(); // temp business logic: favorites is max 2 (change this logic after refactoring the sendGenericTemplate function)
-          }
-          User.findOneAndUpdate({ fb_id: senderId }, { favorites: currentFavoritesList }, { new: true }, function (error, updatedUser) {
-            if (error) {
-              return res.send(error);
-            } else if (!updatedUser) {
-              return res.sendStatus(400);
-            }
-            Bot.sendActorIsBookmarked(senderId, newFavoriteActor);
-            Actor.findOneAndUpdate({ full_name: newFavoriteActor }, { $push: { bookmarkedBy: currentUserName } }, function (error, actor) { // replace last name with id?
+          let currentUserName = currentUser.fb_first_name + " " + currentUser.fb_last_name;
+          if (currentFavoritesList.indexOf(newFavoriteActor) !== -1) {
+            Bot.reply(currentUser.fb_id, "You already bookmarked this actor 😀 Go to your favorites 😉", function () {
+              Bot.sendNextStepMessage(currentUser.fb_id);
+            });
+          } else if (currentFavoritesList.indexOf(newFavoriteActor)) {
+            currentFavoritesList.unshift(newFavoriteActor);
+            User.findOneAndUpdate({ fb_id: senderId }, { favorites: currentFavoritesList }, {new: true}, function (error, updatedUser) {
+              if (error) {
+                return res.send(error);
+              } else if (!updatedUser) {
+                return res.sendStatus(400);
+              }
+              Bot.sendActorIsBookmarked(senderId, newFavoriteActor);
+              Actor.findOneAndUpdate({ full_name: newFavoriteActor }, { $push: { bookmarkedBy: currentUserName } }, function (error, actor) { // replace last name with id?
               if (error) {
                 return error;
               }
             })
-          });
+            });
+          }
         })
       } else if (postback.payload.substr(0, 10) === "UNBOOKMARK") { // Remove an actor from the list of favorites
         let actorToUnbookmark = postback.payload.substr(11);
