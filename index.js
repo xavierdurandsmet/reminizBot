@@ -98,36 +98,32 @@ app.post('/webhook/', function (req, res) {
         Bot.sendSingleActor(senderId, actor);
       } else if (postback.payload.substr(0, 6) === "AMAZON") {
         let actorName = postback.payload.substr(7);
-        let lastName = 'Portman' // we should receive id for each actor by reminiz, replace this value with the id
         Bot.sendAmazonProducts(senderId, actorName);
-        Actor.findOneAndUpdate({ last_name: lastName }, { $inc: { 'sectionsClicked.products': 1 } }, function (error, updatedActor) { // replace last_name with id
+        Actor.findOneAndUpdate({ full_name: actorName }, { $inc: { 'timesSectionsAreClicked.products': 1 } }, function (error, actor) { // replace full_name with id
           if (error) {
             return res.send(error);
           }
         })
       } else if (postback.payload.substr(0, 11) === "FILMOGRAPHY") {
         let actorName = postback.payload.substr(12);
-        let lastName = 'Portman' // we should receive id for each actor by reminiz, replace this value with the id
         Bot.sendCarouselOfFilms(senderId, actorName);
-        Actor.findOneAndUpdate({ last_name: lastName }, { $inc: { 'sectionsClicked.filmography': 1 } }, function (error, updatedActor) { // replace last_name with id
-          console.log("updatedActor ", updatedActor)
+        Actor.findOneAndUpdate({ full_name: actorName }, { $inc: { 'timesSectionsAreClicked.filmography': 1 } }, function (error, actor) { // replace full_name with id
           if (error) {
             return res.send(error);
           }
         })
       } else if (postback.payload.substr(0, 4) === "NEWS") {
         let actorName = postback.payload.substr(5);
-        let lastName = 'Portman' // we should receive id for each actor by reminiz, replace this value with the id
         Bot.sendCarouselOfNews(senderId, actorName);
-        Actor.findOneAndUpdate({ last_name: lastName }, { $inc: { 'sectionsClicked.news': 1 } }, function (error, updatedActor) { // replace last_name with id
+        Actor.findOneAndUpdate({ full_name: actorName }, { $inc: { 'timesSectionsAreClicked.news': 1 } }, function (error, actor) { // replace full_name with id
           if (error) {
             return res.send(error);
           }
         })
       } else if (postback.payload.substr(0, 8) === "BOOKMARK") { // User bookmarks an actor, bot sends the list of his fav actors
         let newFavoriteActor = postback.payload.substr(9);
-        let lastName = 'Portman' // we should receive id for each actor by reminiz, replace this value with the id
         User.findOrCreate(senderId, function (currentUser) {
+          let currentUserName = currentUser.fb_first_name + " " + currentUser.fb_last_name;
           let currentFavoritesList = currentUser.favorites;
           currentFavoritesList.unshift(newFavoriteActor);
           if (currentFavoritesList.length > 2) {
@@ -140,17 +136,18 @@ app.post('/webhook/', function (req, res) {
               return res.sendStatus(400);
             }
             Bot.sendActorIsBookmarked(senderId, newFavoriteActor);
-            Actor.findByIdAndUpdate({ id: lastName }, { $inc: { bookmarked: 1 } }, function (error, updatedActor) {
+            Actor.findOneAndUpdate({ full_name: newFavoriteActor }, { $push: { bookmarkedBy: currentUserName } }, function (error, actor) { // replace last name with id?
               if (error) {
-                return res.send(error);
+                return error;
               }
             })
           });
         })
       } else if (postback.payload.substr(0, 10) === "UNBOOKMARK") { // Remove an actor from the list of favorites
-        const actorToUnbookmark = postback.payload.substr(11);
+        let actorToUnbookmark = postback.payload.substr(11);
         User.findOrCreate(senderId, function (currentUser) {
-          const indexOfActor = currentUser.favorites.indexOf(actorToUnbookmark);
+          let indexOfActor = currentUser.favorites.indexOf(actorToUnbookmark);
+          let currentUserName = currentUser.fb_first_name + " " + currentUser.fb_last_name;
           if (indexOfActor === -1) {
             Bot.reply(currentUser.fb_id, "Tryin' to trick me ? This actor isn't in your favorites 😉", function () {
               Bot.sendNextStepMessage(currentUser.fb_id);
@@ -164,6 +161,18 @@ app.post('/webhook/', function (req, res) {
                 return res.sendStatus(400);
               }
               Bot.sendActorIsUnbookmarked(senderId, actorToUnbookmark);
+                Actor.findOne({ full_name: actorToUnbookmark }, function (error, actor) { // replace name with id?
+                if (error) {
+                  return error;
+                }
+                let indexOfUser = actor.bookmarkedBy.indexOf(currentUserName);
+                actor.bookmarkedBy.splice(indexOfUser, 1); // removes the element from the arr bookmarkedBy
+                Actor.findOneAndUpdate({ full_name: actorToUnbookmark }, { bookmarkedBy: actor.bookmarkedBy}, function (error, actor) {
+                  if (error) {
+                    return error;
+                    }
+                })
+            })
             });
           }
         });
