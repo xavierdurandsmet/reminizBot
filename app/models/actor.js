@@ -13,15 +13,3 @@ var ActorSchema = new mongoose.Schema({
 })
 
 module.exports = mongoose.model("Actor", ActorSchema);
-
-// db.actors.insert({
-//   id: 'id',
-//   defaultImage: 'http://cdn5.thr.com/sites/default/files/2015/05/bts_natalie_portman_clean.jpg',
-//   full_name: "Natalie Portman",
-//   bookmarkedBy: [],
-//   timesSectionsAreClicked: {
-//     filmography: 0,
-//     news: 0,
-//     products: 0
-//   }
-// })
