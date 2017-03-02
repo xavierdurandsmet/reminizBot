@@ -56,9 +56,10 @@ function sendSingleActor(senderId, actorName) { // Send an actor's template
 
   let actor = { name: actorName },
       bingNewsImage = 'http://news.thewindowsclubco.netdna-cdn.com/wp-content/uploads/2015/01/Bing-News.jpg', // in case there is no image for the news
+      biography = 'Who ' + actor.name + ' really is',
       filmImage = 'https://pbs.twimg.com/profile_images/789117657714831361/zGfknUu8.jpg',
       introductionMessage = `${actor.name} is live ❤️`,
-      productImage = 'https://images-na.ssl-images-amazon.com/images/G/01/gc/designs/livepreview/a_generic_white_10_us_noto_email_v2016_us-main._CB277146614_.png'
+      productImage = 'https://images-na.ssl-images-amazon.com/images/G/01/gc/designs/livepreview/a_generic_white_10_us_noto_email_v2016_us-main._CB277146614_.png';
 
   Bing.images(actor.name, { top: 15, skip: 3 },
     function (error, res, body) {
@@ -73,7 +74,7 @@ function sendSingleActor(senderId, actorName) { // Send an actor's template
         actor.description = messageTemplate.createListTemplate( // List template with the actor profile
           [
             {
-              "title": actor.name,
+              "title": biography,
               "image_url": actor.image,
               "subtitle": actor.descriptionSummary,
               "default_action": { url: 'https://en.wikipedia.org/wiki/' + actor.name, fallback_url: 'https://en.wikipedia.org/wiki/' + actor.name },
