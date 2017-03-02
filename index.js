@@ -125,7 +125,6 @@ app.post('/webhook/', function (req, res) {
         let newFavoriteActor = postback.payload.substr(9);
         User.findOrCreate(senderId, function (currentUser) {
           let currentFavoritesList = currentUser.favorites;
-          let currentUserName = currentUser.fb_first_name + " " + currentUser.fb_last_name;
           if (currentFavoritesList.indexOf(newFavoriteActor) !== -1) {
             Bot.reply(currentUser.fb_id, "You already bookmarked this actor 😀 Go to your favorites 😉", function () {
               Bot.sendNextStepMessage(currentUser.fb_id);
@@ -139,7 +138,7 @@ app.post('/webhook/', function (req, res) {
                 return res.sendStatus(400);
               }
               Bot.sendActorIsBookmarked(senderId, newFavoriteActor);
-              Actor.findOneAndUpdate({ full_name: newFavoriteActor }, { $push: { bookmarkedBy: currentUserName } }, function (error, actor) { // replace last name with id?
+              Actor.findOneAndUpdate({ full_name: newFavoriteActor }, { $push: { bookmarkedBy: currentUser.fb_id } }, function (error, actor) { // replace last name with id?
               if (error) {
                 return error;
               }
@@ -151,7 +150,6 @@ app.post('/webhook/', function (req, res) {
         let actorToUnbookmark = postback.payload.substr(11);
         User.findOrCreate(senderId, function (currentUser) {
           let indexOfActor = currentUser.favorites.indexOf(actorToUnbookmark);
-          let currentUserName = currentUser.fb_first_name + " " + currentUser.fb_last_name;
           if (indexOfActor === -1) {
             Bot.reply(currentUser.fb_id, "Tryin' to trick me ? This actor isn't in your favorites 😉", function () {
               Bot.sendNextStepMessage(currentUser.fb_id);
@@ -169,7 +167,7 @@ app.post('/webhook/', function (req, res) {
                 if (error) {
                   return error;
                 }
-                let indexOfUser = actor.bookmarkedBy.indexOf(currentUserName);
+                let indexOfUser = actor.bookmarkedBy.indexOf(currentUser.fb_id);
                 actor.bookmarkedBy.splice(indexOfUser, 1); // removes the element from the arr bookmarkedBy
                 Actor.findOneAndUpdate({ full_name: actorToUnbookmark }, { bookmarkedBy: actor.bookmarkedBy}, function (error, actor) {
                   if (error) {
