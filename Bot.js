@@ -314,7 +314,9 @@ function sendNextStepMessage(senderId) {
       }
     ]
   }
-  reply(senderId, nextStepMessage)
+  setTimeout(function () {
+    reply(senderId, nextStepMessage)
+  }, 5000);
 }
 
 function reply(senderId, response, cb) { // Send a response to user
@@ -331,7 +333,7 @@ function reply(senderId, response, cb) { // Send a response to user
     method: 'POST',
     json: {
       recipient: { id: senderId },
-      message: messageData,
+      message: messageData
     }
   }, function (error, response, body) {
     if (error) {
