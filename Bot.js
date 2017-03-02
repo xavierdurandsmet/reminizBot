@@ -316,7 +316,7 @@ function sendNextStepMessage(senderId) {
   }
   setTimeout(function () {
     reply(senderId, nextStepMessage)
-  }, 5000);
+  }, 2000);
 }
 
 function reply(senderId, response, cb) { // Send a response to user
