@@ -1,29 +1,31 @@
 require('dotenv').config(({ silent: true }));
-
+// Dependencies
 const express = require('express');
-const bodyParser = require('body-parser')
-const app = express()
-const mongoose = require('mongoose') // MongoDB lib
-const Bot = require("./Bot")
-const threadSettings = require('./app/controllers/thread_settings')
-const User = require('./app/models/user')
-const Actor = require('./app/models/actor')
+const bodyParser = require('body-parser');
+const app = express();
+const mongoose = require('mongoose');
+const CronJob = require('cron').CronJob;
 
-app.set('port', (process.env.PORT || 5000))
+const Bot = require("./Bot");
+const threadSettings = require('./app/controllers/thread_settings');
+const User = require('./app/models/user');
+const Actor = require('./app/models/actor');
+
+app.set('port', (process.env.PORT || 5000));
 
 // Process application/x-www-form-urlencoded
 app.use(bodyParser.urlencoded({ extended: false }))
 // Process application/json
-app.use(bodyParser.json())
+app.use(bodyParser.json());
 
 // Spin up the server
 app.listen(app.get('port'), function (err) {
   if (err) {
-    return err
+    return err;
   }
   // Uncomment this line to install thread settings
-  threadSettings()
-  console.log('running on port', app.get('port'))
+  threadSettings();
+  console.log('running on port', app.get('port'));
 })
 
 // Start the database using Mongoose
@@ -33,7 +35,7 @@ mongoose.connect(MONGODB_URI);
 const db = mongoose.connection;
 db.on('error', console.error.bind(console, 'connection error:'))
 db.once('open', () => {
-  console.log(`Successfully connected to ${MONGODB_URI}`)
+  console.log(`Successfully connected to ${MONGODB_URI}`);
 })
 
 // -----------------------------------------------------------------------------
@@ -42,15 +44,15 @@ db.once('open', () => {
 
 // Index route
 app.get('/', function (req, res) {
-  res.send("Welcome to the Bot Server")
+  res.send("Welcome to the Bot Server");
 })
 
 // for Facebook verification
 app.get('/webhook/', function (req, res) {
   if (req.query['hub.verify_token'] === process.env.VERIFY_TOKEN) {
-    res.send(req.query['hub.challenge'])
+    res.send(req.query['hub.challenge']);
   } else {
-    res.send('Error, wrong token')
+    res.send('Error, wrong token');
   }
 })
 
@@ -183,3 +185,42 @@ app.post('/webhook/', function (req, res) {
   }
   res.sendStatus(200)
 })
+
+// NOTIFICATIONS
+new CronJob({
+  cronTime: '* * * *', // CHANGE TO AVOID SENDING AT NIGHT, here runs every minute
+  onTick: function() {
+    console.log("Sending message, at", new Date());
+    sendNotifications();
+  },
+  start: true,
+  timeZone: 'Europe/Paris' // CHANGE BEFORE CONFERENCE
+});
+
+function sendNotifications() { // actors is an array
+  User.
+    find({
+      hasBeenNotified: false,
+      // favorites: { $gt: 2}
+    }, function(error, users) {
+      if (error) {
+        console.log(error);
+        return error;
+      }
+      console.log(users)
+      for (let i = 0; i < users.length; i++) {
+        if (users[i].favorites.length < 1) {
+          return;
+        }
+        let actor = users[i].favorites[0];
+        Bot.reply(users[i].fb_id, `${actor} is on screen right now ${users[i].fb_first_name}`);
+        users[i].hasBeenNotified = true;
+        users[i].save(function(err) {
+          if (err) {
+            return (err);
+          }
+        });
+      }
+    })
+}
+

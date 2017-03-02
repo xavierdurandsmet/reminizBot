@@ -10,7 +10,7 @@ var UserSchema = new mongoose.Schema({
   fb_timezone: Number,
   fb_locale: String,
   favorites: [String], // not completely sure what to do there
-  notification: { type: Boolean, default: false }
+  hasBeenNotified: { type: Boolean, default: false }
 }, { timestamps: true });
 
 // Find the user with this fb Id, create it if doesn't exist, and return it
