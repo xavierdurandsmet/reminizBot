@@ -81,7 +81,7 @@ function sendSingleActor(senderId, actorName) { // Send an actor's template
               "buttons": [{ "type": "postback", "title": 'Bookmark ❤️', "payload": "BOOKMARK " + actor.name }]
             },
             {
-              "title": 'Filmography',
+              "title": 'Famous movies',
               "image_url": filmImage,
               "subtitle": 'Find Movies related to ' + actor.name,
               "default_action": { url: 'https://www.themoviedb.org/person/' + actor.id, fallback_url: 'https://www.themoviedb.org/person/' + actor.id },
