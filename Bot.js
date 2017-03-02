@@ -69,7 +69,7 @@ function sendSingleActor(senderId, actorName) { // Send an actor's template
         if (htmlWikiText) {
           actor.descriptionSummary = htmlWikiText.replace(/<[^>]*>?/gm, '') // to improve: to remove imperfections in parsing
         }
-        actor.image = body.value[0].contentUrl;
+        actor.image = body.value[0].contentUrl; // put a default image if JSON is incorrect
         actor.description = messageTemplate.createListTemplate( // List template with the actor profile
           [
             {
