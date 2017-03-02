@@ -98,62 +98,60 @@ app.post('/webhook/', function (req, res) {
         Bot.sendSingleActor(senderId, actor);
       } else if (postback.payload.substr(0, 6) === "AMAZON") {
         let actorName = postback.payload.substr(7);
-        let lastName = 'Portman' // we should receive id for each actor by reminiz, replace this value with the id
         Bot.sendAmazonProducts(senderId, actorName);
-        Actor.findOneAndUpdate({ last_name: lastName }, { $inc: { 'sectionsClicked.products': 1 } }, function (error, updatedActor) { // replace last_name with id
+        Actor.findOneAndUpdate({ full_name: actorName }, { $inc: { 'timesSectionsAreClicked.products': 1 } }, function (error, actor) { // replace full_name with id
           if (error) {
             return res.send(error);
           }
         })
       } else if (postback.payload.substr(0, 11) === "FILMOGRAPHY") {
         let actorName = postback.payload.substr(12);
-        let lastName = 'Portman' // we should receive id for each actor by reminiz, replace this value with the id
         Bot.sendCarouselOfFilms(senderId, actorName);
-        Actor.findOneAndUpdate({ last_name: lastName }, { $inc: { 'sectionsClicked.filmography': 1 } }, function (error, updatedActor) { // replace last_name with id
-          console.log("updatedActor ", updatedActor)
+        Actor.findOneAndUpdate({ full_name: actorName }, { $inc: { 'timesSectionsAreClicked.filmography': 1 } }, function (error, actor) { // replace full_name with id
           if (error) {
             return res.send(error);
           }
         })
       } else if (postback.payload.substr(0, 4) === "NEWS") {
         let actorName = postback.payload.substr(5);
-        let lastName = 'Portman' // we should receive id for each actor by reminiz, replace this value with the id
         Bot.sendCarouselOfNews(senderId, actorName);
-        Actor.findOneAndUpdate({ last_name: lastName }, { $inc: { 'sectionsClicked.news': 1 } }, function (error, updatedActor) { // replace last_name with id
+        Actor.findOneAndUpdate({ full_name: actorName }, { $inc: { 'timesSectionsAreClicked.news': 1 } }, function (error, actor) { // replace full_name with id
           if (error) {
             return res.send(error);
           }
         })
       } else if (postback.payload.substr(0, 8) === "BOOKMARK") { // User bookmarks an actor, bot sends the list of his fav actors
+        // User bookmarks an actor, bot sends the list of his fav actors
         let newFavoriteActor = postback.payload.substr(9);
-        let lastName = 'Portman' // we should receive id for each actor by reminiz, replace this value with the id
         User.findOrCreate(senderId, function (currentUser) {
           let currentFavoritesList = currentUser.favorites;
-          if (currentFavoritesList.indexOf(newFavorite) !== -1) {
+          let currentUserName = currentUser.fb_first_name + " " + currentUser.fb_last_name;
+          if (currentFavoritesList.indexOf(newFavoriteActor) !== -1) {
             Bot.reply(currentUser.fb_id, "You already bookmarked this actor 😀 Go to your favorites 😉", function () {
               Bot.sendNextStepMessage(currentUser.fb_id);
             });
-          } else if (currentFavoritesList.indexOf(newFavorite)) {
-            currentFavoritesList.unshift(newFavorite);
-            User.findOneAndUpdate({ fb_id: senderId }, { favorites: currentFavoritesList }, { new: true }, function (error, updatedUser) {
+          } else if (currentFavoritesList.indexOf(newFavoriteActor)) {
+            currentFavoritesList.unshift(newFavoriteActor);
+            User.findOneAndUpdate({ fb_id: senderId }, { favorites: currentFavoritesList }, {new: true}, function (error, updatedUser) {
               if (error) {
                 return res.send(error);
               } else if (!updatedUser) {
                 return res.sendStatus(400);
               }
-              Bot.sendActorIsBookmarked(senderId, newFavorite);
-              Actor.findByIdAndUpdate({ id: lastName }, { $inc: { bookmarked: 1 } }, function (error, updatedActor) {
-                if (error) {
-                  return res.send(error);
-                }
-              })
+              Bot.sendActorIsBookmarked(senderId, newFavoriteActor);
+              Actor.findOneAndUpdate({ full_name: newFavoriteActor }, { $push: { bookmarkedBy: currentUserName } }, function (error, actor) { // replace last name with id?
+              if (error) {
+                return error;
+              }
+            })
             });
           }
         })
       } else if (postback.payload.substr(0, 10) === "UNBOOKMARK") { // Remove an actor from the list of favorites
-        const actorToUnbookmark = postback.payload.substr(11);
+        let actorToUnbookmark = postback.payload.substr(11);
         User.findOrCreate(senderId, function (currentUser) {
-          const indexOfActor = currentUser.favorites.indexOf(actorToUnbookmark);
+          let indexOfActor = currentUser.favorites.indexOf(actorToUnbookmark);
+          let currentUserName = currentUser.fb_first_name + " " + currentUser.fb_last_name;
           if (indexOfActor === -1) {
             Bot.reply(currentUser.fb_id, "Tryin' to trick me ? This actor isn't in your favorites 😉", function () {
               Bot.sendNextStepMessage(currentUser.fb_id);
@@ -167,6 +165,18 @@ app.post('/webhook/', function (req, res) {
                 return res.sendStatus(400);
               }
               Bot.sendActorIsUnbookmarked(senderId, actorToUnbookmark);
+                Actor.findOne({ full_name: actorToUnbookmark }, function (error, actor) { // replace name with id?
+                if (error) {
+                  return error;
+                }
+                let indexOfUser = actor.bookmarkedBy.indexOf(currentUserName);
+                actor.bookmarkedBy.splice(indexOfUser, 1); // removes the element from the arr bookmarkedBy
+                Actor.findOneAndUpdate({ full_name: actorToUnbookmark }, { bookmarkedBy: actor.bookmarkedBy}, function (error, actor) {
+                  if (error) {
+                    return error;
+                    }
+                })
+            })
             });
           }
         });
