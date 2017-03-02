@@ -59,7 +59,8 @@ function sendSingleActor(senderId, actorName) { // Send an actor's template
       biography = 'Who ' + actor.name + ' really is',
       filmImage = 'https://pbs.twimg.com/profile_images/789117657714831361/zGfknUu8.jpg',
       introductionMessage = `${actor.name} is live ❤️`,
-      productImage = 'https://images-na.ssl-images-amazon.com/images/G/01/gc/designs/livepreview/a_generic_white_10_us_noto_email_v2016_us-main._CB277146614_.png';
+      productImage = 'http://www.golfsale.net/wp-content/uploads/2016/03/a_cart_icon.png',
+      productName = actor.name + '\'s best sellers';
 
   Bing.images(actor.name, { top: 15, skip: 3 },
     function (error, res, body) {
@@ -95,10 +96,10 @@ function sendSingleActor(senderId, actorName) { // Send an actor's template
               "buttons": [{ "type": "postback", "title": 'Read News 📰', "payload": "NEWS " + actor.name }]
             },
             {
-              "title": 'Products',
+              "title": productName,
               "image_url": productImage,
               "subtitle": 'Find Amazon products related to ' + actor.name,
-              "default_action": { url: 'https://en.wikipedia.org/wiki/' + actor.name, fallback_url: 'https://en.wikipedia.org/wiki/' + actor.name }, // change this?
+              "default_action": { url: 'https://www.amazon.com', fallback_url: 'https://www.amazon.com' },
               "buttons": [{ "type": "postback", "title": 'See Products 🛒', "payload": "AMAZON " + actor.name }]
             }
           ]
@@ -218,8 +219,8 @@ function sendAmazonProducts(senderId, actorName) {
   }, function (err, results) {
     checkForErrors(err);
     let productList = [];
-    for (let i = 0; i <= 4; i++) {
-      if (results[i].OfferSummary[0].TotalNew[0] != 0) { // make sure the product is available or will return undefined
+    for (let i = 0; i < 10; i++) {
+      if (results[i] && results[i].OfferSummary[0].TotalNew[0] != 0) { // make sure the product is available or will return undefined
         let product = {};
         product.title = results[i].ItemAttributes[0].Title[0];
         product.image_url = results[i].LargeImage[0].URL[0];
