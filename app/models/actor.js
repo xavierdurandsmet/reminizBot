@@ -6,6 +6,7 @@ var ActorSchema = new mongoose.Schema({
   full_name: String, // use full name because this what we are using in the rest of the app
   bookmarkedBy: [String],
   timesBookmarked: { type: Number, default: 0 },
+  bookmarkCounter: { type: Number, default: 0 },
   timesSectionsAreClicked: { // number of the times a section is clicked
     filmography: { type: Number, default: 0 },
     news: { type: Number, default: 0 },
