@@ -254,7 +254,7 @@ function sendCarouselOfActors(currentUser, listOfActors, introductionMessage) {
             },
             {
               "title": "Bookmark ❤️",
-              "payload": "BOOKMARK," + actorsInfo[i].name
+              "payload": "BOOKMARK " + actorsInfo[i].name
             }
           ]
         } else {
@@ -265,7 +265,7 @@ function sendCarouselOfActors(currentUser, listOfActors, introductionMessage) {
             },
             {
               "title": "Unbookmark ❌",
-              "payload": "UNBOOKMARK," + actorsInfo[i].name
+              "payload": "UNBOOKMARK " + actorsInfo[i].name
             }
           ]
         }
