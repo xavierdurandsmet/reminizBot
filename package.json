@@ -17,6 +17,7 @@
     "amazon-product-api": "^0.4.3",
     "bluebird": "^3.4.7",
     "body-parser": "^1.16.1",
+    "cron": "^1.2.1",
     "dotenv": "^4.0.0",
     "express": "^4.14.1",
     "mongoose": "^4.8.3",
