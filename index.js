@@ -1,28 +1,31 @@
 require('dotenv').config(({ silent: true }));
-
+// Dependencies
 const express = require('express');
-const bodyParser = require('body-parser')
-const app = express()
-const mongoose = require('mongoose') // MongoDB lib
-const Bot = require("./Bot")
-const threadSettings = require('./app/controllers/thread_settings')
-const User = require('./app/models/user')
+const bodyParser = require('body-parser');
+const app = express();
+const mongoose = require('mongoose');
+const CronJob = require('cron').CronJob;
 
-app.set('port', (process.env.PORT || 5000))
+const Bot = require("./Bot");
+const threadSettings = require('./app/controllers/thread_settings');
+const User = require('./app/models/user');
+const Actor = require('./app/models/actor');
+
+app.set('port', (process.env.PORT || 5000));
 
 // Process application/x-www-form-urlencoded
 app.use(bodyParser.urlencoded({ extended: false }))
 // Process application/json
-app.use(bodyParser.json())
+app.use(bodyParser.json());
 
 // Spin up the server
 app.listen(app.get('port'), function (err) {
   if (err) {
-    return err
+    return err;
   }
   // Uncomment this line to install thread settings
-  threadSettings()
-  console.log('running on port', app.get('port'))
+  threadSettings();
+  console.log('running on port', app.get('port'));
 })
 
 // Start the database using Mongoose
@@ -32,7 +35,7 @@ mongoose.connect(MONGODB_URI);
 const db = mongoose.connection;
 db.on('error', console.error.bind(console, 'connection error:'))
 db.once('open', () => {
-  console.log(`Successfully connected to ${MONGODB_URI}`)
+  console.log(`Successfully connected to ${MONGODB_URI}`);
 })
 
 // -----------------------------------------------------------------------------
@@ -41,15 +44,15 @@ db.once('open', () => {
 
 // Index route
 app.get('/', function (req, res) {
-  res.send("Welcome to the Bot Server")
+  res.send("Welcome to the Bot Server");
 })
 
 // for Facebook verification
 app.get('/webhook/', function (req, res) {
   if (req.query['hub.verify_token'] === process.env.VERIFY_TOKEN) {
-    res.send(req.query['hub.challenge'])
+    res.send(req.query['hub.challenge']);
   } else {
-    res.send('Error, wrong token')
+    res.send('Error, wrong token');
   }
 })
 
@@ -66,9 +69,9 @@ app.post('/webhook/', function (req, res) {
       Bot.sendChannelsList(senderId)
     }
     if ((postback && postback.payload === "FAVORITES") || (event.message && event.message.quick_reply && event.message.quick_reply.payload === "FAVORITES")) {
-        User.findOrCreate(senderId, function (currentUser) {
-          Bot.sendFavoriteActors(currentUser);
-        })
+      User.findOrCreate(senderId, function (currentUser) {
+        Bot.sendFavoriteActors(currentUser);
+      })
     }
     // Send the default answer for any text message
     if ((postback && postback.payload === "TV_CHANNELS") || (event.message && event.message.quick_reply && event.message.quick_reply.payload === "TV_CHANNELS")) {
@@ -98,50 +101,82 @@ app.post('/webhook/', function (req, res) {
       } else if (postback.payload.substr(0, 6) === "AMAZON") {
         let actorName = postback.payload.substr(7);
         Bot.sendAmazonProducts(senderId, actorName);
-       } else if (postback.payload.substr(0, 11) === "FILMOGRAPHY") {
+        Actor.findOneAndUpdate({ full_name: actorName }, { $inc: { 'timesSectionsAreClicked.products': 1 } }, function (error, actor) { // replace full_name with id
+          if (error) {
+            return res.send(error);
+          }
+        })
+      } else if (postback.payload.substr(0, 11) === "FILMOGRAPHY") {
         let actorName = postback.payload.substr(12);
         Bot.sendCarouselOfFilms(senderId, actorName);
+        Actor.findOneAndUpdate({ full_name: actorName }, { $inc: { 'timesSectionsAreClicked.filmography': 1 } }, function (error, actor) { // replace full_name with id
+          if (error) {
+            return res.send(error);
+          }
+        })
       } else if (postback.payload.substr(0, 4) === "NEWS") {
         let actorName = postback.payload.substr(5);
         Bot.sendCarouselOfNews(senderId, actorName);
-      } else if (postback.payload.substr(0, 8) === "BOOKMARK") {
+        Actor.findOneAndUpdate({ full_name: actorName }, { $inc: { 'timesSectionsAreClicked.news': 1 } }, function (error, actor) { // replace full_name with id
+          if (error) {
+            return res.send(error);
+          }
+        })
+      } else if (postback.payload.substr(0, 8) === "BOOKMARK") { // User bookmarks an actor, bot sends the list of his fav actors
         // User bookmarks an actor, bot sends the list of his fav actors
-        let newFavorite = postback.payload.substr(9);
+        let newFavoriteActor = postback.payload.substr(9);
         User.findOrCreate(senderId, function (currentUser) {
           let currentFavoritesList = currentUser.favorites;
-          if (currentFavoritesList.indexOf(newFavorite) !== -1) {
+          if (currentFavoritesList.indexOf(newFavoriteActor) !== -1) {
             Bot.reply(currentUser.fb_id, "You already bookmarked this actor 😀 Go to your favorites 😉", function () {
               Bot.sendNextStepMessage(currentUser.fb_id);
             });
-          } else if (currentFavoritesList.indexOf(newFavorite)) {
-            currentFavoritesList.unshift(newFavorite);
+          } else if (currentFavoritesList.indexOf(newFavoriteActor)) {
+            currentFavoritesList.unshift(newFavoriteActor);
             User.findOneAndUpdate({ fb_id: senderId }, { favorites: currentFavoritesList }, {new: true}, function (error, updatedUser) {
               if (error) {
                 return res.send(error);
               } else if (!updatedUser) {
                 return res.sendStatus(400);
               }
-              Bot.sendActorIsBookmarked(senderId, newFavorite);
+              Bot.sendActorIsBookmarked(senderId, newFavoriteActor);
+              Actor.findOneAndUpdate({ full_name: newFavoriteActor }, { $push: { bookmarkedBy: currentUser.fb_id } }, function (error, actor) { // replace last name with id?
+              if (error) {
+                return error;
+              }
+            })
             });
           }
         })
       } else if (postback.payload.substr(0, 10) === "UNBOOKMARK") { // Remove an actor from the list of favorites
-        const actorToUnbookmark = postback.payload.substr(11);
+        let actorToUnbookmark = postback.payload.substr(11);
         User.findOrCreate(senderId, function (currentUser) {
-          const indexOfActor = currentUser.favorites.indexOf(actorToUnbookmark);
+          let indexOfActor = currentUser.favorites.indexOf(actorToUnbookmark);
           if (indexOfActor === -1) {
             Bot.reply(currentUser.fb_id, "Tryin' to trick me ? This actor isn't in your favorites 😉", function () {
               Bot.sendNextStepMessage(currentUser.fb_id);
             });
           } else {
             currentUser.favorites.splice(indexOfActor, 1);
-            User.findOneAndUpdate({fb_id: senderId}, { favorites: currentUser.favorites }, {new: true}, function (error, updatedUser) {
+            User.findOneAndUpdate({ fb_id: senderId }, { favorites: currentUser.favorites }, { new: true }, function (error, updatedUser) {
               if (error) {
                 return res.send(error);
               } else if (!updatedUser) {
                 return res.sendStatus(400);
               }
               Bot.sendActorIsUnbookmarked(senderId, actorToUnbookmark);
+                Actor.findOne({ full_name: actorToUnbookmark }, function (error, actor) { // replace name with id?
+                if (error) {
+                  return error;
+                }
+                let indexOfUser = actor.bookmarkedBy.indexOf(currentUser.fb_id);
+                actor.bookmarkedBy.splice(indexOfUser, 1); // removes the element from the arr bookmarkedBy
+                Actor.findOneAndUpdate({ full_name: actorToUnbookmark }, { bookmarkedBy: actor.bookmarkedBy}, function (error, actor) {
+                  if (error) {
+                    return error;
+                    }
+                })
+            })
             });
           }
         });
@@ -150,3 +185,42 @@ app.post('/webhook/', function (req, res) {
   }
   res.sendStatus(200)
 })
+
+// NOTIFICATIONS
+new CronJob({
+  cronTime: '* * * *', // CHANGE TO AVOID SENDING AT NIGHT, here runs every minute
+  onTick: function() {
+    console.log("Sending message, at", new Date());
+    sendNotifications();
+  },
+  start: true,
+  timeZone: 'Europe/Paris' // CHANGE BEFORE CONFERENCE
+});
+
+function sendNotifications() { // actors is an array
+  User.
+    find({
+      hasBeenNotified: false,
+      // favorites: { $gt: 2}
+    }, function(error, users) {
+      if (error) {
+        console.log(error);
+        return error;
+      }
+      console.log(users)
+      for (let i = 0; i < users.length; i++) {
+        if (users[i].favorites.length < 1) {
+          return;
+        }
+        let actor = users[i].favorites[0];
+        Bot.reply(users[i].fb_id, `${actor} is on screen right now ${users[i].fb_first_name}`);
+        users[i].hasBeenNotified = true;
+        users[i].save(function(err) {
+          if (err) {
+            return (err);
+          }
+        });
+      }
+    })
+}
+
