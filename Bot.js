@@ -47,7 +47,9 @@ function sendChannelsList(senderId) {
     )
 
     reply(senderId, introductionMessage, function () {
-      reply(senderId, listOfChannelsMessage)
+      setTimeout(function () {
+        reply(senderId, listOfChannelsMessage)
+      }, 2000);
     });
   });
 }
@@ -55,12 +57,12 @@ function sendChannelsList(senderId) {
 function sendSingleActor(senderId, actorName) { // Send an actor's template
 
   let actor = { name: actorName },
-      bingNewsImage = 'http://news.thewindowsclubco.netdna-cdn.com/wp-content/uploads/2015/01/Bing-News.jpg', // in case there is no image for the news
-      biography = 'Who ' + actor.name + ' really is',
-      filmImage = 'https://pbs.twimg.com/profile_images/789117657714831361/zGfknUu8.jpg',
-      introductionMessage = `${actor.name} is live ❤️`,
-      productImage = 'http://www.golfsale.net/wp-content/uploads/2016/03/a_cart_icon.png',
-      productName = actor.name + '\'s best sellers';
+    bingNewsImage = 'http://news.thewindowsclubco.netdna-cdn.com/wp-content/uploads/2015/01/Bing-News.jpg', // in case there is no image for the news
+    biography = 'Who ' + actor.name + ' really is',
+    filmImage = 'https://pbs.twimg.com/profile_images/789117657714831361/zGfknUu8.jpg',
+    introductionMessage = `${actor.name} is live ❤️`,
+    productImage = 'http://www.golfsale.net/wp-content/uploads/2016/03/a_cart_icon.png',
+    productName = actor.name + '\'s best sellers';
 
   Bing.images(actor.name, { top: 15, skip: 3 },
     function (error, res, body) {
@@ -105,9 +107,8 @@ function sendSingleActor(senderId, actorName) { // Send an actor's template
           ]
         )
         reply(senderId, introductionMessage, function () { // Sending the messages to the user, in the right order
-          reply(senderId, actor.description, function () {
-            sendNextStepMessage(senderId, actor)
-          })
+          reply(senderId, actor.description)
+          sendNextStepMessage(senderId, actor)
         })
       })
     })
@@ -122,7 +123,9 @@ function sendFavoriteActors(user) {
   if (user.favorites.length === 0) {
     reply(user.fb_id, "You don't have any favorites yet 😞", function () {
       reply(user.fb_id, "But don't be sad 😄", function () {
-        reply(user.fb_id, "Click on 'Bookmark ❤️' to add an actor to your favorites, like a pro 😎", function () {
+        setTimeout(function () {
+          reply(user.fb_id, "Click on 'Bookmark ❤️' to add an actor to your favorites, like a pro 😎", function () {
+          }, 2000);
           sendNextStepMessage(user.fb_id);
         })
       })
@@ -244,37 +247,39 @@ function sendCarouselOfActors(currentUser, listOfActors, introductionMessage) {
       let element = {
         title: actorsInfo[i].name,
         image_url: actorsInfo[i].image,
-        subtitle: 'DESCRIPTION HERE',
+        subtitle: 'Click on "Choose" to know more about ' + actorsInfo[i].name,
       }
       if (currentUser.favorites.indexOf(actorsInfo[i].name) === -1) {
         element.buttons = [
-            {
-              "title": "Choose ✔︎",
-              "payload": "SINGLE_ACTOR," + actorsInfo[i].name
-            },
-            {
-              "title": "Bookmark ❤️",
-              "payload": "BOOKMARK," + actorsInfo[i].name
-            }
-          ]
-        } else {
+          {
+            "title": "Choose ✔︎",
+            "payload": "SINGLE_ACTOR," + actorsInfo[i].name
+          },
+          {
+            "title": "Bookmark ❤️",
+            "payload": "BOOKMARK " + actorsInfo[i].name
+          }
+        ]
+      } else {
         element.buttons = [
-            {
-              "title": "Choose ✔︎",
-              "payload": "SINGLE_ACTOR," + actorsInfo[i].name
-            },
-            {
-              "title": "Unbookmark ❌",
-              "payload": "UNBOOKMARK," + actorsInfo[i].name
-            }
-          ]
-        }
+          {
+            "title": "Choose ✔︎",
+            "payload": "SINGLE_ACTOR," + actorsInfo[i].name
+          },
+          {
+            "title": "Unbookmark ❌",
+            "payload": "UNBOOKMARK " + actorsInfo[i].name
+          }
+        ]
+      }
       elements.push(element);
       counter += 1;
       if (counter === actorsInfo.length) {
         let listOfActorsMessage = messageTemplate.createGenericTemplate(elements);
         reply(currentUser.fb_id, introductionMessage, function () {
-          reply(currentUser.fb_id, listOfActorsMessage);
+          setTimeout(function () {
+            reply(currentUser.fb_id, listOfActorsMessage);
+          }, 2000);
         })
       }
     }
@@ -305,18 +310,20 @@ function sendNextStepMessage(senderId) {
     text: "What should we do now?",
     quick_replies: [
       {
-        "content_type":"text",
-        "title":"TV Channels 📺",
-        "payload":"TV_CHANNELS"
+        "content_type": "text",
+        "title": "TV Channels 📺",
+        "payload": "TV_CHANNELS"
       },
       {
-        "content_type":"text",
-        "title":"My Favorites ❤️",
-        "payload":"FAVORITES"
+        "content_type": "text",
+        "title": "My Favorites ❤️",
+        "payload": "FAVORITES"
       }
     ]
   }
-  reply(senderId, nextStepMessage)
+  setTimeout(function () {
+    reply(senderId, nextStepMessage)
+  }, 2000);
 }
 
 function reply(senderId, response, cb) { // Send a response to user
@@ -333,7 +340,7 @@ function reply(senderId, response, cb) { // Send a response to user
     method: 'POST',
     json: {
       recipient: { id: senderId },
-      message: messageData,
+      message: messageData
     }
   }, function (error, response, body) {
     if (error) {

@@ -101,15 +101,21 @@ app.post('/webhook/', function (req, res) {
       } else if (postback.payload.substr(0, 6) === "AMAZON") {
         let actorName = postback.payload.substr(7);
         Bot.sendAmazonProducts(senderId, actorName);
-        Actor.findOneAndUpdate({ full_name: actorName }, { $inc: { 'timesSectionsAreClicked.products': 1 } }, function (error, actor) { // replace full_name with id
-          if (error) {
-            return res.send(error);
-          }
-        })
+        Actor.findOneAndUpdate(
+          { full_name: actorName },
+          { $inc: { 'timesSectionsAreClicked.products': 1 } },
+          { upsert: true }, function (error) { // replace full_name with id
+            if (error) {
+              return res.send(error);
+            }
+          })
       } else if (postback.payload.substr(0, 11) === "FILMOGRAPHY") {
         let actorName = postback.payload.substr(12);
         Bot.sendCarouselOfFilms(senderId, actorName);
-        Actor.findOneAndUpdate({ full_name: actorName }, { $inc: { 'timesSectionsAreClicked.filmography': 1 } }, function (error, actor) { // replace full_name with id
+        Actor.findOneAndUpdate(
+         { full_name: actorName },
+         { $inc: { 'timesSectionsAreClicked.filmography': 1 } },
+         { upsert: true }, function (error) { // replace full_name with id
           if (error) {
             return res.send(error);
           }
@@ -117,7 +123,10 @@ app.post('/webhook/', function (req, res) {
       } else if (postback.payload.substr(0, 4) === "NEWS") {
         let actorName = postback.payload.substr(5);
         Bot.sendCarouselOfNews(senderId, actorName);
-        Actor.findOneAndUpdate({ full_name: actorName }, { $inc: { 'timesSectionsAreClicked.news': 1 } }, function (error, actor) { // replace full_name with id
+        Actor.findOneAndUpdate(
+          { full_name: actorName },
+          { $inc: { 'timesSectionsAreClicked.news': 1 } },
+          { upsert: true }, function (error) { // replace full_name with id
           if (error) {
             return res.send(error);
           }
@@ -125,27 +134,45 @@ app.post('/webhook/', function (req, res) {
       } else if (postback.payload.substr(0, 8) === "BOOKMARK") { // User bookmarks an actor, bot sends the list of his fav actors
         // User bookmarks an actor, bot sends the list of his fav actors
         let newFavoriteActor = postback.payload.substr(9);
+        console.log("")
+
         User.findOrCreate(senderId, function (currentUser) {
+          Actor.findOneAndUpdate(
+            { full_name: newFavoriteActor },
+            {
+              $push: { bookmarkedBy: currentUser.fb_id },
+              $inc: { timesBookmarked: 1 },
+              $inc: { bookmarkCounter: 1 },
+            },
+            { upsert: true}, function (error, actor) {
+            if (error) {
+              return error;
+            }
+            console.log(actor)
+          });
+
+
           let currentFavoritesList = currentUser.favorites;
           if (currentFavoritesList.indexOf(newFavoriteActor) !== -1) {
             Bot.reply(currentUser.fb_id, "You already bookmarked this actor 😀 Go to your favorites 😉", function () {
               Bot.sendNextStepMessage(currentUser.fb_id);
             });
           } else if (currentFavoritesList.indexOf(newFavoriteActor)) {
+
             currentFavoritesList.unshift(newFavoriteActor);
-            User.findOneAndUpdate({ fb_id: senderId }, { favorites: currentFavoritesList }, {new: true}, function (error, updatedUser) {
-              if (error) {
-                return res.send(error);
-              } else if (!updatedUser) {
-                return res.sendStatus(400);
+            // Add actor to the user's favorites
+            User.findOneAndUpdate(
+              { fb_id: senderId },
+              { favorites: currentFavoritesList },
+              { new: true }, function (error, updatedUser) {
+                if (error) {
+                  return res.send(error);
+                } else if (!updatedUser) {
+                  return res.sendStatus(400);
+                }
+                Bot.sendActorIsBookmarked(senderId, newFavoriteActor);
               }
-              Bot.sendActorIsBookmarked(senderId, newFavoriteActor);
-              Actor.findOneAndUpdate({ full_name: newFavoriteActor }, { $push: { bookmarkedBy: currentUser.fb_id } }, function (error, actor) { // replace last name with id?
-              if (error) {
-                return error;
-              }
-            })
-            });
+            );
           }
         })
       } else if (postback.payload.substr(0, 10) === "UNBOOKMARK") { // Remove an actor from the list of favorites
@@ -165,18 +192,23 @@ app.post('/webhook/', function (req, res) {
                 return res.sendStatus(400);
               }
               Bot.sendActorIsUnbookmarked(senderId, actorToUnbookmark);
-                Actor.findOne({ full_name: actorToUnbookmark }, function (error, actor) { // replace name with id?
-                if (error) {
-                  return error;
-                }
-                let indexOfUser = actor.bookmarkedBy.indexOf(currentUser.fb_id);
-                actor.bookmarkedBy.splice(indexOfUser, 1); // removes the element from the arr bookmarkedBy
-                Actor.findOneAndUpdate({ full_name: actorToUnbookmark }, { bookmarkedBy: actor.bookmarkedBy}, function (error, actor) {
+
+              Actor.findOneAndUpdate(
+                { full_name: actorToUnbookmark },
+                function (error, actor) { // replace name with id?
                   if (error) {
                     return error;
+                  }
+                  console.log(actor);
+                  let indexOfUser = actor.bookmarkedBy.indexOf(currentUser.fb_id);
+                  actor.bookmarkedBy.splice(indexOfUser, 1); // removes the element from the arr bookmarkedBy
+                  actor.save(function (error) {
+                    if (error) {
+                      return error;
                     }
-                })
-            })
+                  });
+                }
+              );
             });
           }
         });
