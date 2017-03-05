@@ -18,6 +18,8 @@ app.use(bodyParser.urlencoded({ extended: false }))
 // Process application/json
 app.use(bodyParser.json());
 
+app.use(express.static('./app/images'))
+
 // Spin up the server
 app.listen(app.get('port'), function (err) {
   if (err) {

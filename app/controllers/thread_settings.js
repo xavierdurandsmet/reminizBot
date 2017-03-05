@@ -7,6 +7,7 @@ module.exports = function() {
   console.log("EXECUTING THREAD SETTINGS")
   addPersistentMenu()
   addGetStartedButton()
+  whitelistURL()
 }
 
 // Add a POSTBACK button for a user's first interaction
@@ -93,6 +94,31 @@ function removePersistentMenu() {
       console.log("Couldn't delete persistent menu")
     } else {
       console.log("Successfully deleted persistent menu")
+    }
+  })
+}
+
+function whitelistURL() {
+ request({
+    url: THREAD_SETTINGS_URL,
+    qs: { access_token: process.env.PAGE_ACCESS_TOKEN },
+    method: "POST",
+    json: {
+      setting_type:"domain_whitelisting",
+      whitelisted_domains : [
+        "http://news.thewindowsclubco.netdna-cdn.com/",
+        'https://pbs.twimg.com/',
+        'http://www.golfsale.net/',
+        'https://www.instagram.com/',
+        'https://images.seeklogo.net'
+      ],
+      domain_action_type: "add"
+    }
+  }, function(error, response) {
+    if (error || response.body.error) {
+      console.log("Couldn't whitelist domains")
+    } else {
+      console.log("Successfully whitelisted domains")
     }
   })
 }

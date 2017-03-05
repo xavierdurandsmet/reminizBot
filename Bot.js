@@ -66,10 +66,10 @@ function sendSingleActor(senderId, actorName) {
     let bingNewsImage = 'http://news.thewindowsclubco.netdna-cdn.com/wp-content/uploads/2015/01/Bing-News.jpg',
       biography = actor.full_name,
       filmImage = 'https://pbs.twimg.com/profile_images/789117657714831361/zGfknUu8.jpg',
+      instagramLogo = 'https://images.seeklogo.net/2016/06/Instagram-logo.png',
       introductionMessage = `${actor.full_name} is live ❤️`,
       productImage = 'http://www.golfsale.net/wp-content/uploads/2016/03/a_cart_icon.png',
       productName = 'Best sellers';
-
 
   Bing.images(actor.full_name, { top: 15, skip: 3 },
     function (error, res, body) {
@@ -106,9 +106,11 @@ function sendSingleActor(senderId, actorName) {
             "buttons": [{ "type": "postback", "title": 'See Products 🛒', "payload": "AMAZON " + actor.full_name }]
           }
         ];
-        // Send filmography if it's an actor
+        // Send filmography in 1st position if it's an actor
         if (actor.is_actor) {
-          elements.push(
+          elements.splice(
+            1,
+            0,
             {
               "title": 'Famous movies',
               "image_url": filmImage,
@@ -117,8 +119,21 @@ function sendSingleActor(senderId, actorName) {
             }
           );
         }
+        // Include social accounts in 3rd position if they exist
+        if (actor.instagram) {
+          elements.splice(
+            3,
+            0,
+            {
+              "title": 'Social',
+              "image_url": instagramLogo,
+              "default_action": { url: `https://www.instagram.com/${actor.instagram}`, fallback_url: `https://www.instagram.com/` },
+              "buttons": [{ "type": "postback", "title": 'More', "payload": `INSTAGRAM ${actor.full_name}` }]
+            }
+          );
+        }
 
-        actor.description = messageTemplate.createListTemplate(elements)
+        actor.description = messageTemplate.createListTemplate(elements.slice(0, 4));
         reply(senderId, introductionMessage, function () { // Sending the messages to the user, in the right order
           reply(senderId, actor.description)
           sendNextStepMessage(senderId, actor)
