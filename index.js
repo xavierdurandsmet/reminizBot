@@ -133,6 +133,13 @@ app.post('/webhook/', function (req, res) {
             return res.send(error);
           }
         })
+      } else if (postback.payload.substr(0, 9) === "INSTAGRAM") {
+        const actorName = postback.payload.substr(10);
+        Actor.findOne({full_name: actorName}, function(error, actor) {
+          Bot.checkForErrors(error);
+          Bot.sendInstagramFeed(senderId, actor.instagram);
+        });
+
       } else if (postback.payload.substr(0, 8) === "BOOKMARK") { // User bookmarks an actor, bot sends the list of his fav actors
         // User bookmarks an actor, bot sends the list of his fav actors
         let newFavoriteActor = postback.payload.substr(9);

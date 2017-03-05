@@ -9,7 +9,7 @@ function createGenericTemplate(elements) {
   elements = elements.map(function (element) {
     let ret = {};
     for (let key in element) {
-      if (key === "title" || key === "subtitle" || key === "image_url") {
+      if (key === "title" || key === "item_url" || key === "subtitle" || key === "image_url") {
         ret[key] = element[key];
       } else if (key === "buttons") {
         ret.buttons = [];
@@ -33,6 +33,7 @@ function createGenericTemplate(elements) {
       type: "template",
       payload: {
         template_type: "generic",
+        image_aspect_ratio: "square",
         elements: elements
       }
     }
