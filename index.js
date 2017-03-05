@@ -144,7 +144,7 @@ app.post('/webhook/', function (req, res) {
               $inc: { timesBookmarked: 1 },
               $inc: { bookmarkCounter: 1 },
             },
-            { upsert: true}, function (error, actor) {
+            { upsert: true, new: true}, function (error, actor) {
             if (error) {
               return error;
             }

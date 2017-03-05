@@ -7,7 +7,6 @@ var ActorSchema = new mongoose.Schema({
   is_actor: { type: Boolean, default: false },
   instagram: { type: String },
   bookmarkedBy: [String],
-  timesBookmarked: { type: Number, default: 0 },
   bookmarkCounter: { type: Number, default: 0 },
   timesSectionsAreClicked: { // number of the times a section is clicked
     filmography: { type: Number, default: 0 },
