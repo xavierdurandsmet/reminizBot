@@ -84,7 +84,6 @@ function sendSingleActor(senderId, actorName) {
       wikipedia.searchArticle(options, function (err, htmlWikiText) {
         checkForErrors(err);
         if (htmlWikiText) {
-          console.log(htmlWikiText)
           actor.descriptionSummary = htmlWikiText.replace(/<[^>]*>?/gm, '') // to improve: to remove imperfections in parsing
         }
         actor.image = body.value[0].contentUrl; // put a default image if JSON is incorrect
