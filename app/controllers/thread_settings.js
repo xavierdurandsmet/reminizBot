@@ -110,7 +110,9 @@ function whitelistURL() {
         'https://pbs.twimg.com/',
         'http://www.golfsale.net/',
         'https://www.instagram.com/',
-        'https://images.seeklogo.net'
+        'https://images.seeklogo.net',
+        'https://www.youtube.com/',
+        'https://image.flaticon.com/'
       ],
       domain_action_type: "add"
     }
