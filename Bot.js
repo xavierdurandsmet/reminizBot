@@ -10,6 +10,8 @@ const client = amazon.createClient({
   awsId: process.env.AMAZON_ID,
   awsSecret: process.env.AMAZON_SECRET_KEY
 });
+const youtubeBaseUri = 'https://www.googleapis.com/youtube/v3/search';
+const youtubeApiKey = process.env.YOUTUBE_API_KEY;
 
 const Actor = require('./app/models/actor');
 
@@ -26,7 +28,8 @@ module.exports = {
   sendCarouselOfFilms: sendCarouselOfFilms,
   sendCarouselOfNews: sendCarouselOfNews,
   checkForErrors: checkForErrors,
-  sendInstagramFeed: sendInstagramFeed
+  sendInstagramFeed: sendInstagramFeed,
+  sendYoutubeVideos: sendYoutubeVideos
 }
 
 function sendChannelsList(senderId) {
@@ -70,8 +73,9 @@ function sendSingleActor(senderId, actorName) {
       filmImage = 'https://pbs.twimg.com/profile_images/789117657714831361/zGfknUu8.jpg',
       instagramLogo = 'https://images.seeklogo.net/2016/06/Instagram-logo.png',
       introductionMessage = `${actor.full_name} is live ❤️`,
-      productImage = 'http://www.golfsale.net/wp-content/uploads/2016/03/a_cart_icon.png',
-      productName = 'Best sellers';
+      productImage = 'https://image.flaticon.com/icons/png/512/2/2772.png',
+      productName = 'Best sellers',
+      youtubeLogo = 'https://www.youtube.com/yt/brand/media/image/YouTube-icon-full_color.png'
 
   Bing.images(actor.full_name, { top: 15, skip: 3 },
     function (error, res, body) {
@@ -88,24 +92,16 @@ function sendSingleActor(senderId, actorName) {
         let elements = [
           {
             "title": biography,
+            "subtitle": '#actor #35 #American', // To make dynamic
             "image_url": actor.image,
-            "subtitle": actor.descriptionSummary,
             "default_action": { url: 'https://en.wikipedia.org/wiki/' + actor.full_name, fallback_url: 'https://en.wikipedia.org/wiki/' + actor.full_name },
             "buttons": [{ "type": "postback", "title": 'Bookmark ❤️', "payload": "BOOKMARK " + actor.full_name }]
           },
           {
-            "title": 'News',
+            "title": 'Latest News',
             "image_url": bingNewsImage,
-            "subtitle": 'Find News related to ' + actor.full_name,
             "default_action": { url: 'https://en.wikipedia.org/wiki/' + actor, fallback_url: 'https://en.wikipedia.org/wiki/' + actor }, // to change to next line but currently not working
-            "buttons": [{ "type": "postback", "title": 'Read News 📰', "payload": "NEWS " + actor.full_name }]
-          },
-          {
-            "title": productName,
-            "image_url": productImage,
-            "subtitle": 'Find Amazon products related to ' + actor.full_name,
-            "default_action": { url: 'https://www.amazon.com', fallback_url: 'https://www.amazon.com' },
-            "buttons": [{ "type": "postback", "title": 'See Products 🛒', "payload": "AMAZON " + actor.full_name }]
+            "buttons": [{ "type": "postback", "title": 'Read News', "payload": "NEWS " + actor.full_name }]
           }
         ];
         // Send filmography in 1st position if it's an actor
@@ -114,12 +110,24 @@ function sendSingleActor(senderId, actorName) {
             1,
             0,
             {
-              "title": 'Famous movies',
+              "title": 'Famous Movies',
               "image_url": filmImage,
               "default_action": { url: `https://www.themoviedb.org/person/${actor.id}`, fallback_url: `https://www.themoviedb.org/person/${actor.id}` },
-              "buttons": [{ "type": "postback", "title": 'See Films 🎬', "payload": `FILMOGRAPHY ${actor.full_name}` }]
+              "buttons": [{ "type": "postback", "title": 'See Films', "payload": `FILMOGRAPHY ${actor.full_name}` }]
             }
           );
+        } else {
+          elements.splice(
+            1,
+            0,
+            {
+              "title": productName,
+              "image_url": productImage,
+              "default_action": { url: 'https://www.amazon.com', fallback_url: 'https://www.amazon.com' },
+              "buttons": [{ "type": "postback", "title": 'See Products', "payload": `AMAZON ${actor.full_name}` }]
+            }
+          );
+
         }
         // Include social accounts in 3rd position if they exist
         if (actor.instagram) {
@@ -130,7 +138,18 @@ function sendSingleActor(senderId, actorName) {
               "title": 'Social',
               "image_url": instagramLogo,
               "default_action": { url: `https://www.instagram.com/${actor.instagram}`, fallback_url: `https://www.instagram.com/` },
-              "buttons": [{ "type": "postback", "title": 'More', "payload": `INSTAGRAM ${actor.full_name}` }]
+              "buttons": [{ "type": "postback", "title": 'See Instagram', "payload": `INSTAGRAM ${actor.full_name}` }]
+            }
+          );
+        } else {
+          elements.splice(
+            3,
+            0,
+            {
+              "title": 'Videos',
+              "image_url": youtubeLogo,
+              "default_action": { url: `https://www.youtube.com/results?search_query=${actor.full_name}`, fallback_url: `https://www.youtube.com/` },
+              "buttons": [{ "type": "postback", "title": 'More', "payload": `YOUTUBE ${actor.full_name}` }]
             }
           );
         }
@@ -301,7 +320,35 @@ function sendInstagramFeed(senderId, instagramHandle) {
     }
   });
 }
-
+function sendYoutubeVideos(senderId, actorName) {
+  let elements = [];
+  request(`${youtubeBaseUri}?part=snippet&type=video&q=${actorName}&key=${youtubeApiKey}`, function (error, response, body) {
+    checkForErrors(error);
+    const items = JSON.parse(body).items;
+    if (response && response.statusCode === 200) {
+      for (let i = 0; i < 6; i++) {
+        let card = {};
+        if (items[i]) {
+          card.title = items[i].snippet.title;
+          card.item_url = `https://www.youtube.com/watch?v=${items[i].id.videoId}`;
+          card.image_url = items[i].snippet.thumbnails.medium.url;
+          card.subtitle = items[i].snippet.description;
+        elements.push(card);
+        }
+      }
+      let youtubeTemplate = messageTemplate.createGenericTemplate(elements);
+      reply(senderId, `Here's ${actorName} on Youtube:`, function () {
+        reply(senderId, youtubeTemplate, function () {
+          sendNextStepMessage(senderId);
+        });
+      });
+    } else {
+      reply(senderId, 'Sorry, there was an error with the Youtube feed...', function () {
+        sendNextStepMessage(senderId);
+      });
+    }
+  });
+}
 function sendCarouselOfActors(currentUser, listOfActors, introductionMessage) {
   let elements = [];
   let counter = 0;
