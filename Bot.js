@@ -92,7 +92,7 @@ function sendSingleActor(senderId, actorName) {
         let elements = [
           {
             "title": biography,
-            "subtitle": '#actor #35 #American', // To make dynamic
+            "subtitle": actor.descriptionSummary,
             "image_url": actor.image,
             "default_action": { url: 'https://en.wikipedia.org/wiki/' + actor.full_name, fallback_url: 'https://en.wikipedia.org/wiki/' + actor.full_name },
             "buttons": [{ "type": "postback", "title": 'Bookmark ❤️', "payload": "BOOKMARK " + actor.full_name }]
@@ -146,10 +146,10 @@ function sendSingleActor(senderId, actorName) {
             3,
             0,
             {
-              "title": 'Videos',
+              "title": 'Best Videos',
               "image_url": youtubeLogo,
               "default_action": { url: `https://www.youtube.com/results?search_query=${actor.full_name}`, fallback_url: `https://www.youtube.com/` },
-              "buttons": [{ "type": "postback", "title": 'More', "payload": `YOUTUBE ${actor.full_name}` }]
+              "buttons": [{ "type": "postback", "title": 'Watch Videos', "payload": `YOUTUBE ${actor.full_name}` }]
             }
           );
         }
