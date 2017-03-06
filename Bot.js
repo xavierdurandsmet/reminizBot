@@ -10,12 +10,10 @@ const client = amazon.createClient({
   awsId: process.env.AMAZON_ID,
   awsSecret: process.env.AMAZON_SECRET_KEY
 });
-const youtubeBaseUri = 'https://www.googleapis.com/youtube/v3/search';
-const youtubeApiKey = process.env.YOUTUBE_API_KEY;
 
 const Actor = require('./app/models/actor');
 
-const bingNewsImage = 'http://news.thewindowsclubco.netdna-cdn.com/wp-content/uploads/2015/01/Bing-News.jpg';
+const bingNewsImage = `${process.env.SERVER_URI}images/bing.jpg`;
 
 
 module.exports = {
@@ -43,13 +41,13 @@ function sendChannelsList(senderId) {
       [
         {
           "title": channels[0].replace("_", " "),
-          "image_url": 'https://encrypted-tbn2.gstatic.com/images?q=tbn:ANd9GcQn4O8zXpRf9xbk8vy0LdrXqa8jXUduoKdlc2YfrsL5cKxLBegR_e89HXg',
+          "image_url": `${process.env.SERVER_URI}images/cnn.png`,
           "subtitle": 'The news channel',
           "buttons": [{ "title": 'Choose ✔︎', "payload": channels[0] }]
         },
         {
           "title": channels[1].replace("_", " "),
-          "image_url": 'http://vignette4.wikia.nocookie.net/logopedia/images/8/87/Disney_Channel_2014.png/revision/latest?cb=20140522224840',
+          "image_url": `${process.env.SERVER_URI}images/disney_channel.png`,
           "subtitle": 'Children love it',
           "buttons": [{ "title": 'Choose ✔︎', "payload": channels[1] }]
         }
@@ -59,7 +57,7 @@ function sendChannelsList(senderId) {
     reply(senderId, introductionMessage, function () {
       setTimeout(function () {
         reply(senderId, listOfChannelsMessage)
-      }, 2000);
+      }, 1500);
     });
   });
 }
@@ -72,12 +70,12 @@ function sendSingleActor(senderId, actorName) {
       return;
     }
     let biography = actor.full_name,
-      filmImage = 'https://pbs.twimg.com/profile_images/789117657714831361/zGfknUu8.jpg',
-      instagramLogo = 'https://images.seeklogo.net/2016/06/Instagram-logo.png',
+      filmImage = `${process.env.SERVER_URI}images/movie_db.jpg`,
+      instagramLogo = `${process.env.SERVER_URI}images/instagram.png`,
       introductionMessage = `${actor.full_name} is live ❤️`,
-      productImage = 'https://image.flaticon.com/icons/png/512/2/2772.png',
+      productImage = `${process.env.SERVER_URI}images/best_sellers.png`,
       productName = 'Best sellers',
-      youtubeLogo = 'https://www.youtube.com/yt/brand/media/image/YouTube-icon-full_color.png'
+      youtubeLogo = `${process.env.SERVER_URI}images/youtube.png`;
 
   Bing.images(actor.full_name, { top: 15, skip: 3 },
     function (error, res, body) {
@@ -323,6 +321,8 @@ function sendInstagramFeed(senderId, instagramHandle) {
   });
 }
 function sendYoutubeVideos(senderId, actorName) {
+  const youtubeBaseUri = 'https://www.googleapis.com/youtube/v3/search';
+  const youtubeApiKey = process.env.YOUTUBE_API_KEY;
   let elements = [];
   request(`${youtubeBaseUri}?part=snippet&type=video&q=${actorName}&key=${youtubeApiKey}`, function (error, response, body) {
     checkForErrors(error);
