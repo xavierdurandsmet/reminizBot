@@ -106,11 +106,16 @@ function whitelistURL() {
     json: {
       setting_type:"domain_whitelisting",
       whitelisted_domains : [
+        "https://en.wikipedia.org/",
+        "https://image.tmdb.org/",
+        "https://www.youtube.com/",
+        "https://www.themoviedb.org/",
         "http://news.thewindowsclubco.netdna-cdn.com/",
-        'https://pbs.twimg.com/',
-        'https://www.instagram.com/',
-        'https://images.seeklogo.net',
-        'https://image.flaticon.com/'
+        "https://pbs.twimg.com/",
+        "https://www.instagram.com/",
+        "https://images.seeklogo.net/",
+        "https://www.amazon.com/",
+        "https://image.flaticon.com/"
       ],
       domain_action_type: "add"
     }

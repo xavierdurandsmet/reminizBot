@@ -15,6 +15,9 @@ const youtubeApiKey = process.env.YOUTUBE_API_KEY;
 
 const Actor = require('./app/models/actor');
 
+const bingNewsImage = 'http://news.thewindowsclubco.netdna-cdn.com/wp-content/uploads/2015/01/Bing-News.jpg';
+
+
 module.exports = {
   sendChannelsList: sendChannelsList,
   sendSingleActor: sendSingleActor,
@@ -68,8 +71,7 @@ function sendSingleActor(senderId, actorName) {
       console.log('Actor is empty or undefined');
       return;
     }
-    let bingNewsImage = 'http://news.thewindowsclubco.netdna-cdn.com/wp-content/uploads/2015/01/Bing-News.jpg',
-      biography = actor.full_name,
+    let biography = actor.full_name,
       filmImage = 'https://pbs.twimg.com/profile_images/789117657714831361/zGfknUu8.jpg',
       instagramLogo = 'https://images.seeklogo.net/2016/06/Instagram-logo.png',
       introductionMessage = `${actor.full_name} is live ❤️`,
@@ -249,7 +251,7 @@ function sendCarouselOfNews(senderId, actorName) {
       let newsArticle = {};
       newsArticle.title = JSONResponse[i].name;
       if (!JSONResponse[i].image) {
-        newsArticle.image_url = "https://www.google.fr/url?sa=i&rct=j&q=&esrc=s&source=images&cd=&cad=rja&uact=8&ved=0ahUKEwiyro22s7HSAhXMwBQKHQEkDvQQjRwIBw&url=http%3A%2F%2Fona15.journalists.org%2Fsponsors%2Fbing-news%2F&psig=AFQjCNHfW_aTfMwiqhTZmWjONp_U1n3nUA&ust=1488323542794389";
+        newsArticle.image_url = bingNewsImage;
       } else if (JSONResponse[i].image.thumbnail.contentUrl) {
         newsArticle.image_url = JSONResponse[i].image.thumbnail.contentUrl; // get better quality images?
       }

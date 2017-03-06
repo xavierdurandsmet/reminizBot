@@ -267,28 +267,28 @@ function sendNotifications() { // actors is an array
 }
 
 // SEED DATABASE
-const actors = [
-  {"id": 1,
-   "full_name": "Natalie Portman",
-   "is_actor": true
-  },
-  {"id": 2,
-   "full_name": "Justin Timberlake",
-   "is_actor": true,
-   "instagram": "justintimberlake"
-  },
-  {"id": 3,
-   "full_name": "Justin Bieber",
-   "is_actor": false,
-   "instagram": "justinbieber"
-  }
-];
+// const actors = [
+//   {"id": 1,
+//    "full_name": "Natalie Portman",
+//    "is_actor": true
+//   },
+//   {"id": 2,
+//    "full_name": "Justin Timberlake",
+//    "is_actor": true,
+//    "instagram": "justintimberlake"
+//   },
+//   {"id": 3,
+//    "full_name": "Justin Bieber",
+//    "is_actor": false,
+//    "instagram": "justinbieber"
+//   }
+// ];
 
-Actor.create(actors, function (err) {
-  if (err) {
-    console.log('Error seeding DB:', err);
-    return err;
-  }
-});
+// // Actor.create(actors, function (err) {
+// //   if (err) {
+// //     console.log('Error seeding DB:', err);
+// //     return err;
+// //   }
+// // });
 
 
