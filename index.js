@@ -5,7 +5,7 @@ const bodyParser = require('body-parser');
 const app = express();
 const mongoose = require('mongoose');
 const CronJob = require('cron').CronJob;
-const google = require('googleapis');
+const path = require('path');
 
 const Bot = require("./Bot");
 const threadSettings = require('./app/controllers/thread_settings');
@@ -18,6 +18,8 @@ app.set('port', (process.env.PORT || 5000));
 app.use(bodyParser.urlencoded({ extended: false }))
 // Process application/json
 app.use(bodyParser.json());
+
+app.use(express.static('app/public'));
 
 // Spin up the server
 app.listen(app.get('port'), function (err) {
