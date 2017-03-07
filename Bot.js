@@ -214,9 +214,9 @@ function sendCarouselOfFilms(senderId, actorName) {
         let film = {
           id: JSONResponse[i].id,
           title: JSONResponse[i].title,
-          image_url: 'https://image.tmdb.org/t/p/w500/' + JSONResponse[i].poster_path,
+          image_url: `https://image.tmdb.org/t/p/w500/${JSONResponse[i].poster_path}`,
           subtitle: JSONResponse[i].release_date ? JSONResponse[i].release_date.substr(0, 4) : "",
-          buttonsURL: [{ "title": 'See More', "url": "https://www.themoviedb.org/person/" + actor.id }] // change to specific movi,
+          buttonsURL: [{ "title": 'See More', "url": `https://www.themoviedb.org/person/${actor.id}` }] // change to specific movi,
         }
         filmList.push(film)
       }
@@ -224,7 +224,7 @@ function sendCarouselOfFilms(senderId, actorName) {
       filmList.forEach(function (film) { // use forEach to create its own scope, for the async call
         MovieDB.movieTrailers({ id: film.id }, function (err, res) {
           checkForErrors(err);
-          film.trailer = res.youtube[0] ? "https://www.youtube.com/watch?v=" + res.youtube[0].source : "https://www.youtube.com";
+          film.trailer = res.youtube[0] ? `https://www.youtube.com/watch?v=${res.youtube[0].source}` : "https://www.youtube.com";
           film.buttonsURL.push({ "title": 'Watch Trailer', "url": film.trailer })
           filmListToPush.push(film);
           if (filmListToPush.length === 5) { // if statement inside the forEach to not have asynchronous pbs
