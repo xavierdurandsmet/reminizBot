@@ -84,7 +84,7 @@ app.post('/webhook/', function (req, res) {
       let channels = [
         {
           name: "CNN",
-          actors: ["Natalie Portman"]
+          actors: ["Aaron Paul"]
         },
         {
           name: "DISNEY_CHANNEL",
@@ -296,7 +296,6 @@ function sendNotifications() { // actors is an array
       }
     })
 }
-
 // SEED DATABASE
 // const actors = [
 //   {"id": 1,
@@ -315,11 +314,11 @@ function sendNotifications() { // actors is an array
 //   }
 // ];
 
-// // Actor.create(actors, function (err) {
-// //   if (err) {
-// //     console.log('Error seeding DB:', err);
-// //     return err;
-// //   }
-// // });
+// Actor.create(actors, function (err) {
+//  if (err) {
+//    console.log('Error seeding DB:', err);
+//    return err;
+//  }
+//});
 
 
