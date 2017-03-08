@@ -116,7 +116,7 @@ function sendSingleActor(senderId, actorName) {
 
     Bing.images(actor.name, { top: 15, skip: 3 }, function (error, res, body) {
         checkForErrors(error);
-        let options = { query: actor.full_name, format: 'html', summaryOnly: true, lang: 'en' } // get the Wiki summary
+        let options = { query: actor.name, format: 'html', summaryOnly: true, lang: 'en' } // get the Wiki summary
         wikipedia.searchArticle(options, function (err, htmlWikiText) {
           checkForErrors(err);
           if (htmlWikiText) {
@@ -129,14 +129,14 @@ function sendSingleActor(senderId, actorName) {
               "title": biography,
               "subtitle": actor.descriptionSummary,
               "image_url": actor.image,
-              "default_action": { url: 'https://en.wikipedia.org/wiki/' + actor.full_name, fallback_url: 'https://en.wikipedia.org/wiki/' + actor.full_name },
-              "buttons": [{ "type": "postback", "title": 'Bookmark ❤️', "payload": "BOOKMARK " + actor.full_name }]
+              "default_action": { url: 'https://en.wikipedia.org/wiki/' + actor.name, fallback_url: 'https://en.wikipedia.org/wiki/' + actor.name },
+              "buttons": [{ "type": "postback", "title": 'Bookmark ❤️', "payload": "BOOKMARK " + actor.name }]
             },
             {
               "title": 'Latest News',
               "image_url": bingNewsImage,
               "default_action": { url: 'https://en.wikipedia.org/wiki/' + actor, fallback_url: 'https://en.wikipedia.org/wiki/' + actor }, // to change to next line but currently not working
-              "buttons": [{ "type": "postback", "title": 'Read News', "payload": "NEWS " + actor.full_name }]
+              "buttons": [{ "type": "postback", "title": 'Read News', "payload": "NEWS " + actor.name }]
             }
           ];
           // Send filmography in 1st position if it's an actor
@@ -148,7 +148,7 @@ function sendSingleActor(senderId, actorName) {
                 "title": 'Latest Movies and Shows',
                 "image_url": filmImage,
                 "default_action": { url: `https://www.themoviedb.org/person/${actor.id}`, fallback_url: `https://www.themoviedb.org/person/${actor.id}` },
-                "buttons": [{ "type": "postback", "title": 'See Collection', "payload": `FILMOGRAPHY ${actor.full_name}` }]
+                "buttons": [{ "type": "postback", "title": 'See Collection', "payload": `FILMOGRAPHY ${actor.name}` }]
               }
             );
           } else {
@@ -159,7 +159,7 @@ function sendSingleActor(senderId, actorName) {
                 "title": productName,
                 "image_url": productImage,
                 "default_action": { url: 'https://www.amazon.com', fallback_url: 'https://www.amazon.com' },
-                "buttons": [{ "type": "postback", "title": 'See Products', "payload": `AMAZON ${actor.full_name}` }]
+                "buttons": [{ "type": "postback", "title": 'See Products', "payload": `AMAZON ${actor.name}` }]
               }
             );
 
@@ -173,7 +173,7 @@ function sendSingleActor(senderId, actorName) {
                 "title": 'Social',
                 "image_url": instagramLogo,
                 "default_action": { url: `https://www.instagram.com/${actor.instagram}`, fallback_url: `https://www.instagram.com/` },
-                "buttons": [{ "type": "postback", "title": 'See Instagram', "payload": `INSTAGRAM ${actor.full_name}` }]
+                "buttons": [{ "type": "postback", "title": 'See Instagram', "payload": `INSTAGRAM ${actor.name}` }]
               }
             );
           } else {
@@ -183,8 +183,8 @@ function sendSingleActor(senderId, actorName) {
               {
                 "title": 'Best Videos',
                 "image_url": youtubeLogo,
-                "default_action": { url: `https://www.youtube.com/results?search_query=${actor.full_name}`, fallback_url: `https://www.youtube.com/` },
-                "buttons": [{ "type": "postback", "title": 'Watch Videos', "payload": `YOUTUBE ${actor.full_name}` }]
+                "default_action": { url: `https://www.youtube.com/results?search_query=${actor.name}`, fallback_url: `https://www.youtube.com/` },
+                "buttons": [{ "type": "postback", "title": 'Watch Videos', "payload": `YOUTUBE ${actor.name}` }]
               }
             );
           }
