@@ -80,19 +80,11 @@ function sendSingleActor(senderId, actorName) {
   Bing.images(actor.full_name, { top: 15, skip: 3 },
     function (error, res, body) {
       checkForErrors(error);
-      let options = { query: actor.full_name, format: 'html', summaryOnly: true, lang: 'en' } // get the Wiki summary
-      wikipedia.searchArticle(options, function (err, htmlWikiText) {
-        checkForErrors(err);
-        if (htmlWikiText) {
-          actor.descriptionSummary = htmlWikiText.replace(/<[^>]*>?/gm, '') // to improve: to remove imperfections in parsing
-        }
         actor.image = body.value[0].contentUrl; // put a default image if JSON is incorrect
-           // >If it's an actor then send filmography
-
         let elements = [
           {
             "title": biography,
-            "subtitle": actor.descriptionSummary,
+            "subtitle": `Click here to know more about ${actor.full_name}`, // change to actor.name
             "image_url": actor.image,
             "default_action": { url: 'https://en.wikipedia.org/wiki/' + actor.full_name, fallback_url: 'https://en.wikipedia.org/wiki/' + actor.full_name },
             "buttons": [{ "type": "postback", "title": 'Bookmark ❤️', "payload": "BOOKMARK " + actor.full_name }]
@@ -100,7 +92,7 @@ function sendSingleActor(senderId, actorName) {
           {
             "title": 'Latest News',
             "image_url": bingNewsImage,
-            "default_action": { url: 'https://en.wikipedia.org/wiki/' + actor, fallback_url: 'https://en.wikipedia.org/wiki/' + actor }, // to change to next line but currently not working
+            "default_action": { url: 'https://en.wikipedia.org/wiki/' + actor.full_name, fallback_url: 'https://en.wikipedia.org/wiki/' + actor.full_name }, // to change to next line but currently not working
             "buttons": [{ "type": "postback", "title": 'Read News', "payload": "NEWS " + actor.full_name }]
           }
         ];
@@ -158,7 +150,6 @@ function sendSingleActor(senderId, actorName) {
         reply(senderId, introductionMessage, function () {
           reply(senderId, actor.description)
           sendNextStepMessage(senderId, actor)
-        })
       })
     })
   });
