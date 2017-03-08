@@ -84,10 +84,10 @@ function getActorsInfo(listOfActors, callback) {
   let actorsInfo = [];
   let counter = 0;
   for (let i = 0; i < listOfActors.length; i++) {
-    Bing.images(listOfActors[i], { top: 5, skip: 3 }, function (error, res, body) {
+    Bing.images(listOfActors[i].name || listOfActors[i], { top: 5, skip: 3 }, function (error, res, body) {
       checkForErrors(error);
       actorsInfo.push({
-        name: listOfActors[i],
+        name: listOfActors[i].name || listOfActors[i],
         image: body.value ? body.value[i].contentUrl : "" // temp fix, change the lib
       });
       counter += 1;
