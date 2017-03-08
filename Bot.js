@@ -63,7 +63,7 @@ function sendChannelsList(senderId) {
 }
 // Send a list template containing the actor profile
 function sendSingleActor(senderId, actorName) {
-  Actor.findOne({ full_name: actorName}, function(error, actor) {
+  Actor.findOne({ full_name: actorName }, function (error, actor) {
     checkForErrors(error);
     if (!actor) {
       console.log('Actor is empty or undefined');
@@ -77,90 +77,90 @@ function sendSingleActor(senderId, actorName) {
       productName = 'Best sellers',
       youtubeLogo = `${process.env.SERVER_URI}images/youtube.png`;
 
-  Bing.images(actor.full_name, { top: 15, skip: 3 },
-    function (error, res, body) {
-      checkForErrors(error);
-      let options = { query: actor.full_name, format: 'html', summaryOnly: true, lang: 'en' } // get the Wiki summary
-      wikipedia.searchArticle(options, function (err, htmlWikiText) {
-        checkForErrors(err);
-        if (htmlWikiText) {
-          actor.descriptionSummary = htmlWikiText.replace(/<[^>]*>?/gm, '') // to improve: to remove imperfections in parsing
-        }
-        actor.image = body.value[0].contentUrl; // put a default image if JSON is incorrect
-           // >If it's an actor then send filmography
-
-        let elements = [
-          {
-            "title": biography,
-            "subtitle": actor.descriptionSummary,
-            "image_url": actor.image,
-            "default_action": { url: 'https://en.wikipedia.org/wiki/' + actor.full_name, fallback_url: 'https://en.wikipedia.org/wiki/' + actor.full_name },
-            "buttons": [{ "type": "postback", "title": 'Bookmark ❤️', "payload": "BOOKMARK " + actor.full_name }]
-          },
-          {
-            "title": 'Latest News',
-            "image_url": bingNewsImage,
-            "default_action": { url: 'https://en.wikipedia.org/wiki/' + actor, fallback_url: 'https://en.wikipedia.org/wiki/' + actor }, // to change to next line but currently not working
-            "buttons": [{ "type": "postback", "title": 'Read News', "payload": "NEWS " + actor.full_name }]
+    Bing.images(actor.full_name, { top: 15, skip: 3 },
+      function (error, res, body) {
+        checkForErrors(error);
+        let options = { query: actor.full_name, format: 'html', summaryOnly: true, lang: 'en' } // get the Wiki summary
+        wikipedia.searchArticle(options, function (err, htmlWikiText) {
+          checkForErrors(err);
+          if (htmlWikiText) {
+            actor.descriptionSummary = htmlWikiText.replace(/<[^>]*>?/gm, '') // to improve: to remove imperfections in parsing
           }
-        ];
-        // Send filmography in 1st position if it's an actor
-        if (actor.is_actor) {
-          elements.splice(
-            1,
-            0,
-            {
-              "title": 'Famous Movies',
-              "image_url": filmImage,
-              "default_action": { url: `https://www.themoviedb.org/person/${actor.id}`, fallback_url: `https://www.themoviedb.org/person/${actor.id}` },
-              "buttons": [{ "type": "postback", "title": 'See Films', "payload": `FILMOGRAPHY ${actor.full_name}` }]
-            }
-          );
-        } else {
-          elements.splice(
-            1,
-            0,
-            {
-              "title": productName,
-              "image_url": productImage,
-              "default_action": { url: 'https://www.amazon.com', fallback_url: 'https://www.amazon.com' },
-              "buttons": [{ "type": "postback", "title": 'See Products', "payload": `AMAZON ${actor.full_name}` }]
-            }
-          );
+          actor.image = body.value[0].contentUrl; // put a default image if JSON is incorrect
+          // >If it's an actor then send filmography
 
-        }
-        // Include social accounts in 3rd position if they exist
-        if (actor.instagram) {
-          elements.splice(
-            3,
-            0,
+          let elements = [
             {
-              "title": 'Social',
-              "image_url": instagramLogo,
-              "default_action": { url: `https://www.instagram.com/${actor.instagram}`, fallback_url: `https://www.instagram.com/` },
-              "buttons": [{ "type": "postback", "title": 'See Instagram', "payload": `INSTAGRAM ${actor.full_name}` }]
-            }
-          );
-        } else {
-          elements.splice(
-            3,
-            0,
+              "title": biography,
+              "subtitle": actor.descriptionSummary,
+              "image_url": actor.image,
+              "default_action": { url: 'https://en.wikipedia.org/wiki/' + actor.full_name, fallback_url: 'https://en.wikipedia.org/wiki/' + actor.full_name },
+              "buttons": [{ "type": "postback", "title": 'Bookmark ❤️', "payload": "BOOKMARK " + actor.full_name }]
+            },
             {
-              "title": 'Best Videos',
-              "image_url": youtubeLogo,
-              "default_action": { url: `https://www.youtube.com/results?search_query=${actor.full_name}`, fallback_url: `https://www.youtube.com/` },
-              "buttons": [{ "type": "postback", "title": 'Watch Videos', "payload": `YOUTUBE ${actor.full_name}` }]
+              "title": 'Latest News',
+              "image_url": bingNewsImage,
+              "default_action": { url: 'https://en.wikipedia.org/wiki/' + actor, fallback_url: 'https://en.wikipedia.org/wiki/' + actor }, // to change to next line but currently not working
+              "buttons": [{ "type": "postback", "title": 'Read News', "payload": "NEWS " + actor.full_name }]
             }
-          );
-        }
-        // Only render the first 4 elements
-        actor.description = messageTemplate.createListTemplate(elements.slice(0, 4));
-        reply(senderId, introductionMessage, function () {
-          reply(senderId, actor.description)
-          sendNextStepMessage(senderId, actor)
+          ];
+          // Send filmography in 1st position if it's an actor
+          if (actor.is_actor) {
+            elements.splice(
+              1,
+              0,
+              {
+                "title": 'Latest Movies and Shows',
+                "image_url": filmImage,
+                "default_action": { url: `https://www.themoviedb.org/person/${actor.id}`, fallback_url: `https://www.themoviedb.org/person/${actor.id}` },
+                "buttons": [{ "type": "postback", "title": 'See Collection', "payload": `FILMOGRAPHY ${actor.full_name}` }]
+              }
+            );
+          } else {
+            elements.splice(
+              1,
+              0,
+              {
+                "title": productName,
+                "image_url": productImage,
+                "default_action": { url: 'https://www.amazon.com', fallback_url: 'https://www.amazon.com' },
+                "buttons": [{ "type": "postback", "title": 'See Products', "payload": `AMAZON ${actor.full_name}` }]
+              }
+            );
+
+          }
+          // Include social accounts in 3rd position if they exist
+          if (actor.instagram) {
+            elements.splice(
+              3,
+              0,
+              {
+                "title": 'Social',
+                "image_url": instagramLogo,
+                "default_action": { url: `https://www.instagram.com/${actor.instagram}`, fallback_url: `https://www.instagram.com/` },
+                "buttons": [{ "type": "postback", "title": 'See Instagram', "payload": `INSTAGRAM ${actor.full_name}` }]
+              }
+            );
+          } else {
+            elements.splice(
+              3,
+              0,
+              {
+                "title": 'Best Videos',
+                "image_url": youtubeLogo,
+                "default_action": { url: `https://www.youtube.com/results?search_query=${actor.full_name}`, fallback_url: `https://www.youtube.com/` },
+                "buttons": [{ "type": "postback", "title": 'Watch Videos', "payload": `YOUTUBE ${actor.full_name}` }]
+              }
+            );
+          }
+          // Only render the first 4 elements
+          actor.description = messageTemplate.createListTemplate(elements.slice(0, 4));
+          reply(senderId, introductionMessage, function () {
+            reply(senderId, actor.description)
+            sendNextStepMessage(senderId, actor)
+          })
         })
       })
-    })
   });
 }
 
@@ -206,34 +206,66 @@ function sendCarouselOfFilms(senderId, actorName) {
   MovieDB.searchPerson({ query: actorName }, (err, res) => {
     checkForErrors(err);
     actor.id = res.results[0].id;
-    MovieDB.personMovieCredits({ id: actor.id }, (err, res) => {
+    MovieDB.personCombinedCredits({ id: actor.id }, (err, res) => { // get TV shows and movies
       checkForErrors(err);
       let JSONResponse = res.cast;
+      JSONResponse = sortCreditsByYear(JSONResponse);
       let filmList = [];
-      for (let i = 0; i <= 4; i++) {
-        let film = {
-          id: JSONResponse[i].id,
-          title: JSONResponse[i].title,
-          image_url: `https://image.tmdb.org/t/p/w500/${JSONResponse[i].poster_path}`,
-          subtitle: JSONResponse[i].release_date ? JSONResponse[i].release_date.substr(0, 4) : "",
-          buttonsURL: [{ "title": 'See More', "url": `https://www.themoviedb.org/person/${actor.id}` }] // change to specific movi,
+      for (let i = 0; i <= 9; i++) {
+        let film = {};
+        if (JSONResponse[i].media_type === 'movie') {
+          film.media_type = JSONResponse[i].media_type,
+            film.id = JSONResponse[i].id,
+            film.title = JSONResponse[i].media_type === 'movie' ? JSONResponse[i].title : JSONResponse[i].name,
+            film.image_url = JSONResponse[i].poster_path ? `https://image.tmdb.org/t/p/w500/${JSONResponse[i].poster_path}` : `${process.env.SERVER_URI}images/image-not-found.png`,
+            film.buttonsURL = [{ "title": 'See More', "url": `https://www.themoviedb.org/person/${actor.id}` }] // change to specific movi,
+          film.subtitle = JSONResponse[i].release_date ? JSONResponse[i].release_date.substr(0, 4) : ""
+        } else if (JSONResponse[i].media_type === 'tv') {
+          film.media_type = JSONResponse[i].media_type,
+            film.id = JSONResponse[i].id,
+            film.title = JSONResponse[i].media_type === 'movie' ? JSONResponse[i].title : JSONResponse[i].name,
+            film.image_url = JSONResponse[i].poster_path ? `https://image.tmdb.org/t/p/w500/${JSONResponse[i].poster_path}` : `${process.env.SERVER_URI}images/image-not-found.png`,
+            film.subtitle = JSONResponse[i].first_air_date ? JSONResponse[i].first_air_date.substr(0, 4) : "",
+            film.buttonsURL = [{ "title": 'See More', "url": `https://www.themoviedb.org/person/${actor.id}` }] // change to specific movi,
         }
-        filmList.push(film)
+        filmList.push(film);
       }
       let filmListToPush = [];
       filmList.forEach(function (film) { // use forEach to create its own scope, for the async call
-        MovieDB.movieTrailers({ id: film.id }, function (err, res) {
-          checkForErrors(err);
-          film.trailer = res.youtube[0] ? `https://www.youtube.com/watch?v=${res.youtube[0].source}` : "https://www.youtube.com";
-          film.buttonsURL.push({ "title": 'Watch Trailer', "url": film.trailer })
-          filmListToPush.push(film);
-          if (filmListToPush.length === 5) { // if statement inside the forEach to not have asynchronous pbs
-            let filmTemplate = messageTemplate.createGenericTemplate(filmListToPush)
-            reply(senderId, filmTemplate, function () {
-              sendNextStepMessage(senderId)
-            })
-          }
-        })
+
+        if (film.media_type === 'tv') {
+          MovieDB.tvVideos({ id: film.id }, function (err, res) {
+            checkForErrors(err);
+            if (res.results[0].site === 'YouTube') {
+                film.trailer = `https://www.youtube.com/watch?v=${res.results[0].key}`;
+                film.buttonsURL.push({ "title": 'Watch Trailer', "url": film.trailer })
+            }
+            filmListToPush.push(film);
+            if (filmListToPush.length === 10) { // if statement inside the forEach to not have asynchronous pbs
+              let filmTemplate = messageTemplate.createGenericTemplate(filmListToPush)
+              reply(senderId, filmTemplate, function () {
+                sendNextStepMessage(senderId)
+              })
+            }
+          })
+        } else if (film.media_type === 'movie') {
+          MovieDB.movieTrailers({ id: film.id }, function (err, res) {
+            checkForErrors(err);
+            if (res.youtube) {
+              if (res.youtube[0]) {
+                film.trailer = `https://www.youtube.com/watch?v=${res.youtube[0].source}`;
+                film.buttonsURL.push({ "title": 'Watch Trailer', "url": film.trailer })
+              }
+            }
+            filmListToPush.push(film);
+            if (filmListToPush.length === 10) { // if statement inside the forEach to not have asynchronous pbs
+              let filmTemplate = messageTemplate.createGenericTemplate(filmListToPush)
+              reply(senderId, filmTemplate, function () {
+                sendNextStepMessage(senderId)
+              })
+            }
+          })
+        }
       })
     })
   })
@@ -297,14 +329,14 @@ function sendInstagramFeed(senderId, instagramHandle) {
     if (response && response.statusCode === 200) {
       for (let i = 0; i < 10; i++) {
         let card = {};
-          if (items[i].caption === null) {
-            card.title = items[i].user.full_name;
-          } else {
-            card.title = items[i].caption.text;
-          }
-          card.item_url = items[i].link;
-          card.image_url = items[i].images.standard_resolution.url;
-          card.subtitle = `❤️ ${items[i].likes.count}`;
+        if (items[i].caption === null) {
+          card.title = items[i].user.full_name;
+        } else {
+          card.title = items[i].caption.text;
+        }
+        card.item_url = items[i].link;
+        card.image_url = items[i].images.standard_resolution.url;
+        card.subtitle = `❤️ ${items[i].likes.count}`;
         elements.push(card);
       }
       let instagramTemplate = messageTemplate.createGenericTemplate(elements);
@@ -335,7 +367,7 @@ function sendYoutubeVideos(senderId, actorName) {
           card.item_url = `https://www.youtube.com/watch?v=${items[i].id.videoId}`;
           card.image_url = items[i].snippet.thumbnails.medium.url;
           card.subtitle = items[i].snippet.description;
-        elements.push(card);
+          elements.push(card);
         }
       }
       let youtubeTemplate = messageTemplate.createGenericTemplate(elements);
@@ -471,3 +503,19 @@ function checkForErrors(err) {
   }
 }
 
+function sortCreditsByYear(arrayOfCredits) {
+  let sortedArrayOfCredits = arrayOfCredits.sort(function (creditA, creditB) {
+    if (creditA.media_type === 'movie') {
+      yearA = creditA.release_date ? Number(creditA.release_date.substr(0, 4)) : 0; // get the Year for the element
+    } else {
+      yearA = creditA.first_air_date ? Number(creditA.first_air_date.substr(0, 4)) : 0;
+    }
+    if (creditB.media_type === 'movie') {
+      yearB = creditB.release_date ? Number(creditB.release_date.substr(0, 4)) : 0; // get the Year for the element
+    } else {
+      yearB = creditB.first_air_date ? Number(creditB.first_air_date.substr(0, 4)) : 0;
+    }
+    return yearB - yearA;
+  })
+  return sortedArrayOfCredits;
+}
