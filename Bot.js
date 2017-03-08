@@ -10,12 +10,10 @@ const client = amazon.createClient({
   awsId: process.env.AMAZON_ID,
   awsSecret: process.env.AMAZON_SECRET_KEY
 });
-const youtubeBaseUri = 'https://www.googleapis.com/youtube/v3/search';
-const youtubeApiKey = process.env.YOUTUBE_API_KEY;
 
 const Actor = require('./app/models/actor');
 
-const bingNewsImage = 'http://news.thewindowsclubco.netdna-cdn.com/wp-content/uploads/2015/01/Bing-News.jpg';
+const bingNewsImage = `${process.env.SERVER_URI}images/bing.jpg`;
 
 
 module.exports = {
@@ -44,13 +42,13 @@ function sendChannelsList(senderId) {
       [
         {
           "title": channels[0].replace("_", " "),
-          "image_url": 'https://encrypted-tbn2.gstatic.com/images?q=tbn:ANd9GcQn4O8zXpRf9xbk8vy0LdrXqa8jXUduoKdlc2YfrsL5cKxLBegR_e89HXg',
+          "image_url": `${process.env.SERVER_URI}images/cnn.png`,
           "subtitle": 'The news channel',
           "buttons": [{ "title": 'Choose ✔︎', "payload": channels[0] }]
         },
         {
           "title": channels[1].replace("_", " "),
-          "image_url": 'http://vignette4.wikia.nocookie.net/logopedia/images/8/87/Disney_Channel_2014.png/revision/latest?cb=20140522224840',
+          "image_url": `${process.env.SERVER_URI}images/disney_channel.png`,
           "subtitle": 'Children love it',
           "buttons": [{ "title": 'Choose ✔︎', "payload": channels[1] }]
         }
@@ -60,7 +58,7 @@ function sendChannelsList(senderId) {
     reply(senderId, introductionMessage, function () {
       setTimeout(function () {
         reply(senderId, listOfChannelsMessage)
-      }, 2000);
+      }, 1500);
     });
   });
 }
@@ -293,9 +291,9 @@ function sendCarouselOfFilms(senderId, actorName) {
         let film = {
           id: JSONResponse[i].id,
           title: JSONResponse[i].title,
-          image_url: 'https://image.tmdb.org/t/p/w500/' + JSONResponse[i].poster_path,
+          image_url: `https://image.tmdb.org/t/p/w500/${JSONResponse[i].poster_path}`,
           subtitle: JSONResponse[i].release_date ? JSONResponse[i].release_date.substr(0, 4) : "",
-          buttonsURL: [{ "title": 'See More', "url": "https://www.themoviedb.org/person/" + actor.id }] // change to specific movi,
+          buttonsURL: [{ "title": 'See More', "url": `https://www.themoviedb.org/person/${actor.id}` }] // change to specific movi,
         }
         filmList.push(film)
       }
@@ -303,7 +301,7 @@ function sendCarouselOfFilms(senderId, actorName) {
       filmList.forEach(function (film) { // use forEach to create its own scope, for the async call
         MovieDB.movieTrailers({ id: film.id }, function (err, res) {
           checkForErrors(err);
-          film.trailer = res.youtube[0] ? "https://www.youtube.com/watch?v=" + res.youtube[0].source : "https://www.youtube.com";
+          film.trailer = res.youtube[0] ? `https://www.youtube.com/watch?v=${res.youtube[0].source}` : "https://www.youtube.com";
           film.buttonsURL.push({ "title": 'Watch Trailer', "url": film.trailer })
           filmListToPush.push(film);
           if (filmListToPush.length === 5) { // if statement inside the forEach to not have asynchronous pbs
@@ -400,6 +398,8 @@ function sendInstagramFeed(senderId, instagramHandle) {
   });
 }
 function sendYoutubeVideos(senderId, actorName) {
+  const youtubeBaseUri = 'https://www.googleapis.com/youtube/v3/search';
+  const youtubeApiKey = process.env.YOUTUBE_API_KEY;
   let elements = [];
   request(`${youtubeBaseUri}?part=snippet&type=video&q=${actorName}&key=${youtubeApiKey}`, function (error, response, body) {
     checkForErrors(error);

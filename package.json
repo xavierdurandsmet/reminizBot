@@ -27,6 +27,7 @@
     "node-bing-api": "^3.2.1",
     "node-wikipedia": "0.0.2",
     "nodemon": "^1.11.0",
+    "path": "^0.12.7",
     "request": "^2.79.0",
     "wikipedia-js": "0.0.6"
   },
