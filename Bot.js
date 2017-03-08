@@ -100,7 +100,7 @@ function getActorsInfo(listOfActors, callback) {
 
 // Send  list template containing the actor profile
 function sendSingleActor(senderId, actorName) {
-  Actor.findOne({ name: actorName}, function (error, actor) {
+  Actor.findOne({ name: actorName }, function (error, actor) {
     checkForErrors(error);
     if (!actor) {
       console.log('Actor is empty or undefined');
@@ -115,87 +115,87 @@ function sendSingleActor(senderId, actorName) {
       youtubeLogo = `${process.env.SERVER_URI}images/youtube.png`;
 
     Bing.images(actor.name, { top: 15, skip: 3 }, function (error, res, body) {
-        checkForErrors(error);
-        let options = { query: actor.name, format: 'html', summaryOnly: true, lang: 'en' } // get the Wiki summary
-        wikipedia.searchArticle(options, function (err, htmlWikiText) {
-          checkForErrors(err);
-          if (htmlWikiText) {
-            actor.descriptionSummary = htmlWikiText.replace(/<[^>]*>?/gm, '') // to improve: to remove imperfections in parsing
+      checkForErrors(error);
+      let options = { query: actor.name, format: 'html', summaryOnly: true, lang: 'en' } // get the Wiki summary
+      wikipedia.searchArticle(options, function (err, htmlWikiText) {
+        checkForErrors(err);
+        if (htmlWikiText) {
+          actor.descriptionSummary = htmlWikiText.replace(/<[^>]*>?/gm, '') // to improve: to remove imperfections in parsing
+        }
+        actor.image = body.value[0].contentUrl; // put a default image if JSON is incorrect
+        // >If it's an actor then send filmography
+        let elements = [
+          {
+            "title": biography,
+            "subtitle": actor.descriptionSummary,
+            "image_url": actor.image,
+            "default_action": { url: 'https://en.wikipedia.org/wiki/' + actor.name, fallback_url: 'https://en.wikipedia.org/wiki/' + actor.name },
+            "buttons": [{ "type": "postback", "title": 'Bookmark ❤️', "payload": "BOOKMARK " + actor.name }]
+          },
+          {
+            "title": 'Latest News',
+            "image_url": bingNewsImage,
+            "default_action": { url: 'https://en.wikipedia.org/wiki/' + actor, fallback_url: 'https://en.wikipedia.org/wiki/' + actor }, // to change to next line but currently not working
+            "buttons": [{ "type": "postback", "title": 'Read News', "payload": "NEWS " + actor.name }]
           }
-          actor.image = body.value[0].contentUrl; // put a default image if JSON is incorrect
-          // >If it's an actor then send filmography
-          let elements = [
+        ];
+        // Send filmography in 1st position if it's an actor
+        if (actor.is_actor) {
+          elements.splice(
+            1,
+            0,
             {
-              "title": biography,
-              "subtitle": actor.descriptionSummary,
-              "image_url": actor.image,
-              "default_action": { url: 'https://en.wikipedia.org/wiki/' + actor.name, fallback_url: 'https://en.wikipedia.org/wiki/' + actor.name },
-              "buttons": [{ "type": "postback", "title": 'Bookmark ❤️', "payload": "BOOKMARK " + actor.name }]
-            },
-            {
-              "title": 'Latest News',
-              "image_url": bingNewsImage,
-              "default_action": { url: 'https://en.wikipedia.org/wiki/' + actor, fallback_url: 'https://en.wikipedia.org/wiki/' + actor }, // to change to next line but currently not working
-              "buttons": [{ "type": "postback", "title": 'Read News', "payload": "NEWS " + actor.name }]
+              "title": 'Movies and Shows',
+              "image_url": filmImage,
+              "default_action": { url: `https://www.themoviedb.org/person/${actor.id}`, fallback_url: `https://www.themoviedb.org/person/${actor.id}` },
+              "buttons": [{ "type": "postback", "title": 'See Collection', "payload": `FILMOGRAPHY ${actor.name}` }]
             }
-          ];
-          // Send filmography in 1st position if it's an actor
-          if (actor.is_actor) {
-            elements.splice(
-              1,
-              0,
-              {
-                "title": 'Latest Movies and Shows',
-                "image_url": filmImage,
-                "default_action": { url: `https://www.themoviedb.org/person/${actor.id}`, fallback_url: `https://www.themoviedb.org/person/${actor.id}` },
-                "buttons": [{ "type": "postback", "title": 'See Collection', "payload": `FILMOGRAPHY ${actor.name}` }]
-              }
-            );
-          } else {
-            elements.splice(
-              1,
-              0,
-              {
-                "title": productName,
-                "image_url": productImage,
-                "default_action": { url: 'https://www.amazon.com', fallback_url: 'https://www.amazon.com' },
-                "buttons": [{ "type": "postback", "title": 'See Products', "payload": `AMAZON ${actor.name}` }]
-              }
-            );
+          );
+        } else {
+          elements.splice(
+            1,
+            0,
+            {
+              "title": productName,
+              "image_url": productImage,
+              "default_action": { url: 'https://www.amazon.com', fallback_url: 'https://www.amazon.com' },
+              "buttons": [{ "type": "postback", "title": 'See Products', "payload": `AMAZON ${actor.name}` }]
+            }
+          );
 
-          }
-          // Include social accounts in 3rd position if they exist
-          if (actor.instagram) {
-            elements.splice(
-              3,
-              0,
-              {
-                "title": 'Social',
-                "image_url": instagramLogo,
-                "default_action": { url: `https://www.instagram.com/${actor.instagram}`, fallback_url: `https://www.instagram.com/` },
-                "buttons": [{ "type": "postback", "title": 'See Instagram', "payload": `INSTAGRAM ${actor.name}` }]
-              }
-            );
-          } else {
-            elements.splice(
-              3,
-              0,
-              {
-                "title": 'Best Videos',
-                "image_url": youtubeLogo,
-                "default_action": { url: `https://www.youtube.com/results?search_query=${actor.name}`, fallback_url: `https://www.youtube.com/` },
-                "buttons": [{ "type": "postback", "title": 'Watch Videos', "payload": `YOUTUBE ${actor.name}` }]
-              }
-            );
-          }
-          // Only render the first 4 elements
-          actor.list = messageTemplate.createListTemplate(elements.slice(0, 4));
-          reply(senderId, introductionMessage, function () {
-            reply(senderId, actor.list)
-            sendNextStepMessage(senderId, actor)
-          })
+        }
+        // Include social accounts in 3rd position if they exist
+        if (actor.instagram) {
+          elements.splice(
+            3,
+            0,
+            {
+              "title": 'Social',
+              "image_url": instagramLogo,
+              "default_action": { url: `https://www.instagram.com/${actor.instagram}`, fallback_url: `https://www.instagram.com/` },
+              "buttons": [{ "type": "postback", "title": 'See Instagram', "payload": `INSTAGRAM ${actor.name}` }]
+            }
+          );
+        } else {
+          elements.splice(
+            3,
+            0,
+            {
+              "title": 'Best Videos',
+              "image_url": youtubeLogo,
+              "default_action": { url: `https://www.youtube.com/results?search_query=${actor.name}`, fallback_url: `https://www.youtube.com/` },
+              "buttons": [{ "type": "postback", "title": 'Watch Videos', "payload": `YOUTUBE ${actor.name}` }]
+            }
+          );
+        }
+        // Only render the first 4 elements
+        actor.list = messageTemplate.createListTemplate(elements.slice(0, 4));
+        reply(senderId, introductionMessage, function () {
+          reply(senderId, actor.list)
+          sendNextStepMessage(senderId, actor)
         })
       })
+    })
   });
 }
 
@@ -283,69 +283,77 @@ function sendCarouselOfFilms(senderId, actorName) {
   let actor = {};
   MovieDB.searchPerson({ query: actorName }, (err, res) => {
     checkForErrors(err);
-    actor.id = res.results[0].id;
-    MovieDB.personCombinedCredits({ id: actor.id }, (err, res) => { // get TV shows and movies
-      checkForErrors(err);
-      let JSONResponse = res.cast;
-      JSONResponse = sortCreditsByYear(JSONResponse);
-      let filmList = [];
-      for (let i = 0; i <= 9; i++) {
-        let film = {};
-        if (JSONResponse[i].media_type === 'movie') {
-          film.media_type = JSONResponse[i].media_type,
-            film.id = JSONResponse[i].id,
-            film.title = JSONResponse[i].media_type === 'movie' ? JSONResponse[i].title : JSONResponse[i].name,
-            film.image_url = JSONResponse[i].poster_path ? `https://image.tmdb.org/t/p/w500/${JSONResponse[i].poster_path}` : `${process.env.SERVER_URI}images/image-not-found.png`,
-            film.buttonsURL = [{ "title": 'See More', "url": `https://www.themoviedb.org/person/${actor.id}` }] // change to specific movi,
-          film.subtitle = JSONResponse[i].release_date ? JSONResponse[i].release_date.substr(0, 4) : ""
-        } else if (JSONResponse[i].media_type === 'tv') {
-          film.media_type = JSONResponse[i].media_type,
-            film.id = JSONResponse[i].id,
-            film.title = JSONResponse[i].media_type === 'movie' ? JSONResponse[i].title : JSONResponse[i].name,
-            film.image_url = JSONResponse[i].poster_path ? `https://image.tmdb.org/t/p/w500/${JSONResponse[i].poster_path}` : `${process.env.SERVER_URI}images/image-not-found.png`,
-            film.subtitle = JSONResponse[i].first_air_date ? JSONResponse[i].first_air_date.substr(0, 4) : "",
-            film.buttonsURL = [{ "title": 'See More', "url": `https://www.themoviedb.org/person/${actor.id}` }] // change to specific movi,
+    if (res.results[0]) {
+      actor.id = res.results[0].id;
+      MovieDB.personCombinedCredits({ id: actor.id }, (err, res) => { // get TV shows and movies
+        checkForErrors(err);
+        let JSONResponse = res.cast;
+        JSONResponse = sortCreditsByYear(JSONResponse);
+        let filmList = [];
+        for (let i = 0; i <= 9; i++) {
+          let film = {};
+          if (JSONResponse[i].media_type === 'movie') {
+            film.media_type = JSONResponse[i].media_type,
+              film.id = JSONResponse[i].id,
+              film.title = JSONResponse[i].media_type === 'movie' ? JSONResponse[i].title : JSONResponse[i].name,
+              film.image_url = JSONResponse[i].poster_path ? `https://image.tmdb.org/t/p/w500/${JSONResponse[i].poster_path}` : `${process.env.SERVER_URI}images/image-not-found.png`,
+              film.buttonsURL = [{ "title": 'See More', "url": `https://www.themoviedb.org/person/${actor.id}` }] // change to specific movi,
+            film.subtitle = JSONResponse[i].release_date ? JSONResponse[i].release_date.substr(0, 4) : ""
+          } else if (JSONResponse[i].media_type === 'tv') {
+            film.media_type = JSONResponse[i].media_type,
+              film.id = JSONResponse[i].id,
+              film.title = JSONResponse[i].media_type === 'movie' ? JSONResponse[i].title : JSONResponse[i].name,
+              film.image_url = JSONResponse[i].poster_path ? `https://image.tmdb.org/t/p/w500/${JSONResponse[i].poster_path}` : `${process.env.SERVER_URI}images/image-not-found.png`,
+              film.subtitle = JSONResponse[i].first_air_date ? JSONResponse[i].first_air_date.substr(0, 4) : "",
+              film.buttonsURL = [{ "title": 'See More', "url": `https://www.themoviedb.org/person/${actor.id}` }] // change to specific movi,
+          }
+          filmList.push(film);
         }
-        filmList.push(film);
-      }
-      let filmListToPush = [];
-      filmList.forEach(function (film) { // use forEach to create its own scope, for the async call
+        let filmListToPush = [];
+        filmList.forEach(function (film) { // use forEach to create its own scope, for the async call
 
-        if (film.media_type === 'tv') {
-          MovieDB.tvVideos({ id: film.id }, function (err, res) {
-            checkForErrors(err);
-            if (res.results[0].site === 'YouTube') {
-                film.trailer = `https://www.youtube.com/watch?v=${res.results[0].key}`;
-                film.buttonsURL.push({ "title": 'Watch Trailer', "url": film.trailer })
-            }
-            filmListToPush.push(film);
-            if (filmListToPush.length === 10) { // if statement inside the forEach to not have asynchronous pbs
-              let filmTemplate = messageTemplate.createGenericTemplate(filmListToPush)
-              reply(senderId, filmTemplate, function () {
-                sendNextStepMessage(senderId)
-              })
-            }
-          })
-        } else if (film.media_type === 'movie') {
-          MovieDB.movieTrailers({ id: film.id }, function (err, res) {
-            checkForErrors(err);
-            if (res.youtube) {
-              if (res.youtube[0]) {
-                film.trailer = `https://www.youtube.com/watch?v=${res.youtube[0].source}`;
-                film.buttonsURL.push({ "title": 'Watch Trailer', "url": film.trailer })
+          if (film.media_type === 'tv') {
+            MovieDB.tvVideos({ id: film.id }, function (err, res) {
+              checkForErrors(err);
+              if (res.results[0]) {
+                if (res.results[0].site === 'YouTube') {
+                  film.trailer = `https://www.youtube.com/watch?v=${res.results[0].key}`;
+                  film.buttonsURL.push({ "title": 'Watch Trailer', "url": film.trailer })
+                }
               }
-            }
-            filmListToPush.push(film);
-            if (filmListToPush.length === 10) { // if statement inside the forEach to not have asynchronous pbs
-              let filmTemplate = messageTemplate.createGenericTemplate(filmListToPush)
-              reply(senderId, filmTemplate, function () {
-                sendNextStepMessage(senderId)
-              })
-            }
-          })
-        }
+              filmListToPush.push(film);
+              if (filmListToPush.length === 10) { // if statement inside the forEach to not have asynchronous pbs
+                let filmTemplate = messageTemplate.createGenericTemplate(filmListToPush)
+                reply(senderId, filmTemplate, function () {
+                  sendNextStepMessage(senderId)
+                })
+              }
+            })
+          } else if (film.media_type === 'movie') {
+            MovieDB.movieTrailers({ id: film.id }, function (err, res) {
+              checkForErrors(err);
+              if (res.youtube) {
+                if (res.youtube[0]) {
+                  film.trailer = `https://www.youtube.com/watch?v=${res.youtube[0].source}`;
+                  film.buttonsURL.push({ "title": 'Watch Trailer', "url": film.trailer })
+                }
+              }
+              filmListToPush.push(film);
+              if (filmListToPush.length === 10) { // if statement inside the forEach to not have asynchronous pbs
+                let filmTemplate = messageTemplate.createGenericTemplate(filmListToPush)
+                reply(senderId, filmTemplate, function () {
+                  sendNextStepMessage(senderId)
+                })
+              }
+            })
+          }
+        })
       })
-    })
+    } else { // if cannot find person in movieDB
+      reply(senderId, 'No Movies or TV Shows have been found for this person', function () {
+        sendSingleActor(senderId, actorName);
+      });
+    }
   })
 }
 
@@ -407,14 +415,14 @@ function sendInstagramFeed(senderId, instagramHandle) {
     if (response && response.statusCode === 200) {
       for (let i = 0; i < 10; i++) {
         let card = {};
-          if (items[i].caption === null) {
-            card.title = items[i].user.name;
-          } else {
-            card.title = items[i].caption.text;
-          }
-          card.item_url = items[i].link;
-          card.image_url = items[i].images.standard_resolution.url;
-          card.subtitle = `❤️ ${items[i].likes.count}`;
+        if (items[i].caption === null) {
+          card.title = items[i].user.name;
+        } else {
+          card.title = items[i].caption.text;
+        }
+        card.item_url = items[i].link;
+        card.image_url = items[i].images.standard_resolution.url;
+        card.subtitle = `❤️ ${items[i].likes.count}`;
         elements.push(card);
       }
       let instagramTemplate = messageTemplate.createGenericTemplate(elements);
