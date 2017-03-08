@@ -145,7 +145,7 @@ function sendSingleActor(senderId, actorName) {
               1,
               0,
               {
-                "title": 'Latest Movies and Shows',
+                "title": 'Movies and Shows',
                 "image_url": filmImage,
                 "default_action": { url: `https://www.themoviedb.org/person/${actor.id}`, fallback_url: `https://www.themoviedb.org/person/${actor.id}` },
                 "buttons": [{ "type": "postback", "title": 'See Collection', "payload": `FILMOGRAPHY ${actor.name}` }]
@@ -314,9 +314,11 @@ function sendCarouselOfFilms(senderId, actorName) {
         if (film.media_type === 'tv') {
           MovieDB.tvVideos({ id: film.id }, function (err, res) {
             checkForErrors(err);
-            if (res.results[0].site === 'YouTube') {
-                film.trailer = `https://www.youtube.com/watch?v=${res.results[0].key}`;
-                film.buttonsURL.push({ "title": 'Watch Trailer', "url": film.trailer })
+            if (res.results[0]) {
+              if (res.results[0].site === 'YouTube') {
+                  film.trailer = `https://www.youtube.com/watch?v=${res.results[0].key}`;
+                  film.buttonsURL.push({ "title": 'Watch Trailer', "url": film.trailer })
+              }
             }
             filmListToPush.push(film);
             if (filmListToPush.length === 10) { // if statement inside the forEach to not have asynchronous pbs
