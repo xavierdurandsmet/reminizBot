@@ -162,7 +162,6 @@ function sendSingleActor(senderId, actorName) {
               "buttons": [{ "type": "postback", "title": 'See Products', "payload": `AMAZON ${actor.name}` }]
             }
           );
-
         }
         // Include social accounts in 3rd position if they exist
         if (actor.instagram) {
@@ -311,7 +310,6 @@ function sendCarouselOfFilms(senderId, actorName) {
         }
         let filmListToPush = [];
         filmList.forEach(function (film) { // use forEach to create its own scope, for the async call
-
           if (film.media_type === 'tv') {
             MovieDB.tvVideos({ id: film.id }, function (err, res) {
               checkForErrors(err);
