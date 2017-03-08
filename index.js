@@ -92,22 +92,51 @@ app.post('/webhook/', function (req, res) {
         }
       ]
       if (postback.payload === "CNN") {
-        Bot.sendSingleActor(senderId, channels[0].actors[0])
+        Bot.getLiveActors(function (actors) {
+          for (let i = 0; i < actors.length; i++) {
+            Actor.findOneAndUpdate(
+              { name: actors[i].name },
+              { $set: {
+                name: actors[i].name,
+                instagram: actors[i].instagram,
+                is_actor: actors[i].is_actor
+              }
+              },
+              { upsert: true, new: true }, function (err) {
+                Bot.checkForErrors(err)
+              }
+            )
+          }
+          if (!actors || actors.length === 0) {
+            Bot.reply(senderId, 'Nobody on screen right now', function () {
+              Bot.sendNextStepMessage(senderId);
+            });
+          } else if (actors.length === 1) {
+            console.log('single')
+            Bot.sendSingleActor(senderId, actors[0].name);
+          } else {
+            console.log('many', actors)
+            User.findOrCreate(senderId, function(currentUser) {
+              Bot.sendCarouselOfActors(currentUser, actors, 'There are many actors on screen right now 😎 Which one are you interested in?');
+            })
+          }
+        })
+        // Bot.sendSingleActor(senderId, channels[0].actors[0])
       } else if (postback.payload === "DISNEY_CHANNEL") {
         User.findOrCreate(senderId, function (currentUser) {
-          Bot.sendManyActors(currentUser, channels[1].actors);
+          Bot.sendCarouselOfActors(currentUser, channels[1].actors);
         });
       } else if (postback.payload.substr(0, 12) === "SINGLE_ACTOR") {
         let info = postback.payload.split(",");
-        let actor = info[1];
-        Bot.sendSingleActor(senderId, actor);
+        let actorName = info[1];
+        Bot.sendSingleActor(senderId, actorName);
       } else if (postback.payload.substr(0, 6) === "AMAZON") {
         let actorName = postback.payload.substr(7);
         Bot.sendAmazonProducts(senderId, actorName);
         Actor.findOneAndUpdate(
-          { full_name: actorName },
+          { name: actorName },
           { $inc: { 'timesSectionsAreClicked.products': 1 } },
-          { upsert: true }, function (error) { // replace full_name with id
+          { upsert: true }, function (error) { // replace name with id
             if (error) {
               return res.send(error);
             }
@@ -116,9 +145,9 @@ app.post('/webhook/', function (req, res) {
         let actorName = postback.payload.substr(12);
         Bot.sendCarouselOfFilms(senderId, actorName);
         Actor.findOneAndUpdate(
-         { full_name: actorName },
+         { name: actorName },
          { $inc: { 'timesSectionsAreClicked.filmography': 1 } },
-         { upsert: true }, function (error) { // replace full_name with id
+         { upsert: true }, function (error) { // replace name with id
           if (error) {
             return res.send(error);
           }
@@ -127,16 +156,16 @@ app.post('/webhook/', function (req, res) {
         let actorName = postback.payload.substr(5);
         Bot.sendCarouselOfNews(senderId, actorName);
         Actor.findOneAndUpdate(
-          { full_name: actorName },
+          { name: actorName },
           { $inc: { 'timesSectionsAreClicked.news': 1 } },
-          { upsert: true }, function (error) { // replace full_name with id
+          { upsert: true }, function (error) { // replace name with id
           if (error) {
             return res.send(error);
           }
         })
       } else if (postback.payload.substr(0, 9) === "INSTAGRAM") {
         const actorName = postback.payload.substr(10);
-        Actor.findOne({full_name: actorName}, function(error, actor) {
+        Actor.findOne({name: actorName}, function(error, actor) {
           Bot.checkForErrors(error);
           Bot.sendInstagramFeed(senderId, actor.instagram);
         });
@@ -150,7 +179,7 @@ app.post('/webhook/', function (req, res) {
 
         User.findOrCreate(senderId, function (currentUser) {
           Actor.findOneAndUpdate(
-            { full_name: newFavoriteActor },
+            { name: newFavoriteActor },
             {
               $push: { bookmarkedBy: currentUser.fb_id },
               $inc: { timesBookmarked: 1 },
@@ -206,7 +235,7 @@ app.post('/webhook/', function (req, res) {
               Bot.sendActorIsUnbookmarked(senderId, actorToUnbookmark);
 
               Actor.findOneAndUpdate(
-                { full_name: actorToUnbookmark },
+                { name: actorToUnbookmark },
                 function (error, actor) { // replace name with id?
                   if (error) {
                     return error;
@@ -271,16 +300,16 @@ function sendNotifications() { // actors is an array
 // SEED DATABASE
 // const actors = [
 //   {"id": 1,
-//    "full_name": "Natalie Portman",
+//    "name": "Natalie Portman",
 //    "is_actor": true
 //   },
 //   {"id": 2,
-//    "full_name": "Justin Timberlake",
+//    "name": "Justin Timberlake",
 //    "is_actor": true,
 //    "instagram": "justintimberlake"
 //   },
 //   {"id": 3,
-//    "full_name": "Justin Bieber",
+//    "name": "Justin Bieber",
 //    "is_actor": false,
 //    "instagram": "justinbieber"
 //   }

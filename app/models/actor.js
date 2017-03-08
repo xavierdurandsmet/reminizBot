@@ -1,9 +1,8 @@
 const mongoose = require('mongoose');
 
 var ActorSchema = new mongoose.Schema({
-  id: { type: String, index: true, unique: true },
-  full_name: String,
-  thumbnail: {type: String, default: 'http://cdn5.thr.com/sites/default/files/2015/05/bts_natalie_portman_clean.jpg'},
+  name: String,
+  thumbnail: {type: String, default: null },
   is_actor: { type: Boolean, default: false },
   instagram: { type: String },
   bookmarkedBy: [String],
