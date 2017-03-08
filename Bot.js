@@ -192,9 +192,10 @@ function sendSingleActor(senderId, actorName) {
         reply(senderId, introductionMessage, function () {
           reply(senderId, actor.list)
           sendNextStepMessage(senderId, actor)
+        })
       })
-    })
-  });
+    });
+  })
 }
 
 function sendCarouselOfActors(currentUser, listOfActors, introductionMessage) {
