@@ -34,6 +34,7 @@ module.exports = {
   getLiveActors: getLiveActors
 }
 
+// Send a list of channels for Reminiz API requests
 function sendChannelsList(senderId) {
   User.findOrCreate(senderId, function (user) {
     let introductionMessage = `Hi ${user.fb_first_name} 👋 Pick a TV channel to know who's on screen in real time ⚡️` // Greet user by its first name
@@ -64,7 +65,7 @@ function sendChannelsList(senderId) {
 }
 
 
-// Request reminiz API
+// Request reminiz API and return actors
 function getLiveActors(callback) {
   const uri = 'http://40.68.198.152:5000/live/people/a';
   request(uri, function (error, response, body) {
@@ -78,6 +79,7 @@ function getLiveActors(callback) {
   })
 }
 
+// Query Bing to get Actor Thumbnail and return actor as an object for Carousels
 function getActorsInfo(listOfActors, callback) {
   let actorsInfo = [];
   let counter = 0;
@@ -95,7 +97,8 @@ function getActorsInfo(listOfActors, callback) {
     });
   }
 }
-// Send a list template containing the actor profile
+
+// Send  list template containing the actor profile
 function sendSingleActor(senderId, actorName) {
   Actor.findOne({ name: actorName}, function(error, actor) {
     checkForErrors(error);
