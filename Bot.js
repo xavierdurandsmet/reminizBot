@@ -79,6 +79,24 @@ function getLiveActors(callback) {
     return callback(JSON.parse(body));
   })
 }
+
+function getActorsInfo(listOfActors, callback) {
+  let actorsInfo = [];
+  let counter = 0;
+  for (let i = 0; i < listOfActors.length; i++) {
+    Bing.images(listOfActors[i], { top: 5, skip: 3 }, function (error, res, body) {
+      checkForErrors(error);
+      actorsInfo.push({
+        name: listOfActors[i],
+        image: body.value ? body.value[i].contentUrl : "" // temp fix, change the lib
+      });
+      counter += 1;
+      if (counter === listOfActors.length) {
+        return callback(actorsInfo);
+      }
+    });
+  }
+}
 // Send a list template containing the actor profile
 function sendSingleActor(senderId, actorName) {
   Actor.findOne({ name: actorName}, function(error, actor) {
@@ -229,23 +247,6 @@ function sendCarouselOfActors(currentUser, listOfActors, introductionMessage) {
   });
 }
 
-function getActorsInfo(listOfActors, callback) {
-  let actorsInfo = [];
-  let counter = 0;
-  for (let i = 0; i < listOfActors.length; i++) {
-    Bing.images(listOfActors[i].name, { top: 5, skip: 3 }, function (error, res, body) {
-      checkForErrors(error);
-      actorsInfo.push({
-        name: listOfActors[i].name,
-        image: body.value ? body.value[i].contentUrl : "" // temp fix, change the lib
-      });
-      counter += 1;
-      if (counter === listOfActors.length) {
-        return callback(actorsInfo);
-      }
-    });
-  }
-}
 
 function sendFavoriteActors(user) {
   if (user.favorites.length === 0) {

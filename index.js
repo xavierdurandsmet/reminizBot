@@ -100,7 +100,7 @@ app.post('/webhook/', function (req, res) {
                 is_actor: actors[i].is_actor
               }
               },
-              { upsert: true }, function (err) {
+              { upsert: true, new: true }, function (err) {
                 Bot.checkForErrors(err)
               }
             )
