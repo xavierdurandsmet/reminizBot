@@ -17,9 +17,9 @@ const bingNewsImage = `${process.env.SERVER_URI}images/bing.jpg`;
 
 
 module.exports = {
+  sendCarouselOfActors: sendCarouselOfActors,
   sendChannelsList: sendChannelsList,
   sendSingleActor: sendSingleActor,
-  sendManyActors: sendManyActors,
   sendFavoriteActors: sendFavoriteActors,
   sendActorIsBookmarked: sendActorIsBookmarked,
   sendActorIsUnbookmarked: sendActorIsUnbookmarked,
@@ -30,9 +30,11 @@ module.exports = {
   sendCarouselOfNews: sendCarouselOfNews,
   checkForErrors: checkForErrors,
   sendInstagramFeed: sendInstagramFeed,
-  sendYoutubeVideos: sendYoutubeVideos
+  sendYoutubeVideos: sendYoutubeVideos,
+  getLiveActors: getLiveActors
 }
 
+// Send a list of channels for Reminiz API requests
 function sendChannelsList(senderId) {
   User.findOrCreate(senderId, function (user) {
     let introductionMessage = `Hi ${user.fb_first_name} 👋 Pick a TV channel to know who's on screen in real time ⚡️` // Greet user by its first name
@@ -61,24 +63,58 @@ function sendChannelsList(senderId) {
     });
   });
 }
-// Send a list template containing the actor profile
+
+
+// Request reminiz API and return actors
+function getLiveActors(callback) {
+  const uri = 'http://40.68.198.152:5000/live/people/a';
+  request(uri, function (error, response, body) {
+    checkForErrors(error);
+    if (!body) {
+      return callback(null);
+    } else if (response && response.statusCode !== 200) {
+      return callback(response.statusCode);
+    }
+    return callback(JSON.parse(body));
+  })
+}
+
+// Query Bing to get Actor Thumbnail and return actor as an object for Carousels
+function getActorsInfo(listOfActors, callback) {
+  let actorsInfo = [];
+  let counter = 0;
+  for (let i = 0; i < listOfActors.length; i++) {
+    Bing.images(listOfActors[i].name || listOfActors[i], { top: 5, skip: 3 }, function (error, res, body) {
+      checkForErrors(error);
+      actorsInfo.push({
+        name: listOfActors[i].name || listOfActors[i],
+        image: body.value ? body.value[i].contentUrl : "" // temp fix, change the lib
+      });
+      counter += 1;
+      if (counter === listOfActors.length) {
+        return callback(actorsInfo);
+      }
+    });
+  }
+}
+
+// Send  list template containing the actor profile
 function sendSingleActor(senderId, actorName) {
-  Actor.findOne({ full_name: actorName }, function (error, actor) {
+  Actor.findOne({ name: actorName}, function (error, actor) {
     checkForErrors(error);
     if (!actor) {
       console.log('Actor is empty or undefined');
       return;
     }
-    let biography = actor.full_name,
+    let biography = actor.name,
       filmImage = `${process.env.SERVER_URI}images/movie_db.jpg`,
       instagramLogo = `${process.env.SERVER_URI}images/instagram.png`,
-      introductionMessage = `${actor.full_name} is live ❤️`,
+      introductionMessage = `${actor.name} is live ❤️`,
       productImage = `${process.env.SERVER_URI}images/best_sellers.png`,
       productName = 'Best sellers',
       youtubeLogo = `${process.env.SERVER_URI}images/youtube.png`;
 
-    Bing.images(actor.full_name, { top: 15, skip: 3 },
-      function (error, res, body) {
+    Bing.images(actor.name, { top: 15, skip: 3 }, function (error, res, body) {
         checkForErrors(error);
         let options = { query: actor.full_name, format: 'html', summaryOnly: true, lang: 'en' } // get the Wiki summary
         wikipedia.searchArticle(options, function (err, htmlWikiText) {
@@ -88,7 +124,6 @@ function sendSingleActor(senderId, actorName) {
           }
           actor.image = body.value[0].contentUrl; // put a default image if JSON is incorrect
           // >If it's an actor then send filmography
-
           let elements = [
             {
               "title": biography,
@@ -154,9 +189,9 @@ function sendSingleActor(senderId, actorName) {
             );
           }
           // Only render the first 4 elements
-          actor.description = messageTemplate.createListTemplate(elements.slice(0, 4));
+          actor.list = messageTemplate.createListTemplate(elements.slice(0, 4));
           reply(senderId, introductionMessage, function () {
-            reply(senderId, actor.description)
+            reply(senderId, actor.list)
             sendNextStepMessage(senderId, actor)
           })
         })
@@ -164,10 +199,53 @@ function sendSingleActor(senderId, actorName) {
   });
 }
 
-function sendManyActors(user, listOfActors) {
-  let introductionMessage = 'There are many actors on screen right now 😎 Which one are you interested in?'
-  sendCarouselOfActors(user, listOfActors, introductionMessage)
+function sendCarouselOfActors(currentUser, listOfActors, introductionMessage) {
+  let elements = [];
+  let counter = 0;
+  getActorsInfo(listOfActors, function (actorsInfo) {
+    for (let i = 0; i < actorsInfo.length; i++) {
+      let element = {
+        title: actorsInfo[i].name,
+        image_url: actorsInfo[i].image,
+        subtitle: 'Click on "Choose" to know more about ' + actorsInfo[i].name,
+      }
+      if (currentUser.favorites && currentUser.favorites.indexOf(actorsInfo[i].name) === -1) {
+        element.buttons = [
+          {
+            "title": "Choose ✔︎",
+            "payload": "SINGLE_ACTOR," + actorsInfo[i].name
+          },
+          {
+            "title": "Bookmark ❤️",
+            "payload": "BOOKMARK " + actorsInfo[i].name
+          }
+        ]
+      } else {
+        element.buttons = [
+          {
+            "title": "Choose ✔︎",
+            "payload": "SINGLE_ACTOR," + actorsInfo[i].name
+          },
+          {
+            "title": "Unbookmark ❌",
+            "payload": "UNBOOKMARK " + actorsInfo[i].name
+          }
+        ]
+      }
+      elements.push(element);
+      counter += 1;
+      if (counter === actorsInfo.length) {
+        let listOfActorsMessage = messageTemplate.createGenericTemplate(elements);
+        reply(currentUser.fb_id, introductionMessage, function () {
+          setTimeout(function () {
+            reply(currentUser.fb_id, listOfActorsMessage);
+          }, 2000);
+        })
+      }
+    }
+  });
 }
+
 
 function sendFavoriteActors(user) {
   if (user.favorites.length === 0) {
@@ -329,14 +407,14 @@ function sendInstagramFeed(senderId, instagramHandle) {
     if (response && response.statusCode === 200) {
       for (let i = 0; i < 10; i++) {
         let card = {};
-        if (items[i].caption === null) {
-          card.title = items[i].user.full_name;
-        } else {
-          card.title = items[i].caption.text;
-        }
-        card.item_url = items[i].link;
-        card.image_url = items[i].images.standard_resolution.url;
-        card.subtitle = `❤️ ${items[i].likes.count}`;
+          if (items[i].caption === null) {
+            card.title = items[i].user.name;
+          } else {
+            card.title = items[i].caption.text;
+          }
+          card.item_url = items[i].link;
+          card.image_url = items[i].images.standard_resolution.url;
+          card.subtitle = `❤️ ${items[i].likes.count}`;
         elements.push(card);
       }
       let instagramTemplate = messageTemplate.createGenericTemplate(elements);
@@ -383,70 +461,6 @@ function sendYoutubeVideos(senderId, actorName) {
     }
   });
 }
-function sendCarouselOfActors(currentUser, listOfActors, introductionMessage) {
-  let elements = [];
-  let counter = 0;
-  getActorsInfo(listOfActors, function (actorsInfo) {
-    for (let i = 0; i < actorsInfo.length; i++) {
-      let element = {
-        title: actorsInfo[i].name,
-        image_url: actorsInfo[i].image,
-        subtitle: 'Click on "Choose" to know more about ' + actorsInfo[i].name,
-      }
-      if (currentUser.favorites.indexOf(actorsInfo[i].name) === -1) {
-        element.buttons = [
-          {
-            "title": "Choose ✔︎",
-            "payload": "SINGLE_ACTOR," + actorsInfo[i].name
-          },
-          {
-            "title": "Bookmark ❤️",
-            "payload": "BOOKMARK " + actorsInfo[i].name
-          }
-        ]
-      } else {
-        element.buttons = [
-          {
-            "title": "Choose ✔︎",
-            "payload": "SINGLE_ACTOR," + actorsInfo[i].name
-          },
-          {
-            "title": "Unbookmark ❌",
-            "payload": "UNBOOKMARK " + actorsInfo[i].name
-          }
-        ]
-      }
-      elements.push(element);
-      counter += 1;
-      if (counter === actorsInfo.length) {
-        let listOfActorsMessage = messageTemplate.createGenericTemplate(elements);
-        reply(currentUser.fb_id, introductionMessage, function () {
-          setTimeout(function () {
-            reply(currentUser.fb_id, listOfActorsMessage);
-          }, 2000);
-        })
-      }
-    }
-  });
-}
-
-function getActorsInfo(listOfActors, callback) {
-  let actorsInfo = [];
-  let counter = 0;
-  for (let i = 0; i < listOfActors.length; i++) {
-    Bing.images(listOfActors[i], { top: 5, skip: 3 }, function (error, res, body) {
-      checkForErrors(error);
-      actorsInfo.push({
-        name: listOfActors[i],
-        image: body.value ? body.value[i].contentUrl : "" // temp fix, change the lib
-      });
-      counter += 1;
-      if (counter === listOfActors.length) {
-        return callback(actorsInfo);
-      }
-    });
-  }
-}
 
 // Generic follow up message
 function sendNextStepMessage(senderId) {
@@ -467,7 +481,7 @@ function sendNextStepMessage(senderId) {
   }
   setTimeout(function () {
     reply(senderId, nextStepMessage)
-  }, 2000);
+  }, 1000);
 }
 
 function reply(senderId, response, cb) { // Send a response to user
