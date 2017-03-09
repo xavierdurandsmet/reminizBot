@@ -113,12 +113,10 @@ function getActorsInfo(listOfActors, callback) {
   for (let i = 0; i < listOfActors.length; i++) {
     Bing.images(listOfActors[i].name || listOfActors[i], { top: 5, skip: 3 }, function (error, res, body) {
       checkForErrors(error);
-      if (body && body.value[i]) {
-        actorsInfo.push({
-          name: listOfActors[i].name || listOfActors[i],
-          image: body.value ? body.value[i].contentUrl : "" // temp fix, change the lib
-        });
-      }
+      actorsInfo.push({
+        name: listOfActors[i].name || listOfActors[i],
+        image: body && body.value && body.value[i] ? body.value[i].contentUrl : `${process.env.SERVER_URI}images/image-not-found.png`
+      });
       counter += 1;
       if (counter === listOfActors.length) {
         return callback(actorsInfo);
@@ -405,6 +403,7 @@ function sendCarouselOfNews(senderId, actorName) {
     let JSONResponse = body.value;
     let newsList = [];
     for (let i = 0; i <= 4; i++) {
+      if (JSONResponse[i]) {
       let newsArticle = {};
       if (JSONResponse[i]) {
         newsArticle.title = JSONResponse[i].name;
@@ -417,11 +416,21 @@ function sendCarouselOfNews(senderId, actorName) {
         newsArticle.buttonsURL = [{ "title": 'Read More', "url": JSONResponse[i].url }]; // change to specific movie
         newsList.push(newsArticle);
       }
+      newsArticle.subtitle = JSONResponse[i].description;
+      newsArticle.buttonsURL = [{ "title": 'Read More', "url": JSONResponse[i].url }]; // change to specific movie
+      newsList.push(newsArticle);
+      }
     }
-    let newsTemplate = messageTemplate.createGenericTemplate(newsList)
-    reply(senderId, newsTemplate, function () {
-      sendNextStepMessage(senderId)
-    })
+    if (!newsList.length) {
+      reply(senderId, 'No TV News were found for this person', function () {
+        sendSingleActor(senderId, actorName);
+      });
+    } else {
+      let newsTemplate = messageTemplate.createGenericTemplate(newsList)
+      reply(senderId, newsTemplate, function () {
+        sendNextStepMessage(senderId)
+      })
+    }
   })
 }
 
@@ -434,7 +443,7 @@ function sendAmazonProducts(senderId, actorName) {
     checkForErrors(err);
     let productList = [];
     for (let i = 0; i < 10; i++) {
-      if (results[i] && results[i].OfferSummary[0].TotalNew[0] != 0) { // make sure the product is available or will return undefined
+      if (results[i] && results[i].OfferSummary && results[i].OfferSummary[0] && results[i].OfferSummary[0].TotalNew[0] != 0) { // make sure the product is available or will return undefined
         let product = {};
         product.title = results[i].ItemAttributes[0].Title[0];
         product.image_url = results[i].LargeImage[0].URL[0];
