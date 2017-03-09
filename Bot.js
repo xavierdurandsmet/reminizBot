@@ -314,6 +314,7 @@ function sendCarouselOfFilms(senderId, actorName) {
           filmList.push(film);
           }
         }
+        // COULD SPLIT HERE IN 2 FUNCTIONS
         // Stop here if no movies were found
         if (filmList.length === 0) {
           reply(senderId, 'No Movies or TV Shows found for this person', function () {
@@ -347,7 +348,8 @@ function sendCarouselOfFilms(senderId, actorName) {
                 film.buttonsURL.push({ "title": 'Watch Trailer', "url": film.trailer })
               }
               filmListToPush.push(film);
-              if (filmListToPush.length === 10) { // if statement inside the forEach to not have asynchronous pbs
+              // Change this, doesn't work if less than 10 films
+              if (filmListToPush.length === filmList.length || filmListToPush.length === 10) { // if statement inside the forEach to not have asynchronous pbs
                 let filmTemplate = messageTemplate.createGenericTemplate(filmListToPush)
                 reply(senderId, filmTemplate, function () {
                   sendNextStepMessage(senderId)
