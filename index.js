@@ -163,21 +163,18 @@ app.post('/webhook/', function (req, res) {
       } else if (postback.payload.substr(0, 8) === "BOOKMARK") { // User bookmarks an actor, bot sends the list of his fav actors
         // User bookmarks an actor, bot sends the list of his fav actors
         let newFavoriteActor = postback.payload.substr(9);
-        console.log("")
 
         User.findOrCreate(senderId, function (currentUser) {
           Actor.findOneAndUpdate(
             { name: newFavoriteActor },
             {
               $push: { bookmarkedBy: currentUser.fb_id },
-              $inc: { timesBookmarked: 1 },
               $inc: { bookmarkCounter: 1 },
             },
             { upsert: true, new: true}, function (error, actor) {
             if (error) {
               return error;
             }
-            console.log(actor)
           });
 
 
@@ -228,7 +225,6 @@ app.post('/webhook/', function (req, res) {
                   if (error) {
                     return error;
                   }
-                  console.log(actor);
                   let indexOfUser = actor.bookmarkedBy.indexOf(currentUser.fb_id);
                   actor.bookmarkedBy.splice(indexOfUser, 1); // removes the element from the arr bookmarkedBy
                   actor.save(function (error) {
