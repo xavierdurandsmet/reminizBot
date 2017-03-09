@@ -27,7 +27,7 @@ app.listen(app.get('port'), function (err) {
     return err;
   }
   // Uncomment this line to install thread settings
-  threadSettings();
+  // threadSettings();
   console.log('running on port', app.get('port'));
 })
 

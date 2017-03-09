@@ -132,6 +132,7 @@ function sendSingleActor(senderId, actorName) {
     if (!actor) {
       reply(senderId, 'Nobody on screen right now...Try again 😊', function() {
         sendNextStepMessage(senderId, actor);
+        return ;
       })
     }
     let biography = actor.name,
@@ -404,11 +405,16 @@ function sendCarouselOfNews(senderId, actorName) {
     for (let i = 0; i <= 4; i++) {
       if (JSONResponse[i]) {
       let newsArticle = {};
-      newsArticle.title = JSONResponse[i].name;
-      if (!JSONResponse[i].image) {
-        newsArticle.image_url = bingNewsImage;
-      } else if (JSONResponse[i].image.thumbnail.contentUrl) {
-        newsArticle.image_url = JSONResponse[i].image.thumbnail.contentUrl; // get better quality images?
+      if (JSONResponse[i]) {
+        newsArticle.title = JSONResponse[i].name;
+        if (!JSONResponse[i].image) {
+          newsArticle.image_url = bingNewsImage;
+        } else if (JSONResponse[i].image.thumbnail.contentUrl) {
+          newsArticle.image_url = JSONResponse[i].image.thumbnail.contentUrl; // get better quality images?
+        }
+        newsArticle.subtitle = JSONResponse[i].description;
+        newsArticle.buttonsURL = [{ "title": 'Read More', "url": JSONResponse[i].url }]; // change to specific movie
+        newsList.push(newsArticle);
       }
       newsArticle.subtitle = JSONResponse[i].description;
       newsArticle.buttonsURL = [{ "title": 'Read More', "url": JSONResponse[i].url }]; // change to specific movie
