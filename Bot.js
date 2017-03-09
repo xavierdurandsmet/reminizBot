@@ -139,7 +139,6 @@ function sendSingleActor(senderId, actorName) {
     let biography = actor.name,
       filmImage = `${process.env.SERVER_URI}images/movie_db.jpg`,
       instagramLogo = `${process.env.SERVER_URI}images/instagram.png`,
-      introductionMessage = `${actor.name} is live ❤️`,
       productImage = `${process.env.SERVER_URI}images/best_sellers.png`,
       productName = 'Best sellers',
       youtubeLogo = `${process.env.SERVER_URI}images/youtube.png`;
@@ -219,12 +218,10 @@ function sendSingleActor(senderId, actorName) {
         }
         // Only render the first 4 elements
         actor.list = messageTemplate.createListTemplate(elements.slice(0, 4));
-        reply(senderId, introductionMessage, function () {
-          reply(senderId, actor.list, function () {
-            sendNextStepMessage(senderId, actor);
-          })
-        })
-      })
+        reply(senderId, actor.list, function () {
+          sendNextStepMessage(senderId, actor);
+        });
+      });
     });
   })
 }

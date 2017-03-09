@@ -107,10 +107,10 @@ app.post('/webhook/', function (req, res) {
               )
             }
              if (actors.length === 1) {
-              console.log('single')
-              Bot.sendSingleActor(senderId, actors[0].name);
+              Bot.reply(senderId, `${actors[0].name} is live ❤️`, function () {
+                Bot.sendSingleActor(senderId, actors[0].name);
+              })
             } else {
-              console.log('many', actors)
               User.findOrCreate(senderId, function(currentUser) {
                 Bot.sendCarouselOfActors(currentUser, actors, 'Many people on screen right now 😎 Who are you interested in?');
               })
