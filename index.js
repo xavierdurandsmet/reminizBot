@@ -12,6 +12,8 @@ const threadSettings = require('./app/controllers/thread_settings');
 const User = require('./app/models/user');
 const Actor = require('./app/models/actor');
 
+const dashbot = require('dashbot')(process.env.DASHBOT_API_KEY).facebook;
+
 app.set('port', (process.env.PORT || 5000));
 
 // Process application/x-www-form-urlencoded
@@ -61,6 +63,7 @@ app.get('/webhook/', function (req, res) {
 
 // MAIN ROUTE - This is called every time the bot receives a message
 app.post('/webhook/', function (req, res) {
+  dashbot.logIncoming(req.body); // Analytics
   let events = req.body.entry[0].messaging;
   for (let i = 0; i < events.length; i++) {
     let event = events[i];

@@ -10,6 +10,7 @@ const client = amazon.createClient({
   awsId: process.env.AMAZON_ID,
   awsSecret: process.env.AMAZON_SECRET_KEY
 });
+const dashbot = require('dashbot')(process.env.DASHBOT_API_KEY).facebook;
 
 const Actor = require('./app/models/actor');
 
@@ -551,8 +552,7 @@ function reply(senderId, response, cb) { // Send a response to user
   } else {
     messageData = response
   }
-
-  request({
+  const requestData = {
     url: 'https://graph.facebook.com/v2.6/me/messages',
     qs: { access_token: PAGE_ACCESS_TOKEN },
     method: 'POST',
@@ -560,7 +560,9 @@ function reply(senderId, response, cb) { // Send a response to user
       recipient: { id: senderId },
       message: messageData
     }
-  }, function (error, response, body) {
+  }
+  request(requestData, function (error, response, body) {
+    dashbot.logOutgoing(requestData, response.body);
     if (error) {
       console.log('Error sending messages: ', error)
     } else if (response.body.error) {
