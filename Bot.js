@@ -333,7 +333,7 @@ function sendCarouselOfFilms(senderId, actorName) {
                 }
               }
               filmListToPush.push(film);
-              if (filmListToPush.length === 10) { // if statement inside the forEach to not have asynchronous pbs
+              if (filmListToPush.length === filmList.length || filmListToPush.length === 10) { // if statement inside the forEach to not have asynchronous pbs
                 let filmTemplate = messageTemplate.createGenericTemplate(filmListToPush)
                 reply(senderId, filmTemplate, function () {
                   sendNextStepMessage(senderId)
