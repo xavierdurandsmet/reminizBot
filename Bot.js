@@ -314,7 +314,8 @@ function sendCarouselOfFilms(senderId, actorName) {
           filmList.push(film);
           }
         }
-        console.log(filmList)
+
+        // SHOULD SPLIT HERE AND MAKE 2 FUNCTIONS
         // Stop here if no movies were found
         if (filmList.length === 0) {
           reply(senderId, 'No Movies or TV Shows found for this person', function () {
@@ -325,9 +326,8 @@ function sendCarouselOfFilms(senderId, actorName) {
         let counter = 0;
         for (let i = 0; i < filmList.length; i++) {
           let film = filmList[i];
-          console.log(counter)
+          // Send collection if max size or end of film list
           if (counter === (filmList.length - 1) || counter === 10) {
-            console.log(filmListToPush);
             let filmTemplate = messageTemplate.createGenericTemplate(filmListToPush);
             reply(senderId, filmTemplate, function () {
               sendNextStepMessage(senderId);
@@ -367,7 +367,6 @@ function sendCarouselOfFilms(senderId, actorName) {
 }
 
 function sendCarouselOfNews(senderId, actorName) {
-  let actor = {};
   Bing.news(actorName, { top: 10, skip: 3, safeSearch: "Moderate" }, function (error, res, body) {
     checkForErrors(error);
     let JSONResponse = body.value;
@@ -457,7 +456,7 @@ function sendYoutubeVideos(senderId, actorName) {
     if (response && response.statusCode === 200) {
       for (let i = 0; i < 6; i++) {
         let card = {};
-        if (items[i]) {
+        if (items[i] && items[i].snippet) {
           card.title = items[i].snippet.title;
           card.item_url = `https://www.youtube.com/watch?v=${items[i].id.videoId}`;
           card.image_url = items[i].snippet.thumbnails.medium.url;
