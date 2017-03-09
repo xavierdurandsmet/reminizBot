@@ -78,21 +78,11 @@ app.post('/webhook/', function (req, res) {
     }
     // Send the default answer for any text message
     if ((postback && postback.payload === "TV_CHANNELS") || (event.message && event.message.quick_reply && event.message.quick_reply.payload === "TV_CHANNELS")) {
-      Bot.sendChannelsList(senderId)
+      Bot.sendChannelsList(senderId);
     } else if (postback && postback.payload) {
-      // will be replaced with the reminiz API
-      let channels = [
-        {
-          name: "CNN",
-          actors: ["Aaron Paul"]
-        },
-        {
-          name: "DISNEY_CHANNEL",
-          actors: ["Justin Bieber", "Justin Timberlake"]
-        }
-      ]
-      if (postback.payload === "CNN") {
-        Bot.getLiveActors(function (actors) {
+        if (postback.payload.substr(0, 7) === "CHANNEL") {
+        let channelName = postback.payload.substr(8);
+        Bot.getLiveActors(channelName, function (actors) {
           for (let i = 0; i < actors.length; i++) {
             Actor.findOneAndUpdate(
               { name: actors[i].name },
@@ -121,11 +111,6 @@ app.post('/webhook/', function (req, res) {
             })
           }
         })
-        // Bot.sendSingleActor(senderId, channels[0].actors[0])
-      } else if (postback.payload === "DISNEY_CHANNEL") {
-        User.findOrCreate(senderId, function (currentUser) {
-          Bot.sendCarouselOfActors(currentUser, channels[1].actors);
-        });
       } else if (postback.payload.substr(0, 12) === "SINGLE_ACTOR") {
         let info = postback.payload.split(",");
         let actorName = info[1];
@@ -320,5 +305,3 @@ function sendNotifications() { // actors is an array
 //    return err;
 //  }
 //});
-
-

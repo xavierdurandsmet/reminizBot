@@ -62,8 +62,8 @@ function addPersistentMenu() {
       thread_state: "existing_thread",
       call_to_actions: [{
         type:"postback",
-        title:"CNN ✔︎",
-        payload: "CNN"
+        title:"TV Channels 📺",
+        payload: "TV_CHANNELS"
       }, {
         type:"postback",
         title:"My favorites ❤️",
