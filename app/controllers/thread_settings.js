@@ -62,8 +62,18 @@ function addPersistentMenu() {
       thread_state: "existing_thread",
       call_to_actions: [{
         type:"postback",
-        title:"TV Channels 📺",
-        payload: "TV_CHANNELS"
+        title: 'Hello Cinema',
+        payload: 'CHANNEL_HelloCinema'
+      },
+      {
+        type:"postback",
+        title: 'News',
+        payload: 'CHANNEL_News'
+      },
+      {
+        type:"postback",
+        title: 'The Junior Club',
+        payload: 'CHANNEL_JuniorClub'
       }, {
         type:"postback",
         title:"My favorites ❤️",
