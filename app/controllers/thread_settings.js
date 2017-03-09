@@ -6,8 +6,9 @@ const THREAD_SETTINGS_URL = `${FACEBOOK_BASE_URL}thread_settings`
 module.exports = function() {
   console.log("EXECUTING THREAD SETTINGS")
   addPersistentMenu()
-  addGetStartedButton()
-  whitelistURL()
+  // removePersistentMenu()
+  // addGetStartedButton()
+  // whitelistURL()
 }
 
 // Add a POSTBACK button for a user's first interaction
@@ -74,7 +75,8 @@ function addPersistentMenu() {
         type:"postback",
         title: 'The Junior Club',
         payload: 'CHANNEL_JuniorClub'
-      }, {
+      },
+      {
         type:"postback",
         title:"My favorites ❤️",
         payload:"FAVORITES"

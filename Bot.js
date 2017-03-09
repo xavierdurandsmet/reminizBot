@@ -113,10 +113,12 @@ function getActorsInfo(listOfActors, callback) {
   for (let i = 0; i < listOfActors.length; i++) {
     Bing.images(listOfActors[i].name || listOfActors[i], { top: 5, skip: 3 }, function (error, res, body) {
       checkForErrors(error);
-      actorsInfo.push({
-        name: listOfActors[i].name || listOfActors[i],
-        image: body.value ? body.value[i].contentUrl : "" // temp fix, change the lib
-      });
+      if (body && body.value[i]) {
+        actorsInfo.push({
+          name: listOfActors[i].name || listOfActors[i],
+          image: body.value ? body.value[i].contentUrl : "" // temp fix, change the lib
+        });
+      }
       counter += 1;
       if (counter === listOfActors.length) {
         return callback(actorsInfo);
