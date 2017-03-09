@@ -5,10 +5,10 @@ const THREAD_SETTINGS_URL = `${FACEBOOK_BASE_URL}thread_settings`
 
 module.exports = function() {
   console.log("EXECUTING THREAD SETTINGS")
-  addPersistentMenu()
+  addGetStartedButton();
+  addPersistentMenu();
   // removePersistentMenu()
-  // addGetStartedButton()
-  // whitelistURL()
+  whitelistURL();
 }
 
 // Add a POSTBACK button for a user's first interaction
