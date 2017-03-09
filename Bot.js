@@ -15,6 +15,29 @@ const Actor = require('./app/models/actor');
 
 const bingNewsImage = `${process.env.SERVER_URI}images/bing.jpg`;
 
+const channels = {
+  News: {
+    title: 'News',
+    uri: 'http://40.68.198.152:5000/live/people/a', // change to specific uri
+    subtitle: 'The News Channel', // find a better subtitle
+    image_url: `${process.env.SERVER_URI}images/newsChannelLogo.png`,
+    payload: 'CHANNEL_News'
+  },
+  JuniorClub: {
+    title: 'The Junior Club',
+    uri: 'http://40.68.198.152:5000/live/people/a', // change to specific uri
+    subtitle: 'Children love it',
+    image_url: `${process.env.SERVER_URI}images/theJuniorClubLogo.png`,
+    payload: 'CHANNEL_JuniorClub'
+  },
+  HelloCinema: {
+    title: 'Hello Cinema',
+    uri: 'http://40.68.198.152:5000/live/people/a', // change to specific uri
+    subtitle: 'The Movie Channel',
+    image_url: `${process.env.SERVER_URI}images/helloCinemaLogo.png`,
+    payload: 'CHANNEL_HelloCinema'
+  }
+}
 
 module.exports = {
   sendCarouselOfActors: sendCarouselOfActors,
@@ -38,20 +61,25 @@ module.exports = {
 function sendChannelsList(senderId) {
   User.findOrCreate(senderId, function (user) {
     let introductionMessage = `Hi ${user.fb_first_name} 👋 Pick a TV channel to know who's on screen in real time ⚡️` // Greet user by its first name
-    let channels = ['CNN', 'DISNEY_CHANNEL']
     let listOfChannelsMessage = messageTemplate.createGenericTemplate(
       [
         {
-          "title": channels[0].replace("_", " "),
-          "image_url": `${process.env.SERVER_URI}images/cnn.png`,
-          "subtitle": 'The news channel',
-          "buttons": [{ "title": 'Choose ✔︎', "payload": channels[0] }]
+          "title": channels.News.title,
+          "image_url": channels.News.image_url,
+          "subtitle": channels.News.subtitle,
+          "buttons": [{ "title": 'Choose ✔︎', "payload": channels.News.payload }]
         },
         {
-          "title": channels[1].replace("_", " "),
-          "image_url": `${process.env.SERVER_URI}images/disney_channel.png`,
-          "subtitle": 'Children love it',
-          "buttons": [{ "title": 'Choose ✔︎', "payload": channels[1] }]
+          "title": channels.JuniorClub.title,
+          "image_url": channels.JuniorClub.image_url,
+          "subtitle": channels.JuniorClub.subtitle,
+          "buttons": [{ "title": 'Choose ✔︎', "payload": channels.JuniorClub.payload }]
+        },
+        {
+          "title": channels.HelloCinema.title,
+          "image_url": channels.HelloCinema.image_url,
+          "subtitle": channels.HelloCinema.subtitle,
+          "buttons": [{ "title": 'Choose ✔︎', "payload": channels.HelloCinema.payload}]
         }
       ]
     )
@@ -64,10 +92,9 @@ function sendChannelsList(senderId) {
   });
 }
 
-
 // Request reminiz API and return actors
-function getLiveActors(callback) {
-  const uri = 'http://40.68.198.152:5000/live/people/a';
+function getLiveActors(channelName, callback) {
+  let uri = channels[channelName].uri;
   request(uri, function (error, response, body) {
     checkForErrors(error);
     if (!body) {
@@ -191,7 +218,7 @@ function sendSingleActor(senderId, actorName) {
         // Only render the first 4 elements
         actor.list = messageTemplate.createListTemplate(elements.slice(0, 4));
         reply(senderId, introductionMessage, function () {
-          reply(senderId, actor.list, function() {
+          reply(senderId, actor.list, function () {
             sendNextStepMessage(senderId, actor);
           })
         })
@@ -312,7 +339,7 @@ function sendCarouselOfFilms(senderId, actorName) {
               film.subtitle = JSONResponse[i].first_air_date ? JSONResponse[i].first_air_date.substr(0, 4) : "";
               film.buttonsURL = [{ "title": 'See More', "url": `https://www.themoviedb.org/person/${actor.id}` }]; // change to specific movi,
             }
-          filmList.push(film);
+            filmList.push(film);
           }
         }
         // COULD SPLIT HERE IN 2 FUNCTIONS
