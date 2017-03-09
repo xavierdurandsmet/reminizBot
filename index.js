@@ -245,9 +245,8 @@ app.post('/webhook/', function (req, res) {
 
 // NOTIFICATIONS
 new CronJob({
-  cronTime: '10-19 * *', // Should run every hour between 10 and 19
+  cronTime: '09 * * * *', // Should run every hour between 10 and 19
   onTick: function() {
-    console.log("Sending message, at", new Date());
     sendNotifications();
   },
   start: true,
@@ -268,7 +267,7 @@ function sendNotifications() {
         }
         console.log('Sending notif to ', users[i].fb_id)
         let actor = users[i].favorites[0];
-        Bot.reply(users[i].fb_id, `Since you bookmarked ${actor}, we figured you might want some info 😊`, function () {
+        Bot.reply(users[i].fb_id, `You bookmarked ${actor}, remember?`, function () {
           Bot.reply(users[i].fb_id, `Don't worry ${users[i].fb_first_name}, we won't bother you again (unless you ask for it 😉)`, function () {
             Bot.sendSingleActor(users[i].fb_id, actor);
           });
