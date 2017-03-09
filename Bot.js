@@ -103,8 +103,9 @@ function sendSingleActor(senderId, actorName) {
   Actor.findOne({ name: actorName }, function (error, actor) {
     checkForErrors(error);
     if (!actor) {
-      console.log('Actor is empty or undefined');
-      return;
+      reply(senderId, 'Nobody on screen right now...Try again 😊', function() {
+        sendNextStepMessage(senderId, actor);
+      })
     }
     let biography = actor.name,
       filmImage = `${process.env.SERVER_URI}images/movie_db.jpg`,
