@@ -314,7 +314,7 @@ function sendCarouselOfFilms(senderId, actorName) {
           filmList.push(film);
           }
         }
-        console.log(filmList)
+        // COULD SPLIT HERE IN 2 FUNCTIONS
         // Stop here if no movies were found
         if (filmList.length === 0) {
           reply(senderId, 'No Movies or TV Shows found for this person', function () {
@@ -322,7 +322,6 @@ function sendCarouselOfFilms(senderId, actorName) {
           });
         }
         let filmListToPush = [];
-        let counter = 0;
         filmList.forEach(function (film) { // use forEach to create its own scope, for the async call
           if (film && film.media_type === 'tv') {
             MovieDB.tvVideos({ id: film.id }, function (err, res) {
