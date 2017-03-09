@@ -115,7 +115,7 @@ function getActorsInfo(listOfActors, callback) {
       checkForErrors(error);
       actorsInfo.push({
         name: listOfActors[i].name || listOfActors[i],
-        image: body.value && body.value[i] ? body.value[i].contentUrl : `${process.env.SERVER_URI}images/image-not-found.png`
+        image: body && body.value && body.value[i] ? body.value[i].contentUrl : `${process.env.SERVER_URI}images/image-not-found.png`
       });
       counter += 1;
       if (counter === listOfActors.length) {
