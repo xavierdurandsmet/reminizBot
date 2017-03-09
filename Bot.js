@@ -314,8 +314,7 @@ function sendCarouselOfFilms(senderId, actorName) {
           filmList.push(film);
           }
         }
-
-        // SHOULD SPLIT HERE AND MAKE 2 FUNCTIONS
+        console.log(filmList)
         // Stop here if no movies were found
         if (filmList.length === 0) {
           reply(senderId, 'No Movies or TV Shows found for this person', function () {
@@ -324,15 +323,7 @@ function sendCarouselOfFilms(senderId, actorName) {
         }
         let filmListToPush = [];
         let counter = 0;
-        for (let i = 0; i < filmList.length; i++) {
-          let film = filmList[i];
-          // Send collection if max size or end of film list
-          if (counter === (filmList.length - 1) || counter === 10) {
-            let filmTemplate = messageTemplate.createGenericTemplate(filmListToPush);
-            reply(senderId, filmTemplate, function () {
-              sendNextStepMessage(senderId);
-            });
-          }
+        filmList.forEach(function (film) { // use forEach to create its own scope, for the async call
           if (film && film.media_type === 'tv') {
             MovieDB.tvVideos({ id: film.id }, function (err, res) {
               checkForErrors(err);
@@ -342,21 +333,32 @@ function sendCarouselOfFilms(senderId, actorName) {
                   film.buttonsURL.push({ "title": 'Watch Trailer', "url": film.trailer })
                 }
               }
+              filmListToPush.push(film);
+              if (filmListToPush.length === 10) { // if statement inside the forEach to not have asynchronous pbs
+                let filmTemplate = messageTemplate.createGenericTemplate(filmListToPush)
+                reply(senderId, filmTemplate, function () {
+                  sendNextStepMessage(senderId)
+                })
+              }
             })
-            filmListToPush.push(film);
-            counter += 1;
           } else if (film && film.media_type === 'movie') {
             MovieDB.movieTrailers({ id: film.id }, function (err, res) {
               checkForErrors(err);
               if (res.youtube[0]) {
                 film.trailer = `https://www.youtube.com/watch?v=${res.youtube[0].source}`;
-                film.buttonsURL.push({ "title": 'Watch Trailer', "url": film.trailer });
+                film.buttonsURL.push({ "title": 'Watch Trailer', "url": film.trailer })
+              }
+              filmListToPush.push(film);
+              // Change this, doesn't work if less than 10 films
+              if (filmListToPush.length === filmList.length || filmListToPush.length === 10) { // if statement inside the forEach to not have asynchronous pbs
+                let filmTemplate = messageTemplate.createGenericTemplate(filmListToPush)
+                reply(senderId, filmTemplate, function () {
+                  sendNextStepMessage(senderId)
+                })
               }
             })
-            filmListToPush.push(film);
-            counter += 1;
           }
-        }
+        })
       })
     } else { // if cannot find person in movieDB
       reply(senderId, 'No Movies or TV Shows found for this person', function () {
@@ -367,6 +369,7 @@ function sendCarouselOfFilms(senderId, actorName) {
 }
 
 function sendCarouselOfNews(senderId, actorName) {
+  let actor = {};
   Bing.news(actorName, { top: 10, skip: 3, safeSearch: "Moderate" }, function (error, res, body) {
     checkForErrors(error);
     let JSONResponse = body.value;
@@ -456,7 +459,7 @@ function sendYoutubeVideos(senderId, actorName) {
     if (response && response.statusCode === 200) {
       for (let i = 0; i < 6; i++) {
         let card = {};
-        if (items[i] && items[i].snippet) {
+        if (items[i]) {
           card.title = items[i].snippet.title;
           card.item_url = `https://www.youtube.com/watch?v=${items[i].id.videoId}`;
           card.image_url = items[i].snippet.thumbnails.medium.url;
