@@ -113,10 +113,10 @@ app.post('/webhook/', function (req, res) {
               )
             }
              if (actors.length === 1) {
-              console.log('single')
-              Bot.sendSingleActor(senderId, actors[0].name);
+              Bot.reply(senderId, `${actors[0].name} is live ❤️`, function () {
+                Bot.sendSingleActor(senderId, actors[0].name);
+              })
             } else {
-              console.log('many', actors)
               User.findOrCreate(senderId, function(currentUser) {
                 Bot.sendCarouselOfActors(currentUser, actors, 'Many people on screen right now 😎 Who are you interested in?');
               })
@@ -126,7 +126,9 @@ app.post('/webhook/', function (req, res) {
       } else if (postback.payload.substr(0, 12) === "SINGLE_ACTOR") {
         let info = postback.payload.split(",");
         let actorName = info[1];
-        Bot.sendSingleActor(senderId, actorName);
+        Bot.reply(senderId, `${actorName} is live ❤️`, function () {
+          Bot.sendSingleActor(senderId, actorName);
+        });
       } else if (postback.payload.substr(0, 6) === "AMAZON") {
         let actorName = postback.payload.substr(7);
         Bot.sendAmazonProducts(senderId, actorName);

@@ -139,7 +139,6 @@ function sendSingleActor(senderId, actorName) {
     let biography = actor.name,
       filmImage = `${process.env.SERVER_URI}images/movie_db.jpg`,
       instagramLogo = `${process.env.SERVER_URI}images/instagram.png`,
-      introductionMessage = `${actor.name} is live ❤️`,
       productImage = `${process.env.SERVER_URI}images/best_sellers.png`,
       productName = 'Best sellers',
       youtubeLogo = `${process.env.SERVER_URI}images/youtube.png`;
@@ -165,7 +164,6 @@ function sendSingleActor(senderId, actorName) {
           {
             "title": 'Latest News',
             "image_url": bingNewsImage,
-            "default_action": { url: 'https://en.wikipedia.org/wiki/' + actor.name, fallback_url: 'https://en.wikipedia.org/wiki/' + actor.name }, // to change to next line but currently not working
             "buttons": [{ "type": "postback", "title": 'Read News', "payload": "NEWS " + actor.name }]
           }
         ];
@@ -177,7 +175,6 @@ function sendSingleActor(senderId, actorName) {
             {
               "title": 'Movies and Shows',
               "image_url": filmImage,
-              "default_action": { url: `https://www.themoviedb.org/person/${actor.id}`, fallback_url: `https://www.themoviedb.org/person/${actor.id}` },
               "buttons": [{ "type": "postback", "title": 'See Collection', "payload": `FILMOGRAPHY ${actor.name}` }]
             }
           );
@@ -188,7 +185,6 @@ function sendSingleActor(senderId, actorName) {
             {
               "title": productName,
               "image_url": productImage,
-              "default_action": { url: 'https://www.amazon.com', fallback_url: 'https://www.amazon.com' },
               "buttons": [{ "type": "postback", "title": 'See Products', "payload": `AMAZON ${actor.name}` }]
             }
           );
@@ -201,7 +197,6 @@ function sendSingleActor(senderId, actorName) {
             {
               "title": 'Social',
               "image_url": instagramLogo,
-              "default_action": { url: `https://www.instagram.com/${actor.instagram}`, fallback_url: `https://www.instagram.com/` },
               "buttons": [{ "type": "postback", "title": 'See Instagram', "payload": `INSTAGRAM ${actor.name}` }]
             }
           );
@@ -212,19 +207,16 @@ function sendSingleActor(senderId, actorName) {
             {
               "title": 'Best Videos',
               "image_url": youtubeLogo,
-              "default_action": { url: `https://www.youtube.com/results?search_query=${actor.name}`, fallback_url: `https://www.youtube.com/` },
               "buttons": [{ "type": "postback", "title": 'Watch Videos', "payload": `YOUTUBE ${actor.name}` }]
             }
           );
         }
         // Only render the first 4 elements
         actor.list = messageTemplate.createListTemplate(elements.slice(0, 4));
-        reply(senderId, introductionMessage, function () {
-          reply(senderId, actor.list, function () {
-            sendNextStepMessage(senderId, actor);
-          })
-        })
-      })
+        reply(senderId, actor.list, function () {
+          sendNextStepMessage(senderId, actor);
+        });
+      });
     });
   })
 }
