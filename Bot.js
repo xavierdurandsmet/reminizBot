@@ -127,7 +127,7 @@ function sendSingleActor(senderId, actorName) {
         let elements = [
           {
             "title": biography,
-            "subtitle": actor.descriptionSummary,
+            "subtitle": `Click to get ${actor.name}'s biography`, // change to actor.name
             "image_url": actor.image,
             "default_action": { url: 'https://en.wikipedia.org/wiki/' + actor.name, fallback_url: 'https://en.wikipedia.org/wiki/' + actor.name },
             "buttons": [{ "type": "postback", "title": 'Bookmark ❤️', "payload": "BOOKMARK " + actor.name }]
@@ -135,7 +135,7 @@ function sendSingleActor(senderId, actorName) {
           {
             "title": 'Latest News',
             "image_url": bingNewsImage,
-            "default_action": { url: 'https://en.wikipedia.org/wiki/' + actor, fallback_url: 'https://en.wikipedia.org/wiki/' + actor }, // to change to next line but currently not working
+            "default_action": { url: 'https://en.wikipedia.org/wiki/' + actor.name, fallback_url: 'https://en.wikipedia.org/wiki/' + actor.name }, // to change to next line but currently not working
             "buttons": [{ "type": "postback", "title": 'Read News', "payload": "NEWS " + actor.name }]
           }
         ];
@@ -194,8 +194,8 @@ function sendSingleActor(senderId, actorName) {
           sendNextStepMessage(senderId, actor)
         })
       })
-    })
-  });
+    });
+  })
 }
 
 function sendCarouselOfActors(currentUser, listOfActors, introductionMessage) {
