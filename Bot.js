@@ -19,21 +19,27 @@ const bingNewsImage = `${process.env.SERVER_URI}images/bing.jpg`;
 const channels = {
   News: {
     title: 'News',
-    uri: 'http://40.68.198.152:5000/live/people/news', // change to specific uri
+    uri: 'http://40.68.198.152:5000/live/people/news',
+    // live_uri: 'http://40.68.198.152:5000/live/news',
+    live_uri: 'https://en.wikipedia.org/', // !!!!!!!!! CHANGE !!!!!!! 
     subtitle: 'The News Channel', // find a better subtitle
     image_url: `${process.env.SERVER_URI}images/newsChannelLogo.png`,
     payload: 'CHANNEL_News'
   },
   JuniorClub: {
     title: 'The Junior Club',
-    uri: 'http://40.68.198.152:5000/live/people/kids', // change to specific uri
+    uri: 'http://40.68.198.152:5000/live/people/kids',
+    // live_uri: 'http://40.68.198.152:5000/live/news',
+    live_uri: 'https://en.wikipedia.org/', // !!!!!!!!! CHANGE !!!!!!!
     subtitle: 'Children love it',
     image_url: `${process.env.SERVER_URI}images/theJuniorClubLogo.png`,
     payload: 'CHANNEL_JuniorClub'
   },
   HelloCinema: {
     title: 'Hello Cinema',
-    uri: 'http://40.68.198.152:5000/live/people/a', // change to specific uri
+    uri: 'http://40.68.198.152:5000/live/people/movies',
+    // live_uri: 'http://40.68.198.152:5000/live/movies',
+    live_uri: 'https://en.wikipedia.org/', // !!!!!!!!! CHANGE !!!!!!!
     subtitle: 'The Movie Channel',
     image_url: `${process.env.SERVER_URI}images/helloCinemaLogo.png`,
     payload: 'CHANNEL_HelloCinema'
@@ -68,19 +74,22 @@ function sendChannelsList(senderId) {
           "title": channels.News.title,
           "image_url": channels.News.image_url,
           "subtitle": channels.News.subtitle,
-          "buttons": [{ "title": 'Choose ✔︎', "payload": channels.News.payload }]
+          "buttons": [{ "type": "postback", "title": 'Choose ✔︎', "payload": channels.News.payload },
+          { "type": "web_url", "title": "Watch Live ⚡️", "url": channels.News.live_uri }]
         },
         {
           "title": channels.JuniorClub.title,
           "image_url": channels.JuniorClub.image_url,
           "subtitle": channels.JuniorClub.subtitle,
-          "buttons": [{ "title": 'Choose ✔︎', "payload": channels.JuniorClub.payload }]
+          "buttons": [{"type": "postback", "title": 'Choose ✔︎', "payload": channels.JuniorClub.payload },
+          { "type": "web_url", "title": "Watch Live ⚡️", "url": channels.JuniorClub.live_uri }]
         },
         {
           "title": channels.HelloCinema.title,
           "image_url": channels.HelloCinema.image_url,
           "subtitle": channels.HelloCinema.subtitle,
-          "buttons": [{ "title": 'Choose ✔︎', "payload": channels.HelloCinema.payload }]
+          "buttons": [{"type": "postback", "title": 'Choose ✔︎', "payload": channels.HelloCinema.payload },
+          { "type": "web_url", "title": "Watch Live ⚡️", "url": channels.HelloCinema.live_uri }]
         }
       ]
     )
@@ -242,10 +251,12 @@ function sendCarouselOfActors(currentUser, listOfActors, introductionMessage) {
       if (currentUser.favorites && currentUser.favorites.indexOf(actorsInfo[i].name) === -1) {
         element.buttons = [
           {
+            "type": "postback",
             "title": "Choose ✔︎",
             "payload": "SINGLE_ACTOR," + actorsInfo[i].name
           },
           {
+            "type": "postback",
             "title": "Bookmark ❤️",
             "payload": "BOOKMARK " + actorsInfo[i].name
           }
@@ -253,10 +264,12 @@ function sendCarouselOfActors(currentUser, listOfActors, introductionMessage) {
       } else {
         element.buttons = [
           {
+            "type": "postback",
             "title": "Choose ✔︎",
             "payload": "SINGLE_ACTOR," + actorsInfo[i].name
           },
           {
+            "type": "postback",
             "title": "Unbookmark ❌",
             "payload": "UNBOOKMARK " + actorsInfo[i].name
           }
@@ -331,7 +344,7 @@ function sendCarouselOfFilms(senderId, actorName) {
               film.id = JSONResponse[i].id;
               film.title = JSONResponse[i].media_type === 'movie' ? JSONResponse[i].title : JSONResponse[i].name;
               film.image_url = JSONResponse[i].poster_path ? `https://image.tmdb.org/t/p/w500/${JSONResponse[i].poster_path}` : `${process.env.SERVER_URI}images/image-not-found.png`;
-              film.buttonsURL = [{ "title": 'See More', "url": `https://www.themoviedb.org/person/${actor.id}` }]; // change to specific movi,
+              film.buttons = [{"type": "web_url", "title": 'See More', "url": `https://www.themoviedb.org/person/${actor.id}` }]; // change to specific movi,
               film.subtitle = JSONResponse[i].release_date ? JSONResponse[i].release_date.substr(0, 4) : "";
             } else if (JSONResponse[i].media_type === 'tv') {
               film.media_type = JSONResponse[i].media_type;
@@ -339,7 +352,7 @@ function sendCarouselOfFilms(senderId, actorName) {
               film.title = JSONResponse[i].media_type === 'movie' ? JSONResponse[i].title : JSONResponse[i].name;
               film.image_url = JSONResponse[i].poster_path ? `https://image.tmdb.org/t/p/w500/${JSONResponse[i].poster_path}` : `${process.env.SERVER_URI}images/image-not-found.png`;
               film.subtitle = JSONResponse[i].first_air_date ? JSONResponse[i].first_air_date.substr(0, 4) : "";
-              film.buttonsURL = [{ "title": 'See More', "url": `https://www.themoviedb.org/person/${actor.id}` }]; // change to specific movi,
+              film.buttons = [{"type": "web_url", "title": 'See More', "url": `https://www.themoviedb.org/person/${actor.id}` }]; // change to specific movi,
             }
             filmList.push(film);
           }
@@ -359,7 +372,7 @@ function sendCarouselOfFilms(senderId, actorName) {
               if (res && res.results[0]) {
                 if (res.results[0].site === 'YouTube') {
                   film.trailer = `https://www.youtube.com/watch?v=${res.results[0].key}`;
-                  film.buttonsURL.push({ "title": 'Watch Trailer', "url": film.trailer })
+                  film.buttons.push({"type": "web_url", "title": 'Watch Trailer', "url": film.trailer })
                 }
               }
               filmListToPush.push(film);
@@ -375,7 +388,7 @@ function sendCarouselOfFilms(senderId, actorName) {
               checkForErrors(err);
               if (res.youtube[0]) {
                 film.trailer = `https://www.youtube.com/watch?v=${res.youtube[0].source}`;
-                film.buttonsURL.push({ "title": 'Watch Trailer', "url": film.trailer })
+                film.buttons.push({"type": "web_url", "title": 'Watch Trailer', "url": film.trailer })
               }
               filmListToPush.push(film);
               // Change this, doesn't work if less than 10 films
@@ -414,7 +427,7 @@ function sendCarouselOfNews(senderId, actorName) {
             newsArticle.image_url = JSONResponse[i].image.thumbnail.contentUrl; // get better quality images?
           }
           newsArticle.subtitle = JSONResponse[i].description;
-          newsArticle.buttonsURL = [{ "title": 'Read More', "url": JSONResponse[i].url }]; // change to specific movie
+          newsArticle.buttons = [{"type": "web_url", "title": 'Read More', "url": JSONResponse[i].url }]; // change to specific movie
           newsList.push(newsArticle);
         }
       }
@@ -446,7 +459,7 @@ function sendAmazonProducts(senderId, actorName) {
         product.title = results[i].ItemAttributes[0].Title[0];
         product.image_url = results[i].LargeImage[0].URL[0];
         product.subtitle = results[i].OfferSummary[0].LowestNewPrice[0].FormattedPrice[0];
-        product.buttonsURL = [{ "title": 'Buy Now', "url": results[i].DetailPageURL[0] ? results[i].DetailPageURL[0] : 'https://www.amazon.com/' }] // do a more precise search query
+        product.buttons = [{"type": "web_url", "title": 'Buy Now', "url": results[i].DetailPageURL[0] ? results[i].DetailPageURL[0] : 'https://www.amazon.com/' }] // do a more precise search query
         productList.push(product);
       }
     }
