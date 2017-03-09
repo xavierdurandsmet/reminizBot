@@ -127,7 +127,7 @@ function sendSingleActor(senderId, actorName) {
         let elements = [
           {
             "title": biography,
-            "subtitle": actor.descriptionSummary,
+            "subtitle": `Click to get ${actor.name}'s biography`, // change to actor.name
             "image_url": actor.image,
             "default_action": { url: 'https://en.wikipedia.org/wiki/' + actor.name, fallback_url: 'https://en.wikipedia.org/wiki/' + actor.name },
             "buttons": [{ "type": "postback", "title": 'Bookmark ❤️', "payload": "BOOKMARK " + actor.name }]
@@ -135,7 +135,7 @@ function sendSingleActor(senderId, actorName) {
           {
             "title": 'Latest News',
             "image_url": bingNewsImage,
-            "default_action": { url: 'https://en.wikipedia.org/wiki/' + actor, fallback_url: 'https://en.wikipedia.org/wiki/' + actor }, // to change to next line but currently not working
+            "default_action": { url: 'https://en.wikipedia.org/wiki/' + actor.name, fallback_url: 'https://en.wikipedia.org/wiki/' + actor.name }, // to change to next line but currently not working
             "buttons": [{ "type": "postback", "title": 'Read News', "payload": "NEWS " + actor.name }]
           }
         ];
@@ -190,12 +190,13 @@ function sendSingleActor(senderId, actorName) {
         // Only render the first 4 elements
         actor.list = messageTemplate.createListTemplate(elements.slice(0, 4));
         reply(senderId, introductionMessage, function () {
-          reply(senderId, actor.list)
-          sendNextStepMessage(senderId, actor)
+          reply(senderId, actor.list, function() {
+            sendNextStepMessage(senderId, actor);
+          })
         })
       })
-    })
-  });
+    });
+  })
 }
 
 function sendCarouselOfActors(currentUser, listOfActors, introductionMessage) {
@@ -313,6 +314,7 @@ function sendCarouselOfFilms(senderId, actorName) {
           filmList.push(film);
           }
         }
+        console.log(filmList)
         // Stop here if no movies were found
         if (filmList.length === 0) {
           reply(senderId, 'No Movies or TV Shows found for this person', function () {
@@ -320,7 +322,17 @@ function sendCarouselOfFilms(senderId, actorName) {
           });
         }
         let filmListToPush = [];
-        filmList.forEach(function (film) { // use forEach to create its own scope, for the async call
+        let counter = 0;
+        for (let i = 0; i < filmList.length; i++) {
+          let film = filmList[i];
+          console.log(counter)
+          if (counter === (filmList.length - 1) || counter === 10) {
+            console.log(filmListToPush);
+            let filmTemplate = messageTemplate.createGenericTemplate(filmListToPush);
+            reply(senderId, filmTemplate, function () {
+              sendNextStepMessage(senderId);
+            });
+          }
           if (film && film.media_type === 'tv') {
             MovieDB.tvVideos({ id: film.id }, function (err, res) {
               checkForErrors(err);
@@ -330,31 +342,21 @@ function sendCarouselOfFilms(senderId, actorName) {
                   film.buttonsURL.push({ "title": 'Watch Trailer', "url": film.trailer })
                 }
               }
-              filmListToPush.push(film);
-              if (filmListToPush.length === 10) { // if statement inside the forEach to not have asynchronous pbs
-                let filmTemplate = messageTemplate.createGenericTemplate(filmListToPush)
-                reply(senderId, filmTemplate, function () {
-                  sendNextStepMessage(senderId)
-                })
-              }
             })
+            filmListToPush.push(film);
+            counter += 1;
           } else if (film && film.media_type === 'movie') {
             MovieDB.movieTrailers({ id: film.id }, function (err, res) {
               checkForErrors(err);
               if (res.youtube[0]) {
                 film.trailer = `https://www.youtube.com/watch?v=${res.youtube[0].source}`;
-                film.buttonsURL.push({ "title": 'Watch Trailer', "url": film.trailer })
-              }
-              filmListToPush.push(film);
-              if (filmListToPush.length === 10) { // if statement inside the forEach to not have asynchronous pbs
-                let filmTemplate = messageTemplate.createGenericTemplate(filmListToPush)
-                reply(senderId, filmTemplate, function () {
-                  sendNextStepMessage(senderId)
-                })
+                film.buttonsURL.push({ "title": 'Watch Trailer', "url": film.trailer });
               }
             })
+            filmListToPush.push(film);
+            counter += 1;
           }
-        })
+        }
       })
     } else { // if cannot find person in movieDB
       reply(senderId, 'No Movies or TV Shows found for this person', function () {
