@@ -190,8 +190,9 @@ function sendSingleActor(senderId, actorName) {
         // Only render the first 4 elements
         actor.list = messageTemplate.createListTemplate(elements.slice(0, 4));
         reply(senderId, introductionMessage, function () {
-          reply(senderId, actor.list)
-          sendNextStepMessage(senderId, actor)
+          reply(senderId, actor.list, function() {
+            sendNextStepMessage(senderId, actor);
+          })
         })
       })
     });
