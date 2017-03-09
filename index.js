@@ -249,7 +249,7 @@ app.post('/webhook/', function (req, res) {
 
 // NOTIFICATIONS
 new CronJob({
-  cronTime: '* * * *', // CHANGE TO AVOID SENDING AT NIGHT, here runs every minute
+  cronTime: '10-19 * *', // Should run every hour between 10 and 19
   onTick: function() {
     console.log("Sending message, at", new Date());
     sendNotifications();
@@ -258,23 +258,25 @@ new CronJob({
   timeZone: 'Europe/Paris' // CHANGE BEFORE CONFERENCE
 });
 
-function sendNotifications() { // actors is an array
+function sendNotifications() {
   User.
     find({
       hasBeenNotified: false,
-      // favorites: { $gt: 2}
-    }, function(error, users) {
+    }, function (error, users) {
       if (error) {
-        console.log(error);
         return error;
       }
-      console.log(users)
       for (let i = 0; i < users.length; i++) {
         if (users[i].favorites.length < 1) {
           return;
         }
+        console.log('Sending notif to ', users[i].fb_id)
         let actor = users[i].favorites[0];
-        Bot.reply(users[i].fb_id, `${actor} is on screen right now ${users[i].fb_first_name}`);
+        Bot.reply(users[i].fb_id, `Since you bookmarked ${actor}, we figured you might want some info 😊`, function () {
+          Bot.reply(users[i].fb_id, `Don't worry ${users[i].fb_first_name}, we won't bother you again (unless you ask for it 😉)`, function () {
+            Bot.sendSingleActor(users[i].fb_id, actor);
+          });
+        });
         users[i].hasBeenNotified = true;
         users[i].save(function(err) {
           if (err) {
