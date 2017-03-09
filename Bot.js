@@ -286,34 +286,45 @@ function sendCarouselOfFilms(senderId, actorName) {
       actor.id = res.results[0].id;
       MovieDB.personCombinedCredits({ id: actor.id }, (err, res) => { // get TV shows and movies
         checkForErrors(err);
+        // if (res)
         let JSONResponse = res.cast;
         JSONResponse = sortCreditsByYear(JSONResponse);
         let filmList = [];
+        // Iterate over each MovieDB object an create a film object
         for (let i = 0; i <= 9; i++) {
           let film = {};
-          if (JSONResponse[i].media_type === 'movie') {
-            film.media_type = JSONResponse[i].media_type,
-              film.id = JSONResponse[i].id,
-              film.title = JSONResponse[i].media_type === 'movie' ? JSONResponse[i].title : JSONResponse[i].name,
-              film.image_url = JSONResponse[i].poster_path ? `https://image.tmdb.org/t/p/w500/${JSONResponse[i].poster_path}` : `${process.env.SERVER_URI}images/image-not-found.png`,
-              film.buttonsURL = [{ "title": 'See More', "url": `https://www.themoviedb.org/person/${actor.id}` }] // change to specific movi,
-            film.subtitle = JSONResponse[i].release_date ? JSONResponse[i].release_date.substr(0, 4) : ""
-          } else if (JSONResponse[i].media_type === 'tv') {
-            film.media_type = JSONResponse[i].media_type,
-              film.id = JSONResponse[i].id,
-              film.title = JSONResponse[i].media_type === 'movie' ? JSONResponse[i].title : JSONResponse[i].name,
-              film.image_url = JSONResponse[i].poster_path ? `https://image.tmdb.org/t/p/w500/${JSONResponse[i].poster_path}` : `${process.env.SERVER_URI}images/image-not-found.png`,
-              film.subtitle = JSONResponse[i].first_air_date ? JSONResponse[i].first_air_date.substr(0, 4) : "",
-              film.buttonsURL = [{ "title": 'See More', "url": `https://www.themoviedb.org/person/${actor.id}` }] // change to specific movi,
-          }
+          // Differentate between tv shows and Movies
+          if (JSONResponse[i]) {
+            if (JSONResponse[i].media_type === 'movie') {
+              film.media_type = JSONResponse[i].media_type;
+              film.id = JSONResponse[i].id;
+              film.title = JSONResponse[i].media_type === 'movie' ? JSONResponse[i].title : JSONResponse[i].name;
+              film.image_url = JSONResponse[i].poster_path ? `https://image.tmdb.org/t/p/w500/${JSONResponse[i].poster_path}` : `${process.env.SERVER_URI}images/image-not-found.png`;
+              film.buttonsURL = [{ "title": 'See More', "url": `https://www.themoviedb.org/person/${actor.id}` }]; // change to specific movi,
+              film.subtitle = JSONResponse[i].release_date ? JSONResponse[i].release_date.substr(0, 4) : "";
+            } else if (JSONResponse[i].media_type === 'tv') {
+              film.media_type = JSONResponse[i].media_type;
+              film.id = JSONResponse[i].id;
+              film.title = JSONResponse[i].media_type === 'movie' ? JSONResponse[i].title : JSONResponse[i].name;
+              film.image_url = JSONResponse[i].poster_path ? `https://image.tmdb.org/t/p/w500/${JSONResponse[i].poster_path}` : `${process.env.SERVER_URI}images/image-not-found.png`;
+              film.subtitle = JSONResponse[i].first_air_date ? JSONResponse[i].first_air_date.substr(0, 4) : "";
+              film.buttonsURL = [{ "title": 'See More', "url": `https://www.themoviedb.org/person/${actor.id}` }]; // change to specific movi,
+            }
           filmList.push(film);
+          }
+        }
+        // Stop here if no movies were found
+        if (filmList.length === 0) {
+          reply(senderId, 'No Movies or TV Shows found for this person', function () {
+            sendSingleActor(senderId, actorName);
+          });
         }
         let filmListToPush = [];
         filmList.forEach(function (film) { // use forEach to create its own scope, for the async call
-          if (film.media_type === 'tv') {
+          if (film && film.media_type === 'tv') {
             MovieDB.tvVideos({ id: film.id }, function (err, res) {
               checkForErrors(err);
-              if (res.results[0]) {
+              if (res && res.results[0]) {
                 if (res.results[0].site === 'YouTube') {
                   film.trailer = `https://www.youtube.com/watch?v=${res.results[0].key}`;
                   film.buttonsURL.push({ "title": 'Watch Trailer', "url": film.trailer })
@@ -327,14 +338,12 @@ function sendCarouselOfFilms(senderId, actorName) {
                 })
               }
             })
-          } else if (film.media_type === 'movie') {
+          } else if (film && film.media_type === 'movie') {
             MovieDB.movieTrailers({ id: film.id }, function (err, res) {
               checkForErrors(err);
-              if (res.youtube) {
-                if (res.youtube[0]) {
-                  film.trailer = `https://www.youtube.com/watch?v=${res.youtube[0].source}`;
-                  film.buttonsURL.push({ "title": 'Watch Trailer', "url": film.trailer })
-                }
+              if (res.youtube[0]) {
+                film.trailer = `https://www.youtube.com/watch?v=${res.youtube[0].source}`;
+                film.buttonsURL.push({ "title": 'Watch Trailer', "url": film.trailer })
               }
               filmListToPush.push(film);
               if (filmListToPush.length === 10) { // if statement inside the forEach to not have asynchronous pbs
@@ -348,7 +357,7 @@ function sendCarouselOfFilms(senderId, actorName) {
         })
       })
     } else { // if cannot find person in movieDB
-      reply(senderId, 'No Movies or TV Shows have been found for this person', function () {
+      reply(senderId, 'No Movies or TV Shows found for this person', function () {
         sendSingleActor(senderId, actorName);
       });
     }
