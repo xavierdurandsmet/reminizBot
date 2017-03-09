@@ -18,6 +18,7 @@
     "bluebird": "^3.4.7",
     "body-parser": "^1.16.1",
     "cron": "^1.2.1",
+    "dashbot": "^0.8.4",
     "dotenv": "^4.0.0",
     "express": "^4.14.1",
     "googleapis": "^17.1.0",
