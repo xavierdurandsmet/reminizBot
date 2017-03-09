@@ -19,8 +19,8 @@ const bingNewsImage = `${process.env.SERVER_URI}images/bing.jpg`;
 const channels = {
   News: {
     title: 'News',
-    uri: 'http://40.68.198.152:5000/live/people/news',
-    // live_uri: 'http://40.68.198.152:5000/live/news',
+    uri: 'http://52.174.33.111/live/people/news',
+    // live_uri: 'http://52.174.33.111/live/news',
     live_uri: 'https://en.wikipedia.org/', // !!!!!!!!! CHANGE !!!!!!! 
     subtitle: 'The News Channel', // find a better subtitle
     image_url: `${process.env.SERVER_URI}images/newsChannelLogo.png`,
@@ -28,8 +28,8 @@ const channels = {
   },
   JuniorClub: {
     title: 'The Junior Club',
-    uri: 'http://40.68.198.152:5000/live/people/kids',
-    // live_uri: 'http://40.68.198.152:5000/live/news',
+    uri: 'http://52.174.33.111/live/people/kids',
+    // live_uri: 'http://52.174.33.111/live/kids',
     live_uri: 'https://en.wikipedia.org/', // !!!!!!!!! CHANGE !!!!!!!
     subtitle: 'Children love it',
     image_url: `${process.env.SERVER_URI}images/theJuniorClubLogo.png`,
@@ -37,8 +37,8 @@ const channels = {
   },
   HelloCinema: {
     title: 'Hello Cinema',
-    uri: 'http://40.68.198.152:5000/live/people/movies',
-    // live_uri: 'http://40.68.198.152:5000/live/movies',
+    uri: 'http://52.174.33.111/live/people/movies',
+    // live_uri: 'http://52.174.33.111/live/movies',
     live_uri: 'https://en.wikipedia.org/', // !!!!!!!!! CHANGE !!!!!!!
     subtitle: 'The Movie Channel',
     image_url: `${process.env.SERVER_URI}images/helloCinemaLogo.png`,
