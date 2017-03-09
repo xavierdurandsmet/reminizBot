@@ -127,7 +127,7 @@ function sendSingleActor(senderId, actorName) {
         let elements = [
           {
             "title": biography,
-            "subtitle": `Click here to know more about ${actor.full_name}`, // change to actor.name
+            "subtitle": `Click to get ${actor.name}'s biography`, // change to actor.name
             "image_url": actor.image,
             "default_action": { url: 'https://en.wikipedia.org/wiki/' + actor.name, fallback_url: 'https://en.wikipedia.org/wiki/' + actor.name },
             "buttons": [{ "type": "postback", "title": 'Bookmark ❤️', "payload": "BOOKMARK " + actor.name }]
