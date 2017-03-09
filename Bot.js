@@ -18,14 +18,14 @@ const bingNewsImage = `${process.env.SERVER_URI}images/bing.jpg`;
 const channels = {
   News: {
     title: 'News',
-    uri: 'http://40.68.198.152:5000/live/news', // change to specific uri
+    uri: 'http://40.68.198.152:5000/live/people/news', // change to specific uri
     subtitle: 'The News Channel', // find a better subtitle
     image_url: `${process.env.SERVER_URI}images/newsChannelLogo.png`,
     payload: 'CHANNEL_News'
   },
   JuniorClub: {
     title: 'The Junior Club',
-    uri: 'http://40.68.198.152:5000/live/kids', // change to specific uri
+    uri: 'http://40.68.198.152:5000/live/people/kids', // change to specific uri
     subtitle: 'Children love it',
     image_url: `${process.env.SERVER_URI}images/theJuniorClubLogo.png`,
     payload: 'CHANNEL_JuniorClub'

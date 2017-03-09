@@ -83,32 +83,35 @@ app.post('/webhook/', function (req, res) {
         if (postback.payload.substr(0, 7) === "CHANNEL") {
         let channelName = postback.payload.substr(8);
         Bot.getLiveActors(channelName, function (actors) {
-          for (let i = 0; i < actors.length; i++) {
-            Actor.findOneAndUpdate(
-              { name: actors[i].name },
-              { $set: {
-                name: actors[i].name,
-                instagram: actors[i].instagram,
-                is_actor: actors[i].is_actor
-              }
-              },
-              { upsert: true, new: true }, function (err) {
-                Bot.checkForErrors(err)
-              }
-            )
-          }
           if (!actors || actors.length === 0) {
             Bot.reply(senderId, 'Nobody on screen right now', function () {
               Bot.sendNextStepMessage(senderId);
             });
-          } else if (actors.length === 1) {
-            console.log('single')
-            Bot.sendSingleActor(senderId, actors[0].name);
-          } else {
-            console.log('many', actors)
-            User.findOrCreate(senderId, function(currentUser) {
-              Bot.sendCarouselOfActors(currentUser, actors, 'There are many actors on screen right now 😎 Which one are you interested in?');
-            })
+          }
+          if (actors) {
+            for (let i = 0; i < actors.length; i++) {
+              Actor.findOneAndUpdate(
+                { name: actors[i].name },
+                { $set: {
+                  name: actors[i].name,
+                  instagram: actors[i].instagram,
+                  is_actor: actors[i].is_actor
+                }
+                },
+                { upsert: true, new: true }, function (err) {
+                  Bot.checkForErrors(err)
+                }
+              )
+            }
+             if (actors.length === 1) {
+              console.log('single')
+              Bot.sendSingleActor(senderId, actors[0].name);
+            } else {
+              console.log('many', actors)
+              User.findOrCreate(senderId, function(currentUser) {
+                Bot.sendCarouselOfActors(currentUser, actors, 'Many people on screen right now 😎 Who are you interested in?');
+              })
+            }
           }
         })
       } else if (postback.payload.substr(0, 12) === "SINGLE_ACTOR") {
