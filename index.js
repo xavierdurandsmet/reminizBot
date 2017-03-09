@@ -245,7 +245,7 @@ app.post('/webhook/', function (req, res) {
 
 // NOTIFICATIONS
 new CronJob({
-  cronTime: '09 * * * *', // Should run every hour between 10 and 19
+  cronTime: '11 * * * *', // Should run every hour between 10 and 19
   onTick: function() {
     sendNotifications();
   },
