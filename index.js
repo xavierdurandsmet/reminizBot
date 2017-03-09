@@ -245,12 +245,12 @@ app.post('/webhook/', function (req, res) {
 
 // NOTIFICATIONS
 new CronJob({
-  cronTime: '16 * * * *', // Should run every hour between 10 and 19
+  cronTime: '01 07-16 * * *', // Should run every hour between 10 and 19
   onTick: function() {
     sendNotifications();
   },
   start: true,
-  timeZone: 'Europe/Paris' // CHANGE BEFORE CONFERENCE
+  timeZone: 'America/Los_Angeles' // CHANGE BEFORE CONFERENCE
 });
 
 function sendNotifications() {
@@ -268,7 +268,7 @@ function sendNotifications() {
         console.log('Sending notif to ', users[i].fb_id)
         let actor = users[i].favorites[0];
         Bot.reply(users[i].fb_id, `You bookmarked ${actor}, remember?`, function () {
-          Bot.reply(users[i].fb_id, `Don't worry ${users[i].fb_first_name}, we won't bother you again (unless you ask for it 😉)`, function () {
+          Bot.reply(users[i].fb_id, `Don't worry ${users[i].fb_first_name}, we won't bother you again 😉`, function () {
             Bot.sendSingleActor(users[i].fb_id, actor);
           });
         });
