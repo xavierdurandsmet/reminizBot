@@ -19,24 +19,24 @@ const bingNewsImage = `${process.env.SERVER_URI}images/bing.jpg`;
 const channels = {
   News: {
     title: 'News',
-    uri: 'http://reminizliveapi.westeurope.cloudapp.azure.com/live/people/news',
-    live_uri: 'http://reminizliveapi.westeurope.cloudapp.azure.com/live/news',
+    uri: 'http://livereminiz.westus2.cloudapp.azure.com/live/people/news',
+    live_uri: 'http://livereminiz.westus2.cloudapp.azure.com/live/news',
     subtitle: 'The News Channel',
     image_url: `${process.env.SERVER_URI}images/newsChannelLogo.png`,
     payload: 'CHANNEL_News'
   },
   JuniorClub: {
     title: 'The Junior Club',
-    uri: 'http://reminizliveapi.westeurope.cloudapp.azure.com/live/people/kids',
-    live_uri: 'http://reminizliveapi.westeurope.cloudapp.azure.com/live/kids',
+    uri: 'http://livereminiz.westus2.cloudapp.azure.com/live/people/kids',
+    live_uri: 'http://livereminiz.westus2.cloudapp.azure.com/live/kids',
     subtitle: 'Children love it',
     image_url: `${process.env.SERVER_URI}images/theJuniorClubLogo.png`,
     payload: 'CHANNEL_JuniorClub'
   },
   HelloCinema: {
     title: 'Hello Cinema',
-    uri: 'http://reminizliveapi.westeurope.cloudapp.azure.com/live/people/movies',
-    live_uri: 'http://reminizliveapi.westeurope.cloudapp.azure.com/live/news/movies',
+    uri: 'http://livereminiz.westus2.cloudapp.azure.com/live/people/movies',
+    live_uri: 'http://livereminiz.westus2.cloudapp.azure.com/live/movies',
     subtitle: 'The Movie Channel',
     image_url: `${process.env.SERVER_URI}images/helloCinemaLogo.png`,
     payload: 'CHANNEL_HelloCinema'
