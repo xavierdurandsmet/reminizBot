@@ -129,7 +129,9 @@ app.post('/webhook/', function (req, res) {
         });
       } else if (postback.payload.substr(0, 6) === "AMAZON") {
         let actorName = postback.payload.substr(7);
-        Bot.sendAmazonProducts(senderId, actorName);
+        Bot.reply(senderId, `Getting ${actorName}'s best sellers, this might take a few seconds 🎈`, function() {
+          Bot.sendAmazonProducts(senderId, actorName);
+        });
         Actor.findOneAndUpdate(
           { name: actorName },
           { $inc: { 'timesSectionsAreClicked.products': 1 } },
@@ -140,7 +142,9 @@ app.post('/webhook/', function (req, res) {
           })
       } else if (postback.payload.substr(0, 11) === "FILMOGRAPHY") {
         let actorName = postback.payload.substr(12);
-        Bot.sendCarouselOfFilms(senderId, actorName);
+        Bot.reply(senderId, `Getting ${actorName}'s movies and shows, this might take a few seconds 🎈`, function() {
+          Bot.sendCarouselOfFilms(senderId, actorName);
+        });
         Actor.findOneAndUpdate(
          { name: actorName },
          { $inc: { 'timesSectionsAreClicked.filmography': 1 } },
@@ -151,7 +155,9 @@ app.post('/webhook/', function (req, res) {
         })
       } else if (postback.payload.substr(0, 4) === "NEWS") {
         let actorName = postback.payload.substr(5);
-        Bot.sendCarouselOfNews(senderId, actorName);
+        Bot.reply(senderId, `Getting ${actorName}'s latest news, this might take a few seconds 🎈`, function() {
+          Bot.sendCarouselOfNews(senderId, actorName);
+        });
         Actor.findOneAndUpdate(
           { name: actorName },
           { $inc: { 'timesSectionsAreClicked.news': 1 } },
