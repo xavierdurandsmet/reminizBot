@@ -460,36 +460,46 @@ function sendAmazonProducts(senderId, actorName) {
 }
 
 function sendInstagramFeed(senderId, instagramHandle) {
-  let elements = [];
-  request(`http://www.instagram.com/${instagramHandle}/media/`, function (error, response, body) {
-    checkForErrors(error);
-    const items = JSON.parse(body).items;
-    if (response && response.statusCode === 200) {
-      for (let i = 0; i < 10; i++) {
-        let card = {};
-        if (items[i].caption === null) {
-          card.title = items[i].user.name;
-        } else {
-          card.title = items[i].caption.text;
-        }
-        card.item_url = items[i].link;
-        card.image_url = items[i].images.standard_resolution.url;
-        card.subtitle = `❤️ ${items[i].likes.count}`;
-        elements.push(card);
-      }
-      let instagramTemplate = messageTemplate.createGenericTemplate(elements);
-      reply(senderId, `Here's ${instagramHandle} on Instagram:`, function () {
-        reply(senderId, instagramTemplate, function () {
-          sendNextStepMessage(senderId);
-        });
-      });
-    } else {
-      reply(senderId, 'Sorry, there was an error with the Instagram feed...', function () {
+  console.log(instagramHandle)
+  if (instagramHandle === 'None') {
+    reply(senderId, 'Sorry, there was an error with the Instagram feed...', function () {
         sendNextStepMessage(senderId);
       });
-    }
-  });
+  } else {
+    let elements = [];
+    request(`http://www.instagram.com/${instagramHandle}/media/`, function (error, response, body) {
+      checkForErrors(error);
+      const items = JSON.parse(body).items;
+      if (response && response.statusCode === 200) {
+        for (let i = 0; i < 10; i++) {
+          let card = {};
+          if (items[i]) {
+            if (items[i].caption === null) {
+              card.title = items[i].user.name;
+            } else {
+              card.title = items[i].caption.text;
+            }
+            card.item_url = items[i].link;
+            card.image_url = items[i].images.standard_resolution.url;
+            card.subtitle = `❤️ ${items[i].likes.count}`;
+            elements.push(card);
+          }
+        }
+        let instagramTemplate = messageTemplate.createGenericTemplate(elements);
+        reply(senderId, `Here's ${instagramHandle} on Instagram:`, function () {
+          reply(senderId, instagramTemplate, function () {
+            sendNextStepMessage(senderId);
+          });
+        });
+      } else {
+        reply(senderId, 'Sorry, there was an error with the Instagram feed...', function () {
+          sendNextStepMessage(senderId);
+        });
+      }
+    });
+  }
 }
+
 function sendYoutubeVideos(senderId, actorName) {
   const youtubeBaseUri = 'https://www.googleapis.com/youtube/v3/search';
   const youtubeApiKey = process.env.YOUTUBE_API_KEY;
