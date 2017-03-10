@@ -19,27 +19,24 @@ const bingNewsImage = `${process.env.SERVER_URI}images/bing.jpg`;
 const channels = {
   News: {
     title: 'News',
-    uri: 'http://52.174.33.111/live/people/news',
-    // live_uri: 'http://52.174.33.111/live/news',
-    live_uri: 'https://en.wikipedia.org/', // !!!!!!!!! CHANGE !!!!!!! 
-    subtitle: 'The News Channel', // find a better subtitle
+    uri: 'http://reminizliveapi.westeurope.cloudapp.azure.com/live/people/news',
+    live_uri: 'http://reminizliveapi.westeurope.cloudapp.azure.com/live/news',
+    subtitle: 'The News Channel',
     image_url: `${process.env.SERVER_URI}images/newsChannelLogo.png`,
     payload: 'CHANNEL_News'
   },
   JuniorClub: {
     title: 'The Junior Club',
-    uri: 'http://52.174.33.111/live/people/kids',
-    // live_uri: 'http://52.174.33.111/live/kids',
-    live_uri: 'https://en.wikipedia.org/', // !!!!!!!!! CHANGE !!!!!!!
+    uri: 'http://reminizliveapi.westeurope.cloudapp.azure.com/live/people/kids',
+    live_uri: 'http://reminizliveapi.westeurope.cloudapp.azure.com/live/kids',
     subtitle: 'Children love it',
     image_url: `${process.env.SERVER_URI}images/theJuniorClubLogo.png`,
     payload: 'CHANNEL_JuniorClub'
   },
   HelloCinema: {
     title: 'Hello Cinema',
-    uri: 'http://52.174.33.111/live/people/movies',
-    // live_uri: 'http://52.174.33.111/live/movies',
-    live_uri: 'https://en.wikipedia.org/', // !!!!!!!!! CHANGE !!!!!!!
+    uri: 'http://reminizliveapi.westeurope.cloudapp.azure.com/live/people/movies',
+    live_uri: 'http://reminizliveapi.westeurope.cloudapp.azure.com/live/news/movies',
     subtitle: 'The Movie Channel',
     image_url: `${process.env.SERVER_URI}images/helloCinemaLogo.png`,
     payload: 'CHANNEL_HelloCinema'
