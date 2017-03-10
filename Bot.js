@@ -447,7 +447,7 @@ function sendAmazonProducts(senderId, actorName) {
         if (results[i] && results[i].OfferSummary && results[i].OfferSummary[0] && results[i].OfferSummary[0].TotalNew[0] != 0) { // make sure the product is available or will return undefined
           let product = {};
           product.title = results[i].ItemAttributes[0].Title[0];
-          product.image_url = results[i].LargeImage[0].URL[0];
+          product.image_url = results[i].LargeImage && results[i].LargeImage[0] ? results[i].LargeImage[0].URL[0] : `${process.env.SERVER_URI}images/image-not-found.png`;
           product.subtitle = results[i].OfferSummary[0].LowestNewPrice[0].FormattedPrice[0];
           product.buttons = [{"type": "web_url", "title": 'Buy Now', "url": results[i].DetailPageURL[0] ? results[i].DetailPageURL[0] : 'https://www.amazon.com/' }] // do a more precise search query
           productList.push(product);

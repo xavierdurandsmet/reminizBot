@@ -124,7 +124,8 @@ function whitelistURL() {
         "https://pbs.twimg.com/",
         "https://www.instagram.com/",
         "https://www.amazon.com/",
-        "http://sxsw.reminiz.com/"
+        "http://sxsw.reminiz.com/",
+        "https://reminiz.herokuapp.com/"
       ],
       domain_action_type: "add"
     }
