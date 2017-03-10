@@ -14,14 +14,13 @@ function createGenericTemplate(elements) {
       } else if (key === "buttons") {
         ret.buttons = [];
         element.buttons.forEach(function (button) {
-          ret.buttons.push({ type: "postback", title: button.title, payload: button.payload });
+          if (button.type === "postback") {
+            ret.buttons.push({ type: "postback", title: button.title, payload: button.payload });
+          } else if (button.type === "web_url") {
+            ret.buttons.push({ type: "web_url", webview_height_ratio: "tall", title: button.title, url: button.url });
+          }
         })
-      } else if (key === "buttonsURL") {
-        ret.buttons = [];
-        element.buttonsURL.forEach(function (button) {
-          ret.buttons.push({ type: "web_url", webview_height_ratio: "tall", title: button.title, url: button.url });
-        })
-      }
+      } 
     }
     if (element.share === true) {
       ret.buttons.push({ type: 'element_share' });
