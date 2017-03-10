@@ -441,21 +441,27 @@ function sendAmazonProducts(senderId, actorName) {
     responseGroup: 'ItemAttributes,Offers,Images'
   }, function (err, results) {
     checkForErrors(err);
-    let productList = [];
-    for (let i = 0; i < 10; i++) {
-      if (results[i] && results[i].OfferSummary && results[i].OfferSummary[0] && results[i].OfferSummary[0].TotalNew) { // make sure the product is available or will return undefined
-        let product = {};
-        product.title = results[i].ItemAttributes[0].Title[0];
-        product.image_url = results[i].LargeImage[0].URL[0];
-        product.subtitle = results[i].OfferSummary[0].LowestNewPrice[0].FormattedPrice[0];
-        product.buttons = [{"type": "web_url", "title": 'Buy Now', "url": results[i].DetailPageURL[0] ? results[i].DetailPageURL[0] : 'https://www.amazon.com/' }] // do a more precise search query
-        productList.push(product);
+    if (results) {
+      let productList = [];
+      for (let i = 0; i < 10; i++) {
+        if (results[i] && results[i].OfferSummary && results[i].OfferSummary[0] && results[i].OfferSummary[0].TotalNew[0] != 0) { // make sure the product is available or will return undefined
+          let product = {};
+          product.title = results[i].ItemAttributes[0].Title[0];
+          product.image_url = results[i].LargeImage[0].URL[0];
+          product.subtitle = results[i].OfferSummary[0].LowestNewPrice[0].FormattedPrice[0];
+          product.buttons = [{"type": "web_url", "title": 'Buy Now', "url": results[i].DetailPageURL[0] ? results[i].DetailPageURL[0] : 'https://www.amazon.com/' }] // do a more precise search query
+          productList.push(product);
+        }
       }
+      let productTemplate = messageTemplate.createGenericTemplate(productList);
+      reply(senderId, productTemplate, function () {
+        sendNextStepMessage(senderId)
+      })
+    } else {
+      reply(senderId, `Sorry, no best sellers found for ${actorName}`, function () {
+        sendNextStepMessage(senderId)
+      })
     }
-    let productTemplate = messageTemplate.createGenericTemplate(productList);
-    reply(senderId, productTemplate, function () {
-      sendNextStepMessage(senderId)
-    })
   })
 }
 
