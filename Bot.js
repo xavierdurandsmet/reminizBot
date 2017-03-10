@@ -460,7 +460,6 @@ function sendAmazonProducts(senderId, actorName) {
 }
 
 function sendInstagramFeed(senderId, instagramHandle) {
-  console.log(instagramHandle)
   if (instagramHandle === 'None') {
     reply(senderId, 'Sorry, there was an error with the Instagram feed...', function () {
         sendNextStepMessage(senderId);
