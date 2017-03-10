@@ -5,9 +5,9 @@ const THREAD_SETTINGS_URL = `${FACEBOOK_BASE_URL}thread_settings`
 
 module.exports = function() {
   console.log("EXECUTING THREAD SETTINGS")
-  addGetStartedButton();
-  addPersistentMenu();
-  // removePersistentMenu()
+  // addGetStartedButton();
+  // addPersistentMenu();
+  removePersistentMenu()
   whitelistURL();
 }
 
@@ -119,15 +119,12 @@ function whitelistURL() {
       setting_type:"domain_whitelisting",
       whitelisted_domains : [
         "https://en.wikipedia.org/",
-        "https://image.tmdb.org/",
         "https://www.youtube.com/",
         "https://www.themoviedb.org/",
-        "http://news.thewindowsclubco.netdna-cdn.com/",
         "https://pbs.twimg.com/",
         "https://www.instagram.com/",
-        "https://images.seeklogo.net/",
         "https://www.amazon.com/",
-        "https://image.flaticon.com/"
+        "http://sxsw.reminiz.com/"
       ],
       domain_action_type: "add"
     }
