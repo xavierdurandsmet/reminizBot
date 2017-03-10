@@ -79,10 +79,11 @@ app.post('/webhook/', function (req, res) {
       })
     }
     // Send the default answer for any text message
-    if ((postback && postback.payload === "TV_CHANNELS")
-      || (event.message && event.message.quick_reply && event.message.quick_reply.payload === "TV_CHANNELS")
-      || (event.message && event.message.sticker_id) // sticker input
-      || (event.message && event.message.attachments) // attachement
+    if ((postback && postback.payload === "TV_CHANNELS") ||
+      (event.message && event.message.quick_reply && event.message.quick_reply.payload === "TV_CHANNELS") ||
+      (event.message && event.message.sticker_id) || // sticker input
+      (event.message && event.message.attachments) ||  // attachement
+      (event.message && event.message.text && !event.message.quick_replies && !event.message.quick_reply) // text input
       ) {
       Bot.sendChannelsList(senderId);
     } else if (postback && postback.payload) {
