@@ -5,7 +5,6 @@ const bodyParser = require('body-parser');
 const app = express();
 const mongoose = require('mongoose');
 const CronJob = require('cron').CronJob;
-const path = require('path');
 
 const Bot = require("./Bot");
 const threadSettings = require('./app/controllers/thread_settings');

@@ -1,4 +1,4 @@
-const request = require('request')
+  const request = require('request')
 const Bing = require('node-bing-api')({ accKey: process.env.BING_ACCESS_KEY }) // put this in .env
 const MovieDB = require('moviedb')(process.env.MOVIE_DB_ACCESS_KEY); // put this in .env
 const wikipedia = require('wikipedia-js')
@@ -19,24 +19,24 @@ const bingNewsImage = `${process.env.SERVER_URI}images/bing.jpg`;
 const channels = {
   News: {
     title: 'News',
-    uri: 'http://livereminiz.westus2.cloudapp.azure.com/live/people/news',
-    live_uri: 'http://livereminiz.westus2.cloudapp.azure.com/live/news',
+    uri: 'http://sxsw.reminiz.com/news/people',
+    live_uri: 'http://sxsw.reminiz.com/news',
     subtitle: 'The News Channel',
     image_url: `${process.env.SERVER_URI}images/newsChannelLogo.png`,
     payload: 'CHANNEL_News'
   },
   JuniorClub: {
     title: 'The Junior Club',
-    uri: 'http://livereminiz.westus2.cloudapp.azure.com/live/people/kids',
-    live_uri: 'http://livereminiz.westus2.cloudapp.azure.com/live/kids',
+    uri: 'http://sxsw.reminiz.com/kids/people',
+    live_uri: 'http://sxsw.reminiz.com/kids',
     subtitle: 'Children love it',
     image_url: `${process.env.SERVER_URI}images/theJuniorClubLogo.png`,
     payload: 'CHANNEL_JuniorClub'
   },
   HelloCinema: {
     title: 'Hello Cinema',
-    uri: 'http://livereminiz.westus2.cloudapp.azure.com/live/people/movies',
-    live_uri: 'http://livereminiz.westus2.cloudapp.azure.com/live/movies',
+    uri: 'http://sxsw.reminiz.com/movies/people',
+    live_uri: 'http://sxsw.reminiz.com/movies',
     subtitle: 'The Movie Channel',
     image_url: `${process.env.SERVER_URI}images/helloCinemaLogo.png`,
     payload: 'CHANNEL_HelloCinema'
@@ -443,7 +443,7 @@ function sendAmazonProducts(senderId, actorName) {
     checkForErrors(err);
     let productList = [];
     for (let i = 0; i < 10; i++) {
-      if (results[i] && results[i].OfferSummary && results[i].OfferSummary[0] && results[i].OfferSummary[0].TotalNew[0] != 0) { // make sure the product is available or will return undefined
+      if (results[i] && results[i].OfferSummary && results[i].OfferSummary[0] && results[i].OfferSummary[0].TotalNew) { // make sure the product is available or will return undefined
         let product = {};
         product.title = results[i].ItemAttributes[0].Title[0];
         product.image_url = results[i].LargeImage[0].URL[0];
