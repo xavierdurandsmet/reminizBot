@@ -5,9 +5,9 @@ const THREAD_SETTINGS_URL = `${FACEBOOK_BASE_URL}thread_settings`
 
 module.exports = function() {
   console.log("EXECUTING THREAD SETTINGS")
-  // addGetStartedButton();
-  // addPersistentMenu();
-  removePersistentMenu()
+  addGetStartedButton();
+  addPersistentMenu();
+  // removePersistentMenu()
   whitelistURL();
 }
 
