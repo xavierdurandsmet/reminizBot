@@ -72,21 +72,21 @@ function sendChannelsList(senderId) {
           "image_url": channels.News.image_url,
           "subtitle": channels.News.subtitle,
           "buttons": [{ "type": "postback", "title": 'Choose ✔︎', "payload": channels.News.payload },
-          { "type": "web_url", "title": "Watch Live ⚡️", "url": channels.News.live_uri }]
+          { "type": "postback", "title": "Watch Live ⚡️", "payload": `LIVE_${channels.News.live_uri}`}]
         },
         {
           "title": channels.JuniorClub.title,
           "image_url": channels.JuniorClub.image_url,
           "subtitle": channels.JuniorClub.subtitle,
           "buttons": [{"type": "postback", "title": 'Choose ✔︎', "payload": channels.JuniorClub.payload },
-          { "type": "web_url", "title": "Watch Live ⚡️", "url": channels.JuniorClub.live_uri }]
+          { "type": "postback", "title": "Watch Live ⚡️", "payload": `LIVE_${channels.JuniorClub.live_uri}`}]
         },
         {
           "title": channels.HelloCinema.title,
           "image_url": channels.HelloCinema.image_url,
           "subtitle": channels.HelloCinema.subtitle,
           "buttons": [{"type": "postback", "title": 'Choose ✔︎', "payload": channels.HelloCinema.payload },
-          { "type": "web_url", "title": "Watch Live ⚡️", "url": channels.HelloCinema.live_uri }]
+          { "type": "postback", "title": "Watch Live ⚡️", "payload": `LIVE_${channels.HelloCinema.live_uri}`}]
         }
       ]
     )

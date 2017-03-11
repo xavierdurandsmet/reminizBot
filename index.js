@@ -121,6 +121,11 @@ app.post('/webhook/', function (req, res) {
             }
           }
         })
+      } else if (postback.payload.substr(0, 4) === "LIVE") {
+        let liveLink = postback.payload.substr(5);
+        Bot.reply(senderId, `Watch the live there: ${liveLink}`, function () {
+          Bot.sendNextStepMessage(senderId);
+        })
       } else if (postback.payload.substr(0, 12) === "SINGLE_ACTOR") {
         let info = postback.payload.split(",");
         let actorName = info[1];
