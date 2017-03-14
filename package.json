@@ -20,6 +20,7 @@
     "cron": "^1.2.1",
     "dashbot": "^0.8.4",
     "dotenv": "^4.0.0",
+    "eslint": "^3.17.1",
     "express": "^4.14.1",
     "googleapis": "^17.1.0",
     "mongoose": "^4.8.3",
@@ -33,9 +34,6 @@
     "wikipedia-js": "0.0.6"
   },
   "devDependencies": {
-    "eslint": "^3.15.0",
-    "eslint-config-airbnb-base": "^11.1.0",
-    "eslint-plugin-import": "^2.2.0",
     "htmlparser2": "^3.9.2",
     "jsdom": "^9.11.0",
     "node-wikipedia": "0.0.2",
