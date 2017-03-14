@@ -9,7 +9,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "nodemon index.js",
-    "ngrok": "./node_modules/ngrok/bin/ngrok http 5000"
+    "ngrok": "./node_modules/ngrok/bin/ngrok http 5000",
+    "lint": "./node_modules/eslint/bin/eslint.js"
   },
   "author": "Antonin Archer",
   "license": "ISC",

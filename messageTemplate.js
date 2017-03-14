@@ -2,25 +2,25 @@
 module.exports = {
   createGenericTemplate: createGenericTemplate,
   createListTemplate: createListTemplate
-}
+};
 
-function createGenericTemplate(elements) {
+function createGenericTemplate (elements) {
   // format elements as a gallery
   elements = elements.map(function (element) {
     let ret = {};
     for (let key in element) {
-      if (key === "title" || key === "item_url" || key === "subtitle" || key === "image_url") {
+      if (key === 'title' || key === 'item_url' || key === 'subtitle' || key === 'image_url') {
         ret[key] = element[key];
-      } else if (key === "buttons") {
+      } else if (key === 'buttons') {
         ret.buttons = [];
         element.buttons.forEach(function (button) {
-          if (button.type === "postback") {
-            ret.buttons.push({ type: "postback", title: button.title, payload: button.payload });
-          } else if (button.type === "web_url") {
-            ret.buttons.push({ type: "web_url", webview_height_ratio: "tall", title: button.title, url: button.url });
+          if (button.type === 'postback') {
+            ret.buttons.push({ type: 'postback', title: button.title, payload: button.payload });
+          } else if (button.type === 'web_url') {
+            ret.buttons.push({ type: 'web_url', webview_height_ratio: 'tall', title: button.title, url: button.url });
           }
-        })
-      } 
+        });
+      }
     }
     if (element.share === true) {
       ret.buttons.push({ type: 'element_share' });
@@ -29,34 +29,34 @@ function createGenericTemplate(elements) {
   });
   let messageFormat = {
     attachment: {
-      type: "template",
+      type: 'template',
       payload: {
-        template_type: "generic",
-        image_aspect_ratio: "square",
+        template_type: 'generic',
+        image_aspect_ratio: 'square',
         elements: elements
       }
     }
-  }
+  };
   return messageFormat;
 }
 
-function createListTemplate(elements) {
+function createListTemplate (elements) {
   // format elements as a gallery
   elements = elements.map(function (element) {
     let ret = {};
     for (let key in element) {
-      if (key === "title" || key === "subtitle" || key === "image_url") {
+      if (key === 'title' || key === 'subtitle' || key === 'image_url') {
         ret[key] = element[key];
-      } else if (key === "buttons") {
+      } else if (key === 'buttons') {
         ret.buttons = [];
         element.buttons.forEach(function (button) {
-          if (button.type === "web_url") {
-            ret.buttons.push({ type: "web_url", title: button.title, url: button.url });
+          if (button.type === 'web_url') {
+            ret.buttons.push({ type: 'web_url', title: button.title, url: button.url });
           } else {
-            ret.buttons.push({ type: "postback", title: button.title, payload: button.payload });
+            ret.buttons.push({ type: 'postback', title: button.title, payload: button.payload });
           }
-        })
-      } else if (key === "default_action") {
+        });
+      } else if (key === 'default_action') {
         ret.default_action = {
           type: 'web_url',
           messenger_extensions: true,
@@ -71,18 +71,18 @@ function createListTemplate(elements) {
   });
   let messageFormat = {
     attachment: {
-      type: "template",
+      type: 'template',
       payload: {
-        template_type: "list",
+        template_type: 'list',
         elements: elements,
         // To refactor: not always share button
         buttons: [
           {
-            type: "element_share"
+            type: 'element_share'
           }
         ]
       }
     }
-  }
+  };
   return messageFormat;
 }

@@ -1,139 +1,138 @@
-const request = require('request')
+const request = require('request');
 
-const FACEBOOK_BASE_URL = "https://graph.facebook.com/v2.6/me/"
-const THREAD_SETTINGS_URL = `${FACEBOOK_BASE_URL}thread_settings`
+const FACEBOOK_BASE_URL = 'https://graph.facebook.com/v2.6/me/';
+const THREAD_SETTINGS_URL = `${FACEBOOK_BASE_URL}thread_settings`;
 
-module.exports = function() {
-  console.log("EXECUTING THREAD SETTINGS")
+module.exports = function () {
+  console.log('EXECUTING THREAD SETTINGS');
   addGetStartedButton();
   addPersistentMenu();
   // removePersistentMenu()
   whitelistURL();
-}
+};
 
 // Add a POSTBACK button for a user's first interaction
-function addGetStartedButton() {
+function addGetStartedButton () {
   request({
     url: THREAD_SETTINGS_URL,
     qs: { access_token: process.env.PAGE_ACCESS_TOKEN },
-    method: "POST",
+    method: 'POST',
     json: {
-      setting_type: "call_to_actions",
-      thread_state: "new_thread",
-      call_to_actions:[{
-        payload: "GET_STARTED" /* CHANGE HERE */
+      setting_type: 'call_to_actions',
+      thread_state: 'new_thread',
+      call_to_actions: [{
+        payload: 'GET_STARTED' /* CHANGE HERE */
       }]
     }
-  }, function(error, response) {
+  }, function (error, response) {
     if (error || response.body.error) {
-      console.log("Error adding Get Started button")
+      console.log('Error adding Get Started button');
     } else {
-      console.log("Get started button successfully added")
+      console.log('Get started button successfully added');
     }
-  })
+  });
 }
 
-function removeGetStartedButton() {
+function removeGetStartedButton () {
   request({
     url: THREAD_SETTINGS_URL,
     qs: { access_token: process.env.PAGE_ACCESS_TOKEN },
-    method: "DELETE",
+    method: 'DELETE',
     json: {
-      setting_type: "call_to_actions",
-      thread_state: "new_thread"
+      setting_type: 'call_to_actions',
+      thread_state: 'new_thread'
     }
-  }, function(error, response) {
+  }, function (error, response) {
     if (error || response.body.error) {
-      console.log("Error removing Get Started button")
+      console.log('Error removing Get Started button');
     } else {
-      console.log("Get started button successfully removed")
+      console.log('Get started button successfully removed');
     }
-  })
+  });
 }
-
 
 // Add a menu on the left, with buttons linking to main parts
-function addPersistentMenu() {
+function addPersistentMenu () {
   request({
     url: THREAD_SETTINGS_URL,
     qs: { access_token: process.env.PAGE_ACCESS_TOKEN },
-    method: "POST",
+    method: 'POST',
     json: {
-      setting_type: "call_to_actions",
-      thread_state: "existing_thread",
+      setting_type: 'call_to_actions',
+      thread_state: 'existing_thread',
       call_to_actions: [{
-        type:"postback",
+        type: 'postback',
         title: 'Hello Cinema',
         payload: 'CHANNEL_HelloCinema'
       },
       {
-        type:"postback",
+        type: 'postback',
         title: 'News',
         payload: 'CHANNEL_News'
       },
       {
-        type:"postback",
+        type: 'postback',
         title: 'The Junior Club',
         payload: 'CHANNEL_JuniorClub'
       },
       {
-        type:"postback",
-        title:"My favorites ❤️",
-        payload:"FAVORITES"
+        type: 'postback',
+        title: 'My favorites ❤️',
+        payload: 'FAVORITES'
       }
-    ]
+      ]
     }
   }, function (error, response, body) {
     if (error || response.body.error) {
-      console.log('Could not add persistent menu')
+      console.log('Could not add persistent menu');
     } else {
-      console.log('Successfully added persistent menu')
+      console.log('Successfully added persistent menu');
     }
-  })
+  });
 }
 
-function removePersistentMenu() {
+function removePersistentMenu () {
   request({
     url: THREAD_SETTINGS_URL,
     qs: { access_token: process.env.PAGE_ACCESS_TOKEN },
-    method: "DELETE",
+    method: 'DELETE',
     json: {
-      setting_type:"call_to_actions",
-      thread_state:"existing_thread"
+      setting_type: 'call_to_actions',
+      thread_state: 'existing_thread'
     }
-  }, function(error, response, body) {
+  }, function (error, response, body) {
     if (error || response.body.error) {
-      console.log("Couldn't delete persistent menu")
+      console.log("Couldn't delete persistent menu");
     } else {
-      console.log("Successfully deleted persistent menu")
+      console.log('Successfully deleted persistent menu');
     }
-  })
+  });
 }
 
-function whitelistURL() {
- request({
+function whitelistURL () {
+  request({
     url: THREAD_SETTINGS_URL,
     qs: { access_token: process.env.PAGE_ACCESS_TOKEN },
-    method: "POST",
+    method: 'POST',
     json: {
-      setting_type:"domain_whitelisting",
-      whitelisted_domains : [
-        "https://en.wikipedia.org/",
-        "https://www.youtube.com/",
-        "https://www.themoviedb.org/",
-        "https://pbs.twimg.com/",
-        "https://www.instagram.com/",
-        "https://www.amazon.com/",
-        "http://sxsw.reminiz.com/",
-        "https://reminiz.herokuapp.com/"
+      setting_type: 'domain_whitelisting',
+      whitelisted_domains: [
+        'https://en.wikipedia.org/',
+        'https://www.youtube.com/',
+        'https://www.themoviedb.org/',
+        'https://pbs.twimg.com/',
+        'https://www.instagram.com/',
+        'https://www.amazon.com/',
+        'http://sxsw.reminiz.com/',
+        'https://reminiz.herokuapp.com/'
       ],
-      domain_action_type: "add"
+      domain_action_type: 'add'
     }
-  }, function(error, response) {
+  }, function (error, response) {
     if (error || response.body.error) {
-      console.log("Couldn't whitelist domains")
+      console.log("Couldn't whitelist domains");
     } else {
-      console.log("Successfully whitelisted domains")
+      console.log('Successfully whitelisted domains');
     }
-  })
+  });
 }
