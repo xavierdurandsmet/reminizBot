@@ -6,7 +6,7 @@ const app = express();
 const mongoose = require('mongoose');
 
 const Bot = require('./Bot');
-const threadSettings = require('./app/controllers/thread_settings');
+const threadSettings = require('./app/thread_settings');
 const User = require('./app/models/user');
 const Actor = require('./app/models/actor');
 
