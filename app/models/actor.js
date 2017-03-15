@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 
 var ActorSchema = new mongoose.Schema({
   name: String,
-  thumbnail: {type: String, default: null },
+  thumbnail: { type: String, default: null },
   is_actor: { type: Boolean, default: false },
   instagram: { type: String },
   bookmarkedBy: [String],
@@ -12,6 +12,6 @@ var ActorSchema = new mongoose.Schema({
     news: { type: Number, default: 0 },
     products: { type: Number, default: 0 }
   }
-})
+});
 
-module.exports = mongoose.model("Actor", ActorSchema);
+module.exports = mongoose.model('Actor', ActorSchema);

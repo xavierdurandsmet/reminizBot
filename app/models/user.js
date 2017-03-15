@@ -1,5 +1,5 @@
-const mongoose = require('mongoose')
-const request = require('request')
+const mongoose = require('mongoose');
+const request = require('request');
 
 var UserSchema = new mongoose.Schema({
   fb_id: { type: String, index: true, unique: true },
@@ -14,26 +14,26 @@ var UserSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 // Find the user with this fb Id, create it if doesn't exist, and return it
-UserSchema.statics.findOrCreate = function(facebookId, callback) {
-  const that = this
+UserSchema.statics.findOrCreate = function (facebookId, callback) {
+  const User = this;
   if (!facebookId) {
-    console.log('Missing facebook Id')
+    console.log('Missing facebook Id');
   }
   // Look up if the user exists
-  this.findOne({ fb_id: facebookId }, function(error, currentUser) {
+  this.findOne({ fb_id: facebookId }, function (error, currentUser) {
     if (error) {
-      console.log('there was an error', error)
-      return error
+      console.log('there was an error', error);
+      return error;
     }
     // If no user, request to facebook graph API
     if (!currentUser) {
-      getFacebookProfile(facebookId, function(fbProfile) {
+      getFacebookProfile(facebookId, function (fbProfile) {
         if (!fbProfile || fbProfile === null) {
-          console.log("has no fb profile")
+          console.log('has no fb profile');
           return callback(null);
         }
         // Create the new user with fb profile and return it
-        const newUser = new that({
+        const newUser = new User({
           fb_id: facebookId,
           fb_first_name: fbProfile.first_name,
           fb_last_name: fbProfile.last_name,
@@ -41,35 +41,34 @@ UserSchema.statics.findOrCreate = function(facebookId, callback) {
           fb_locale: fbProfile.locale,
           fb_profile_pic: fbProfile.profile_pic,
           fb_timezone: fbProfile.timezone
-        })
+        });
         newUser.save(function (err, user) {
           if (err || !user) {
-            console.log("there was an error after saving ", err);
+            console.log('there was an error after saving ', err);
             return err || null;
           }
           return callback(user);
-        })
-      })
+        });
+      });
     } else if (currentUser) {
       return callback(currentUser);
     }
-  })
-}
+  });
+};
 
 // Get the Facebook profile from the Graph API, and print it
-function getFacebookProfile(senderId, callback) {
+function getFacebookProfile (senderId, callback) {
   if (!senderId) {
-    console.log('Missing senderId')
-    return callback(null)
+    console.log('Missing senderId');
+    return callback(null);
   }
   request(`https://graph.facebook.com/v2.6/${senderId}?access_token=${process.env.PAGE_ACCESS_TOKEN}`, function (error, response, body) {
-    const fbProfile = JSON.parse(body)
+    const fbProfile = JSON.parse(body);
     if (error || body.error) {
-      return callback(error || body.error)
+      return callback(error || body.error);
     }
-    return callback(fbProfile)
-  })
+    return callback(fbProfile);
+  });
 }
 
-module.exports = mongoose.model("User", UserSchema);
-
+module.exports = mongoose.model('User', UserSchema);
