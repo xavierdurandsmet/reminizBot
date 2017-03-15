@@ -2,19 +2,38 @@ const request = require('request');
 const Bing = require('node-bing-api')({ accKey: process.env.BING_ACCESS_KEY }); // put this in .env
 const MovieDB = require('moviedb')(process.env.MOVIE_DB_ACCESS_KEY); // put this in .env
 const wikipedia = require('wikipedia-js');
-
 const PAGE_ACCESS_TOKEN = process.env.PAGE_ACCESS_TOKEN;
 const messageTemplate = require('./messageTemplate');
 const amazon = require('amazon-product-api');
 const bingNewsImage = `${process.env.SERVER_URI}images/bing.jpg`;
+const dashbot = require('dashbot')(process.env.DASHBOT_API_KEY).facebook;
 const client = amazon.createClient({
   awsId: process.env.AMAZON_ID,
   awsSecret: process.env.AMAZON_SECRET_KEY
 });
-const dashbot = require('dashbot')(process.env.DASHBOT_API_KEY).facebook;
 
-const Actor = require('./app/models/actor');
-const User = require('./app/models/user');
+const Actor = require('./models/actor');
+const User = require('./models/user');
+
+const actorsController = require('./controllers/actors_controller');
+
+module.exports = {
+  sendCarouselOfActors: sendCarouselOfActors,
+  sendChannelsList: sendChannelsList,
+  sendSingleActor: sendSingleActor,
+  sendFavoriteActors: sendFavoriteActors,
+  sendActorIsBookmarked: sendActorIsBookmarked,
+  sendActorIsUnbookmarked: sendActorIsUnbookmarked,
+  sendAmazonProducts: sendAmazonProducts,
+  reply: reply,
+  sendNextStepMessage: sendNextStepMessage,
+  sendCarouselOfFilms: sendCarouselOfFilms,
+  sendCarouselOfNews: sendCarouselOfNews,
+  checkForErrors: checkForErrors,
+  sendInstagramFeed: sendInstagramFeed,
+  sendYoutubeVideos: sendYoutubeVideos,
+  getLiveActors: getLiveActors
+};
 
 const channels = {
   News: {
@@ -41,24 +60,6 @@ const channels = {
     image_url: `${process.env.SERVER_URI}images/helloCinemaLogo.png`,
     payload: 'CHANNEL_HelloCinema'
   }
-};
-
-module.exports = {
-  sendCarouselOfActors: sendCarouselOfActors,
-  sendChannelsList: sendChannelsList,
-  sendSingleActor: sendSingleActor,
-  sendFavoriteActors: sendFavoriteActors,
-  sendActorIsBookmarked: sendActorIsBookmarked,
-  sendActorIsUnbookmarked: sendActorIsUnbookmarked,
-  sendAmazonProducts: sendAmazonProducts,
-  reply: reply,
-  sendNextStepMessage: sendNextStepMessage,
-  sendCarouselOfFilms: sendCarouselOfFilms,
-  sendCarouselOfNews: sendCarouselOfNews,
-  checkForErrors: checkForErrors,
-  sendInstagramFeed: sendInstagramFeed,
-  sendYoutubeVideos: sendYoutubeVideos,
-  getLiveActors: getLiveActors
 };
 
 // Send a list of channels for Reminiz API requests
@@ -111,25 +112,6 @@ function getLiveActors (channelName, callback) {
     }
     return callback(JSON.parse(body));
   });
-}
-
-// Query Bing to get Actor Thumbnail and return actor as an object for Carousels
-function getActorsInfo (listOfActors, callback) {
-  let actorsInfo = [];
-  let counter = 0;
-  for (let i = 0; i < listOfActors.length; i++) {
-    Bing.images(listOfActors[i].name || listOfActors[i], { top: 5, skip: 3 }, function (error, res, body) {
-      checkForErrors(error);
-      actorsInfo.push({
-        name: listOfActors[i].name || listOfActors[i],
-        image: body && body.value && body.value[i] ? body.value[i].contentUrl : `${process.env.SERVER_URI}images/image-not-found.png`
-      });
-      counter += 1;
-      if (counter === listOfActors.length) {
-        return callback(actorsInfo);
-      }
-    });
-  }
 }
 
 // Send  list template containing the actor profile
@@ -229,7 +211,7 @@ function sendSingleActor (senderId, actorName) {
 function sendCarouselOfActors (currentUser, listOfActors, introductionMessage) {
   let elements = [];
   let counter = 0;
-  getActorsInfo(listOfActors, function (actorsInfo) {
+  actorsController.getActorsInfo(listOfActors, function (actorsInfo) {
     for (let i = 0; i < actorsInfo.length; i++) {
       let element = {
         title: actorsInfo[i].name,

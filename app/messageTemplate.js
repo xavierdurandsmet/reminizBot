@@ -1,11 +1,9 @@
-
 module.exports = {
   createGenericTemplate: createGenericTemplate,
   createListTemplate: createListTemplate
 };
 
 function createGenericTemplate (elements) {
-  // format elements as a gallery
   elements = elements.map(function (element) {
     let ret = {};
     for (let key in element) {
@@ -41,7 +39,6 @@ function createGenericTemplate (elements) {
 }
 
 function createListTemplate (elements) {
-  // format elements as a gallery
   elements = elements.map(function (element) {
     let ret = {};
     for (let key in element) {
