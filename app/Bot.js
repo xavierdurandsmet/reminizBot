@@ -13,8 +13,8 @@ const client = amazon.createClient({
 });
 const dashbot = require('dashbot')(process.env.DASHBOT_API_KEY).facebook;
 
-const Actor = require('./app/models/actor');
-const User = require('./app/models/user');
+const Actor = require('./models/actor');
+const User = require('./models/user');
 
 const channels = {
   News: {

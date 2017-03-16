@@ -5,7 +5,7 @@ const bodyParser = require('body-parser');
 const app = express();
 const mongoose = require('mongoose');
 
-const Bot = require('./Bot');
+const Bot = require('./app/Bot');
 const threadSettings = require('./app/thread_settings');
 const User = require('./app/models/user');
 const Actor = require('./app/models/actor');
