@@ -1,7 +1,7 @@
 const request = require('request');
 const messageTemplate = require('../utils/messageTemplate');
 const errorChecker = require('../utils/errorChecker');
-const replier = require('../utils/replier');
+const handler = require('../utils/handler');
 
 module.exports = {
     sendYoutubeVideos: sendYoutubeVideos
@@ -26,14 +26,14 @@ function sendYoutubeVideos (senderId, actorName) {
         }
       }
       let youtubeTemplate = messageTemplate.createGenericTemplate(elements);
-      replier.reply(senderId, `Here's ${actorName} on Youtube:`, function () {
-        replier.reply(senderId, youtubeTemplate, function () {
-          replier.sendNextStepMessage(senderId);
+      handler.reply(senderId, `Here's ${actorName} on Youtube:`, function () {
+        handler.reply(senderId, youtubeTemplate, function () {
+          handler.sendNextStepMessage(senderId);
         });
       });
     } else {
-      replier.reply(senderId, 'Sorry, there was an error with the Youtube feed...', function () {
-        replier.sendNextStepMessage(senderId);
+      handler.reply(senderId, 'Sorry, there was an error with the Youtube feed...', function () {
+        handler.sendNextStepMessage(senderId);
       });
     }
   });

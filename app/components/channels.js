@@ -1,5 +1,5 @@
 const messageTemplate = require('../utils/messageTemplate');
-const replier = require('../utils/replier');
+const handler = require('../utils/handler');
 const User = require('../models/user');
 const request = require('request');
 const errorChecker = require('../utils/errorChecker');
@@ -65,9 +65,9 @@ function sendChannelsList (senderId) { // Send a list of channels for Reminiz AP
       ]
     );
 
-    replier.reply(senderId, introductionMessage, function () {
+    handler.reply(senderId, introductionMessage, function () {
       setTimeout(function () {
-        replier.reply(senderId, listOfChannelsMessage);
+        handler.reply(senderId, listOfChannelsMessage);
       }, 1500);
     });
   });

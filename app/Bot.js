@@ -5,7 +5,7 @@ const movieDbComponent = require('./components/movieDb');
 const bingNewsComponent = require('./components/bingNews');
 const channelsComponent = require('./components/channels');
 const actorsComponent = require('./components/actors');
-const replier = require('./utils/replier');
+const handler = require('./utils/handler');
 const errorChecker = require('./utils/errorChecker');
 
 module.exports = {
@@ -15,8 +15,8 @@ module.exports = {
   sendActorIsBookmarked: actorsComponent.sendActorIsBookmarked,
   sendActorIsUnbookmarked: actorsComponent.sendActorIsUnbookmarked,
   sendAmazonProducts: amazonComponent.sendAmazonProducts,
-  reply: replier.reply,
-  sendNextStepMessage: replier.sendNextStepMessage,
+  reply: handler.reply,
+  sendNextStepMessage: handler.sendNextStepMessage,
   sendCarouselOfFilms: movieDbComponent.sendCarouselOfFilms,
   sendCarouselOfNews: bingNewsComponent.sendCarouselOfNews,
   sendInstagramFeed: instagramComponent.sendInstagramFeed,

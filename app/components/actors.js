@@ -4,7 +4,7 @@ const messageTemplate = require('../utils/messageTemplate');
 const bingNewsImage = `${process.env.SERVER_URI}images/bing.jpg`;
 const Actor = require('../models/actor');
 const errorChecker = require('../utils/errorChecker');
-const replier = require('../utils/replier');
+const handler = require('../utils/handler');
 
 module.exports = {
     getActorsInfo: getActorsInfo,
@@ -39,8 +39,8 @@ function sendSingleActor (senderId, actorName) {
   Actor.findOne({ name: actorName }, function (error, actor) {
     errorChecker.checkForErrors(error);
     if (!actor) {
-      replier.reply(senderId, 'Nobody on screen right now...Try again 😊', function () {
-        replier.sendNextStepMessage(senderId, actor);
+      handler.reply(senderId, 'Nobody on screen right now...Try again 😊', function () {
+        handler.sendNextStepMessage(senderId, actor);
       });
     }
     let biography = actor.name;
@@ -120,8 +120,8 @@ function sendSingleActor (senderId, actorName) {
         }
         // Only render the first 4 elements
         actor.list = messageTemplate.createListTemplate(elements.slice(0, 4));
-        replier.reply(senderId, actor.list, function () {
-          replier.sendNextStepMessage(senderId, actor);
+        handler.reply(senderId, actor.list, function () {
+          handler.sendNextStepMessage(senderId, actor);
         });
       });
     });
@@ -169,9 +169,9 @@ function sendCarouselOfActors (currentUser, listOfActors, introductionMessage) {
       counter += 1;
       if (counter === actorsInfo.length) {
         let listOfActorsMessage = messageTemplate.createGenericTemplate(elements);
-        replier.reply(currentUser.fb_id, introductionMessage, function () {
+        handler.reply(currentUser.fb_id, introductionMessage, function () {
           setTimeout(function () {
-            replier.reply(currentUser.fb_id, listOfActorsMessage);
+            handler.reply(currentUser.fb_id, listOfActorsMessage);
           }, 2000);
         });
       }
@@ -181,12 +181,12 @@ function sendCarouselOfActors (currentUser, listOfActors, introductionMessage) {
 
 function sendFavoriteActors (user) {
   if (user.favorites.length === 0) {
-    replier.reply(user.fb_id, "You don't have any favorites yet 😞", function () {
-      replier.reply(user.fb_id, "But don't be sad 😄", function () {
+    handler.reply(user.fb_id, "You don't have any favorites yet 😞", function () {
+      handler.reply(user.fb_id, "But don't be sad 😄", function () {
         setTimeout(function () {
-          replier.reply(user.fb_id, "Click on 'Bookmark ❤️' to add an actor to your favorites, like a pro 😎", function () {
+          handler.reply(user.fb_id, "Click on 'Bookmark ❤️' to add an actor to your favorites, like a pro 😎", function () {
           }, 2000);
-          replier.sendNextStepMessage(user.fb_id);
+          handler.sendNextStepMessage(user.fb_id);
         });
       });
     });
@@ -198,14 +198,14 @@ function sendFavoriteActors (user) {
 
 function sendActorIsBookmarked (senderId, newFavorite) {
   let introductionMessage = `${newFavorite} is now bookmarked 😎 You can access bookmarked actors by clicking on "My favorites" ❤️`;
-  replier.reply(senderId, introductionMessage, function () {
-    replier.sendNextStepMessage(senderId);
+  handler.reply(senderId, introductionMessage, function () {
+    handler.sendNextStepMessage(senderId);
   });
 }
 
 function sendActorIsUnbookmarked (senderId, actorName) {
   let introductionMessage = `${actorName} successfully unbookmarked ❌️`;
-  replier.reply(senderId, introductionMessage, function () {
-    replier.sendNextStepMessage(senderId);
+  handler.reply(senderId, introductionMessage, function () {
+    handler.sendNextStepMessage(senderId);
   });
 }

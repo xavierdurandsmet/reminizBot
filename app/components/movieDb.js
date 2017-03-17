@@ -1,7 +1,7 @@
 const request = require('request');
 const messageTemplate = require('../utils/messageTemplate');
 const errorChecker = require('../utils/errorChecker');
-const replier = require('../utils/replier');
+const handler = require('../utils/handler');
 const MovieDB = require('moviedb')(process.env.MOVIE_DB_ACCESS_KEY);
 
 module.exports = {
@@ -43,7 +43,7 @@ function sendCarouselOfFilms (senderId, actorName) {
           }
         }
         if (filmList.length === 0) { // Stop here if no movies were found
-          replier.reply(senderId, 'No Movies or TV Shows found for this person', function () {
+          handler.reply(senderId, 'No Movies or TV Shows found for this person', function () {
             sendSingleActor(senderId, actorName);
           });
         }
@@ -61,8 +61,8 @@ function sendCarouselOfFilms (senderId, actorName) {
               filmListToPush.push(film);
               if (filmListToPush.length === filmList.length || filmListToPush.length === 10) { // if statement inside the forEach to not have asynchronous pbs
                 let filmTemplate = messageTemplate.createGenericTemplate(filmListToPush);
-                replier.reply(senderId, filmTemplate, function () {
-                  replier.sendNextStepMessage(senderId);
+                handler.reply(senderId, filmTemplate, function () {
+                  handler.sendNextStepMessage(senderId);
                 });
               }
             });
@@ -77,8 +77,8 @@ function sendCarouselOfFilms (senderId, actorName) {
               // Change this, doesn't work if less than 10 films
               if (filmListToPush.length === filmList.length || filmListToPush.length === 10) { // if statement inside the forEach to not have asynchronous pbs
                 let filmTemplate = messageTemplate.createGenericTemplate(filmListToPush);
-                replier.reply(senderId, filmTemplate, function () {
-                  replier.sendNextStepMessage(senderId);
+                handler.reply(senderId, filmTemplate, function () {
+                  handler.sendNextStepMessage(senderId);
                 });
               }
             });
@@ -86,7 +86,7 @@ function sendCarouselOfFilms (senderId, actorName) {
         });
       });
     } else { // if cannot find person in movieDB
-      replier.reply(senderId, 'No Movies or TV Shows found for this person', function () {
+      handler.reply(senderId, 'No Movies or TV Shows found for this person', function () {
         sendSingleActor(senderId, actorName);
       });
     }

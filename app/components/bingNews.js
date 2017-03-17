@@ -1,7 +1,7 @@
 const request = require('request');
 const messageTemplate = require('../utils/messageTemplate');
 const errorChecker = require('../utils/errorChecker');
-const replier = require('../utils/replier');
+const handler = require('../utils/handler');
 const Bing = require('node-bing-api')({ accKey: process.env.BING_ACCESS_KEY });
 const bingNewsImage = `${process.env.SERVER_URI}images/bing.jpg`;
 
@@ -31,13 +31,13 @@ function sendCarouselOfNews (senderId, actorName) {
       }
     }
     if (!newsList.length) {
-      replier.reply(senderId, 'No TV News were found for this person', function () {
+      handler.reply(senderId, 'No TV News were found for this person', function () {
         sendSingleActor(senderId, actorName);
       });
     } else {
       let newsTemplate = messageTemplate.createGenericTemplate(newsList);
-      replier.reply(senderId, newsTemplate, function () {
-        replier.sendNextStepMessage(senderId);
+      handler.reply(senderId, newsTemplate, function () {
+        handler.sendNextStepMessage(senderId);
       });
     }
   });

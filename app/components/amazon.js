@@ -1,7 +1,7 @@
 const request = require('request');
 const messageTemplate = require('../utils/messageTemplate');
 const errorChecker = require('../utils/errorChecker');
-const replier = require('../utils/replier');
+const handler = require('../utils/handler');
 const amazon = require('amazon-product-api');
 const client = amazon.createClient({
   awsId: process.env.AMAZON_ID,
@@ -32,12 +32,12 @@ function sendAmazonProducts (senderId, actorName) {
         }
       }
       let productTemplate = messageTemplate.createGenericTemplate(productList);
-      replier.reply(senderId, productTemplate, function () {
-        replier.sendNextStepMessage(senderId);
+      handler.reply(senderId, productTemplate, function () {
+        handler.sendNextStepMessage(senderId);
       });
     } else {
-      replier.replierreply(senderId, `Sorry, no best sellers found for ${actorName}`, function () {
-        replier.sendNextStepMessage(senderId);
+      handler.handlerreply(senderId, `Sorry, no best sellers found for ${actorName}`, function () {
+        handler.sendNextStepMessage(senderId);
       });
     }
   });

@@ -1,7 +1,7 @@
 const request = require('request');
 const messageTemplate = require('../utils/messageTemplate');
 const errorChecker = require('../utils/errorChecker');
-const replier = require('../utils/replier');
+const handler = require('../utils/handler');
 
 module.exports = {
     sendInstagramFeed: sendInstagramFeed
@@ -9,8 +9,8 @@ module.exports = {
 
 function sendInstagramFeed (senderId, instagramHandle) {
   if (instagramHandle === 'None') {
-    replier.reply(senderId, 'Sorry, there was an error with the Instagram feed...', function () {
-      replier.sendNextStepMessage(senderId);
+    handler.reply(senderId, 'Sorry, there was an error with the Instagram feed...', function () {
+      handler.sendNextStepMessage(senderId);
     });
   } else {
     let elements = [];
@@ -33,14 +33,14 @@ function sendInstagramFeed (senderId, instagramHandle) {
           }
         }
         let instagramTemplate = messageTemplate.createGenericTemplate(elements);
-        replier.reply(senderId, `Here's ${instagramHandle} on Instagram:`, function () {
-          replier.reply(senderId, instagramTemplate, function () {
-            replier.sendNextStepMessage(senderId);
+        handler.reply(senderId, `Here's ${instagramHandle} on Instagram:`, function () {
+          handler.reply(senderId, instagramTemplate, function () {
+            handler.sendNextStepMessage(senderId);
           });
         });
       } else {
-        replier.reply(senderId, 'Sorry, there was an error with the Instagram feed...', function () {
-          replier.sendNextStepMessage(senderId);
+        handler.reply(senderId, 'Sorry, there was an error with the Instagram feed...', function () {
+          handler.sendNextStepMessage(senderId);
         });
       }
     });
