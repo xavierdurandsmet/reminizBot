@@ -9,7 +9,7 @@ For commit messages, we'll use the following standard https://robots.thoughtbot.
 ## Getting Started
 
 Set up ngrok to create a secure public URL, to be able to test your bot locally.
-* Download and install ngrok here: [ngrok] (https://ngrok.com/)
+* Download and install ngrok here: [ngrok](https://ngrok.com/)
 * run ngrok in one of your terminal windows 
 ```
 npm run ngrok
