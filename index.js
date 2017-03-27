@@ -1,5 +1,5 @@
 require('dotenv').config(({ silent: true }));
-// Dependencies
+
 const express = require('express');
 const bodyParser = require('body-parser');
 const app = express();
@@ -21,7 +21,6 @@ app.use(bodyParser.json());
 
 app.use(express.static('app/public'));
 
-// Spin up the server
 app.listen(app.get('port'), function (err) {
   if (err) {
     return err;
@@ -31,7 +30,6 @@ app.listen(app.get('port'), function (err) {
   console.log('running on port', app.get('port'));
 });
 
-// Start the database using Mongoose
 const MONGODB_URI = process.env.MONGODB_URI;
 mongoose.Promise = require('bluebird'); // Mongoose promise library is deprecated
 mongoose.connect(MONGODB_URI);
